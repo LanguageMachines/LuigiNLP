@@ -3,7 +3,7 @@ PICCL (proof of concept)
 
 Proof of concept for the PICCL NLP pipeline.
 
-Implementated using [sciluigi](https://github.com/pharmbio/sciluigi), which is in turn
+Implemented using [sciluigi](https://github.com/pharmbio/sciluigi), which is in turn
 based on [luigi](https://github.com/spotify/luigi).
 
 Goals
