@@ -14,4 +14,5 @@ Goals
  * Explicit workflow definitions
  * Automatic parallellisation where possible (due to luigi)
  * Keep it simple, minimize overhead for the developer of the workflow
+ * Runnable standalone from command-line as well as through CLAM
 
