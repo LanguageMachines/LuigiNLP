@@ -26,4 +26,5 @@ Structure
  * ``piccl/workflows/`` - Workflows, each expresses a specific pipeline that combines the above modules in some way.
  * ``piccl/inputs.py`` - Definition of initial inputs, to be used by the workflows
  * ``piccl/util.py`` - Auxiliary functions
- * ``bootstrap.sh`` - Installation script, to be invoked by or from within [LaMachine](https://github.com/proycon/LaMachine)
+ * ``setup.py`` - Installation script for PICCL (only covers PICCL and its direct python dependencies)
+ * ``bootstrap.sh`` - Full installation script, pulls in all necessary dependencies and runs ``setup.py``, to be invoked by or from within [LaMachine](https://github.com/proycon/LaMachine)
