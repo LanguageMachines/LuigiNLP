@@ -1,7 +1,9 @@
+import logging
 from sciluigi import Task, TargetInfo
 from luigi import StringParameter, BoolParameter
 from piccl.util import replaceextension
 
+log = logging.getLogger('mainlog')
 
 class Ucto_txt2folia(Task):
     executable = 'ucto' #external executable (None if n/a)
@@ -19,7 +21,9 @@ class Ucto_txt2folia(Task):
         params = ' -L' + self.language
         if self.tok_input_sentenceperline:
             params += ' -m'
-        self.ex(self.executable + ' ' + params + ' '+ self.in_txt().path + ' ' + self.out_folia().path)
+        cmd = self.executable + ' ' + params + ' '+ self.in_txt().path + ' ' + self.out_folia().path
+        log.info("Running " + self.__class__.__name__ + ': ' + cmd)
+        self.ex(cmd)
 
 class Ucto_txt2tok(Task):
     executable = 'ucto' #external executable (None if n/a)
@@ -40,7 +44,9 @@ class Ucto_txt2tok(Task):
             params += ' -m'
         if self.tok_output_sentenceperline:
             params += ' -n'
-        self.ex(self.executable + ' ' + params + ' '+ self.in_txt().path + ' ' + self.out_tok().path)
+        cmd = self.executable + ' ' + params + ' '+ self.in_txt().path + ' ' + self.out_tok().path
+        log.info("Running " + self.__class__.__name__ + ': ' + cmd)
+        self.ex(cmd)
 
 class Ucto_folia2folia(Task):
     executable = 'ucto' #external executable (None if n/a)
@@ -56,4 +62,6 @@ class Ucto_folia2folia(Task):
     def run(self):
         params = ' -L' + self.language
         params += ' -F '
-        self.ex(self.executable + ' ' + params + ' '+ self.in_txt().path + ' ' + self.out_tok().path)
+        cmd = self.executable + ' ' + params + ' '+ self.in_txt().path + ' ' + self.out_tok().path
+        log.info("Running " + self.__class__.__name__ + ': ' + cmd)
+        self.ex(cmd)

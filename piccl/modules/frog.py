@@ -1,7 +1,10 @@
+import os
+import logging
 from sciluigi import Task, TargetInfo
 from luigi import StringParameter, BoolParameter
-import os
 from piccl.util import replaceextension
+
+log = logging.getLogger('mainlog')
 
 class Frog_txt2folia(Task):
     executable = 'frog' #external executable (None if n/a)
@@ -23,7 +26,9 @@ class Frog_txt2folia(Task):
             params += ' -n'
         folia_id = os.path.basename(self.in_txt().path).split('.')[0] #first component of input filename (up to first period) will be FoLiA ID
         params += ' --id=' + folia_id
-        self.ex(self.executable + ' ' + params + ' -t ' + self.in_txt().path + ' -X ' + self.out_folia().path)
+        cmd = self.executable + ' ' + params + ' -t ' + self.in_txt().path + ' -X ' + self.out_folia().path
+        log.info("Running " + self.__class__.__name__ + ': ' + cmd)
+        self.ex(cmd)
 
 
 class Frog_folia2folia(Task):
@@ -41,4 +46,6 @@ class Frog_folia2folia(Task):
         params = ""
         if self.skip:
             params += ' --skip=' + self.skip
-        self.ex(self.executable + ' ' + params + ' -t ' + self.in_folia().path + ' -X ' + self.out_folia().path)
+        cmd = self.executable + ' ' + params + ' -t ' + self.in_folia().path + ' -X ' + self.out_folia().path
+        log.info("Running " + self.__class__.__name__ + ': ' + cmd)
+        self.ex(cmd)
