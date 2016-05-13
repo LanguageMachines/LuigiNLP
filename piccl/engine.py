@@ -1,4 +1,8 @@
 import sciluigi
+import logging
+from piccl.util import shellsafe
+
+log = logging.getLogger('mainlog')
 
 class WorkflowTask(sciluigi.WorkflowTask):
     def initial_task(self, inputfilename, extension2inputclass, **kwargs):
@@ -18,7 +22,31 @@ class WorkflowTask(sciluigi.WorkflowTask):
             raise Exception("Input file does not match any known pattern for this workflow")
 
 class Task(sciluigi.Task):
-    pass
+    def ex(self, *args, **kwargs):
+        if hasattr(self,'executable'):
+            raise Exception("No executable defined for Task " + self.__class__.__name__)
+
+
+        if self.executable[-4:] == '.jar':
+            cmd = 'java -jar ' + self.executable
+        else:
+            cmd = self.executable
+        opts = []
+        for key, value in kwargs.items():
+            if len(key) == 1:
+                key = '-' + key
+            else:
+                key = '--' + key
+            if value is True:
+                opts.append(key)
+            else:
+                opts.append(key + ' ' + shellsafe(value))
+        if opts:
+            cmd += ' ' + ' '.join(opts)
+        if args:
+            cmd += ' ' + ' '.join(args)
+        log.info("Running " + self.__class__.__name__ + ': ' + cmd)
+        super(Task, self).ex(cmd)
 
 class TargetInfo(sciluigi.TargetInfo):
     pass

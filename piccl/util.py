@@ -1,3 +1,4 @@
+DISALLOWINSHELLSAFE = ('|','&',';','!','<','>','{','}','`','\n','\r','\t')
 
 def replaceextension(filename, oldextensions, newextension):
     if newextension[0] != '.':
@@ -10,3 +11,37 @@ def replaceextension(filename, oldextensions, newextension):
         if filename.lower().endswith(oldextension):
             filename = filename[:-len(oldextension)]
     return filename + newextension
+
+def escape(s, quote):
+    s2 = ""
+    for i, c in enumerate(s):
+        if c == quote:
+            escapes = 0
+            j = i - 1
+            while j > 0:
+                if s[j] == "\\":
+                    escapes += 1
+                else:
+                    break
+                j -= 1
+            if escapes % 2 == 0: #even number of escapes, we need another one
+                s2 += "\\"
+        s2 += c
+    return s2
+
+def shellsafe(s, quote="'", doescape=True):
+    """Returns the value string, wrapped in the specified quotes (if not empty), but checks and raises an Exception if the string is at risk of causing code injection"""
+    if len(s) > 1024:
+        raise ValueError("Variable value rejected for security reasons: too long")
+    if quote:
+        if quote in s:
+            if doescape:
+                s = escape(s,quote)
+            else:
+                raise ValueError("Variable value rejected for security reasons: " + s)
+        return quote + s + quote
+    else:
+        for c in s:
+            if c in DISALLOWINSHELLSAFE:
+                raise ValueError("Variable value rejected for security reasons: " + s)
+        return s
