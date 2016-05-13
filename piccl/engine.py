@@ -42,8 +42,10 @@ class Task(sciluigi.Task):
                 key = '--' + key
             if value is True:
                 opts.append(key)
-            else:
+            elif isinstance(value,str):
                 opts.append(key + ' ' + shellsafe(value))
+            else:
+                opts.append(key + ' ' + str(value))
         if opts:
             cmd += ' ' + ' '.join(opts)
         if args:
