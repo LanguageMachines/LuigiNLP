@@ -12,7 +12,7 @@ def read(fname):
 
 
 setup(
-    name = "PICCL (proof of concept)",
+    name = "PICCL",
     version = "0.1", #edit version in __init__.py as well!
     author = "Maarten van Gompel",
     author_email = "proycon@anaproy.nl",
