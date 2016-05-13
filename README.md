@@ -21,11 +21,12 @@ Goals
 Architecture
 ----------------
 
- * A **module** (``piccl/modules/*.py``) provides a specific component in the form
+ * A **module** (``piccl/modules/*.py``) covers a particular tool in the form
    of one or more **tasks**:
  * A **task** takes input files, parameters and produces output files, in a
-   deterministic fashion. Each task defines input and output slots.
- * A **workflow** takes an initial input (``piccl/inputs.py``), parameters, and
+   deterministic fashion. Each task defines input and output slots and either
+   defers work to an external tool, or contains the implementation directly.
+ * A **workflow** (``piccl/workflows/*.py``) takes an initial input (``piccl/inputs.py``), parameters, and
    invokes a chain of tasks, i.e. a workflow definition connects the input and
    output slots of different tasks.
  * The user (or an intermediary) selects a workflow and provides input and
