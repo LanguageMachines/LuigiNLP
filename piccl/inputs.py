@@ -1,28 +1,28 @@
 from sciluigi import ExternalTask, TargetInfo
-from luigi import StringParameter
+from luigi import Parameter
 
 class FoLiAInput(ExternalTask):
-    basename= StringParameter()
+    basename= Parameter()
     def out_default(self):
         return TargetInfo(self, self.basename + '.folia.xml')
 
 class TEIInput(ExternalTask):
-    basename= StringParameter()
+    basename= Parameter()
     def out_default(self):
         return TargetInfo(self, self.basename + '.tei.xml')
 
 class PlainTextInput(ExternalTask):
     """Untokenised plain text documents"""
-    basename= StringParameter()
+    basename= Parameter()
     def out_default(self):
         return TargetInfo(self, self.basename + '.txt')
 
 class WordInput(ExternalTask):
-    basename= StringParameter()
+    basename= Parameter()
     def out_default(self):
         return TargetInfo(self, self.basename + '.docx')
 
 class WordInput_legacy(ExternalTask):
-    basename= StringParameter()
+    basename= Parameter()
     def out_default(self):
         return TargetInfo(self, self.basename + '.doc')
