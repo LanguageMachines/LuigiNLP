@@ -1,6 +1,6 @@
 import logging
-from sciluigi import Task, TargetInfo
-from luigi import StringParameter, BoolParameter
+from luigi import Parameter, BoolParameter
+from piccl.engine import Task, TargetInfo
 from piccl.util import replaceextension
 
 log = logging.getLogger('mainlog')
@@ -9,7 +9,7 @@ class Ucto_txt2folia(Task):
     executable = 'ucto' #external executable (None if n/a)
 
     #Parameters for this module (all mandatory!)
-    language = StringParameter()
+    language = Parameter()
     tok_input_sentenceperline = BoolParameter(default=False)
 
     in_txt = None #will be linked to an out_* slot of another module in the workflow specification
@@ -29,7 +29,7 @@ class Ucto_txt2tok(Task):
     executable = 'ucto' #external executable (None if n/a)
 
     #Parameters for this module (all mandatory!)
-    language = StringParameter()
+    language = Parameter()
     tok_input_sentenceperline = BoolParameter(default=False)
     tok_output_sentenceperline = BoolParameter(default=False)
 
@@ -52,7 +52,7 @@ class Ucto_folia2folia(Task):
     executable = 'ucto' #external executable (None if n/a)
 
     #Parameters for this module (all mandatory!)
-    language = StringParameter()
+    language = Parameter()
 
     in_folia = None #will be linked to an out_* slot of another module in the workflow specification
 

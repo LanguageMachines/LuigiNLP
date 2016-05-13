@@ -4,9 +4,12 @@ import luigi
 import logging
 
 log = logging.getLogger('mainlog')
-log.basicConfig(level=logging.INFO)
+log.level=logging.INFO
+
+def main():
+    log.info("Starting PICCL")
+    luigi.run(local_scheduler=True)
 
 
 if __name__ == '__main__':
-    log.info("Starting PICCL")
-    luigi.run(local_scheduler=True)
+    main()

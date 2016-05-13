@@ -1,6 +1,6 @@
 import os
 import logging
-from luigi import StringParameter, BoolParameter
+from luigi import Parameter, BoolParameter
 from piccl.engine import WorkflowTask, TargetInfo
 from piccl.modules.frog import Frog_folia2folia, Frog_txt2folia
 from piccl.modules.openconvert import OpenConvert_folia
@@ -11,8 +11,8 @@ log = logging.getLogger('mainlog')
 
 
 class Frog(WorkflowTask):
-    inputfilename = StringParameter()
-    skip = StringParameter(default="")
+    inputfilename = Parameter()
+    skip = Parameter(default="")
 
     def workflow(self):
         #detect format of input file by extension

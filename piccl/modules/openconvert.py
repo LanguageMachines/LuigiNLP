@@ -1,7 +1,7 @@
 import os
 import logging
-from sciluigi import Task, TargetInfo
-from luigi import StringParameter, BoolParameter
+from luigi import Parameter, BoolParameter
+from piccl.engine import Task, TargetInfo
 from piccl.util import replaceextension
 
 log = logging.getLogger('mainlog')
@@ -10,7 +10,7 @@ class OpenConvert_folia(Task):
     executable = 'OpenConvert.jar' #external executable (None if n/a)
 
     #Parameters for this module (all mandatory!)
-    from_format = StringParameter()
+    from_format = Parameter()
 
     in_any = None #will be linked to an out_* slot of another module in the workflow specification
 
@@ -27,7 +27,7 @@ class OpenConvert_tei(Task):
     executable = 'OpenConvert.jar' #external executable (None if n/a)
 
     #Parameters for this module (all mandatory!)
-    from_format = StringParameter()
+    from_format = Parameter()
 
     in_any = None #will be linked to an out_* slot of another module in the workflow specification
 

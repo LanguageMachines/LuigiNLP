@@ -1,6 +1,6 @@
 import os
 import logging
-from luigi import StringParameter, BoolParameter
+from luigi import Parameter, BoolParameter
 from piccl.engine import Task, TargetInfo
 from piccl.util import replaceextension
 
@@ -11,7 +11,7 @@ class Frog_txt2folia(Task):
 
     #Parameters for this module (all mandatory!)
     tok_input_sentenceperline = BoolParameter(default=False)
-    skip = StringParameter(default="")
+    skip = Parameter(default="")
 
     in_txt = None #will be linked to an out_* slot of another module in the workflow specification
 
@@ -35,7 +35,7 @@ class Frog_folia2folia(Task):
     executable = 'frog' #external executable (None if n/a)
 
     #Parameters for this module (all mandatory!)
-    skip = StringParameter(default="")
+    skip = Parameter(default="")
 
     in_folia = None #will be linked to an out_* slot of another module in the workflow specification
 
