@@ -18,6 +18,19 @@ Goals
  * Runnable standalone from command-line as well as through CLAM
     * Not sure yet whether to expose multiple CLAM webservices (one per workflow), or one monolithic one, leaning towards the former.
 
+Architecture
+----------------
+
+ * A **module** (``piccl/modules/*.py``) provides a specific component in the form
+   of one or more **tasks**:
+ * A **task** takes input files, parameters and produces output files, in a
+   deterministic fashion. Each task defines input and output slots.
+ * A **workflow** takes an initial input (``piccl/inputs.py``), parameters, and
+   invokes a chain of tasks, i.e. a workflow definition connects the input and
+   output slots of different tasks.
+ * The user (or an intermediary) selects a workflow and provides input and
+   initial parameters.
+
 Structure
 ----------
 
