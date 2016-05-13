@@ -16,3 +16,9 @@ class WorkflowTask(sciluigi.WorkflowTask):
             return self.new_task(initialtask_id, Inputclass, basename), Inputclass
         else:
             raise Exception("Input file does not match any known pattern for this workflow")
+
+class Task(sciluigi.Task):
+    pass
+
+class TargetInfo(sciluigi.TargetInfo):
+    pass

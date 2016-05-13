@@ -1,7 +1,7 @@
 import os
 import logging
-from sciluigi import Task, TargetInfo
 from luigi import StringParameter, BoolParameter
+from piccl.engine import Task, TargetInfo
 from piccl.util import replaceextension
 
 log = logging.getLogger('mainlog')

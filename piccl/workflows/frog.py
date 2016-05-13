@@ -1,8 +1,7 @@
 import os
 import logging
-from sciluigi import TargetInfo
 from luigi import StringParameter, BoolParameter
-from piccl.engine import WorkflowTask
+from piccl.engine import WorkflowTask, TargetInfo
 from piccl.modules import Frog_folia2folia, Frog_txt2folia, OpenConvert_folia
 from piccl.inputs import FoLiAInput, PlainTextInput, WordInput, TEIInput
 from piccl.util import replaceextension
@@ -25,9 +24,11 @@ class Frog(WorkflowTask):
 
         #Set up workflow to Frog for this type of input
         if inputtype is FoLiAInput:
+            #Frog can handle FoLiA
             frog = self.new_task('frog', Frog_folia2folia,skip=self.skip )
             frog.in_folia = initialtask.out_default
         elif inputtype is PlainTextInput:
+            #Frog itself calls ucto to tokenize plaintext, no need to solve it here:
             frog = self.new_task('frog', Frog_txt2folia,skip=self.skip )
             frog.in_txt = initialtask.out_default
         elif inputformat in (WordInput, TEIInput):
