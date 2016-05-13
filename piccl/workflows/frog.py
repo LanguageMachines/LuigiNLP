@@ -2,7 +2,8 @@ import os
 import logging
 from luigi import StringParameter, BoolParameter
 from piccl.engine import WorkflowTask, TargetInfo
-from piccl.modules import Frog_folia2folia, Frog_txt2folia, OpenConvert_folia
+from piccl.modules.frog import Frog_folia2folia, Frog_txt2folia
+from piccl.modules.openconvert import OpenConvert_folia
 from piccl.inputs import FoLiAInput, PlainTextInput, WordInput, TEIInput
 from piccl.util import replaceextension
 
@@ -31,7 +32,7 @@ class Frog(WorkflowTask):
             #Frog itself calls ucto to tokenize plaintext, no need to solve it here:
             frog = self.new_task('frog', Frog_txt2folia,skip=self.skip )
             frog.in_txt = initialtask.out_default
-        elif inputformat in (WordInput, TEIInput):
+        elif inputtype in (WordInput, TEIInput):
             #Input is something OpenConvert can handle: convert to FoLiA first
             openconvert = self.new_task('openconvert',OpenConvert_folia,from_format='docx')
             openconvert.in_any = initialtask.out_default
