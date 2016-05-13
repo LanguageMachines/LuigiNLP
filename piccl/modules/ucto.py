@@ -18,12 +18,11 @@ class Ucto_txt2folia(Task):
         return TargetInfo( replaceextension(self.in_txt().path, '.txt','.folia.xml'))
 
     def run(self):
-        params = ' -L' + self.language
-        if self.tok_input_sentenceperline:
-            params += ' -m'
-        cmd = self.executable + ' ' + params + ' '+ self.in_txt().path + ' ' + self.out_folia().path
-        log.info("Running " + self.__class__.__name__ + ': ' + cmd)
-        self.ex(cmd)
+        self.ex(self.in_txt().path(), self.out_folia().path,
+                L=self.language,
+                m=self.tok_input_sentenceperline,
+                X=True,
+        )
 
 class Ucto_txt2tok(Task):
     executable = 'ucto' #external executable (None if n/a)
@@ -39,14 +38,11 @@ class Ucto_txt2tok(Task):
         return TargetInfo( replaceextension(self.in_txt().path, '.txt','.tok'))
 
     def run(self):
-        params = ' -L' + self.language
-        if self.tok_input_sentenceperline:
-            params += ' -m'
-        if self.tok_output_sentenceperline:
-            params += ' -n'
-        cmd = self.executable + ' ' + params + ' '+ self.in_txt().path + ' ' + self.out_tok().path
-        log.info("Running " + self.__class__.__name__ + ': ' + cmd)
-        self.ex(cmd)
+        self.ex(self.in_txt().path(), self.out_tok().path,
+                L=self.language,
+                m=self.tok_input_sentenceperline,
+                n=self.tok_output_sentenceperline,
+        )
 
 class Ucto_folia2folia(Task):
     executable = 'ucto' #external executable (None if n/a)
@@ -60,8 +56,8 @@ class Ucto_folia2folia(Task):
         return TargetInfo( replaceextension(self.in_folia().path, '.folia.xml','.tok.folia.xml'))
 
     def run(self):
-        params = ' -L' + self.language
-        params += ' -F '
-        cmd = self.executable + ' ' + params + ' '+ self.in_txt().path + ' ' + self.out_tok().path
-        log.info("Running " + self.__class__.__name__ + ': ' + cmd)
-        self.ex(cmd)
+        self.ex(self.in_txt().path(), self.out_folia().path,
+                L=self.language,
+                F=True, #folia input
+                X=True, #folia output
+        )

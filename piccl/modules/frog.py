@@ -19,16 +19,13 @@ class Frog_txt2folia(Task):
         return TargetInfo( replaceextension(self.in_txt().path, '.txt','.frogged.folia.xml'))
 
     def run(self):
-        params = ""
-        if self.skip:
-            params += ' --skip=' + self.skip
-        if self.tok_input_sentenceperline:
-            params += ' -n'
-        folia_id = os.path.basename(self.in_txt().path).split('.')[0] #first component of input filename (up to first period) will be FoLiA ID
-        params += ' --id=' + folia_id
-        cmd = self.executable + ' ' + params + ' -t ' + self.in_txt().path + ' -X ' + self.out_folia().path
-        log.info("Running " + self.__class__.__name__ + ': ' + cmd)
-        self.ex(cmd)
+        self.ex(
+            t=self.in_txt().path,
+            X=self.out_folia().path,
+            id=os.path.basename(self.in_txt().path).split('.')[0], #first component of input filename (up to first period) will be FoLiA ID
+            skip=self.skip if self.skip else None,
+            n=self.tok_input_sentenceperline,
+        )
 
 
 class Frog_folia2folia(Task):
@@ -43,9 +40,8 @@ class Frog_folia2folia(Task):
         return TargetInfo( replaceextension(self.in_txt().path, '.folia.xml','.frogged.folia.xml'))
 
     def run(self):
-        params = ""
-        if self.skip:
-            params += ' --skip=' + self.skip
-        cmd = self.executable + ' ' + params + ' -t ' + self.in_folia().path + ' -X ' + self.out_folia().path
-        log.info("Running " + self.__class__.__name__ + ': ' + cmd)
-        self.ex(cmd)
+        self.ex(
+            t=self.in_txt().path,
+            X=self.out_folia().path,
+            skip=self.skip if self.skip else None,
+        )

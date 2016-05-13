@@ -15,13 +15,14 @@ class OpenConvert_folia(Task):
     in_any = None #will be linked to an out_* slot of another module in the workflow specification
 
     def out_folia(self):
-        return TargetInfo( replaceextension(self.in_txt().path, ['.tei.xml', '.alto.xml','.tei', '.alto', '.xml', '.doc','.docx','.html', '.epub'],'.openconvert.folia.xml'))
+        return TargetInfo( replaceextension(self.in_any().path, ['.tei.xml', '.alto.xml','.tei', '.alto', '.xml', '.doc','.docx','.html', '.epub'],'.openconvert.folia.xml'))
 
     def run(self):
-        params = ' --from=' + self.from_format
-        cmd = 'java -jar ' + os.environ['VIRTUAL_ENV'] + '/java/' + self.executable + ' ' + params + ' -t ' + self.in_txt().path + ' -X ' + self.out_folia().path
-        log.info("Running " + self.__class__.__name__ + ': ' + cmd)
-        self.ex(cmd)
+        self.ex(
+                _from=self.from_format, #any underscore will be removed (only to prevent clash with python reserved keyword)
+                t=self.in_any().path,
+                X=self.out_folia().path
+        )
 
 class OpenConvert_tei(Task):
     executable = 'OpenConvert.jar' #external executable (None if n/a)
@@ -35,9 +36,9 @@ class OpenConvert_tei(Task):
         return TargetInfo( replaceextension(self.in_txt().path, ['.folia.xml', '.alto.xml','.tei', '.alto', '.xml', '.doc','.docx','.html', '.epub'],'.openconvert.tei.xml'))
 
     def run(self):
-        params = ' --from=' + self.from_format
-        log.info("Running " + self.__class__.__name__)
-        cmd = 'java -jar ' + os.environ['VIRTUAL_ENV'] + '/java/' + self.executable + ' ' + params + ' -t ' + self.in_txt().path + ' -X ' + self.out_folia().path
-        log.info("Running " + self.__class__.__name__ + ': ' + cmd)
-        self.ex(cmd)
+        self.ex(
+                _from=self.from_format, #any underscore will be removed (only to prevent clash with python reserved keyword)
+                t=self.in_any().path,
+                X=self.out_folia().path
+        )
 

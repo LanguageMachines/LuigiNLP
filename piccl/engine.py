@@ -5,7 +5,7 @@ from piccl.util import shellsafe
 log = logging.getLogger('mainlog')
 
 class WorkflowTask(sciluigi.WorkflowTask):
-    def initial_task(self, inputfilename, extension2inputclass, **kwargs):
+    def initial_task(self, inputfilename, extension2inputtask, **kwargs):
         if 'id' in kwargs:
             initialtask_id = kwargs['id']
             del kwargs['id']
@@ -26,13 +26,16 @@ class Task(sciluigi.Task):
         if hasattr(self,'executable'):
             raise Exception("No executable defined for Task " + self.__class__.__name__)
 
-
         if self.executable[-4:] == '.jar':
             cmd = 'java -jar ' + self.executable
         else:
             cmd = self.executable
         opts = []
         for key, value in kwargs.items():
+            if value is None or value is False:
+                continue #no value, ignore this one
+            if key[0] == '_':
+                key = key[1:]
             if len(key) == 1:
                 key = '-' + key
             else:
