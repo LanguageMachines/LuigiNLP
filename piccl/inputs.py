@@ -17,6 +17,12 @@ class PlainTextInput(ExternalTask):
     def out_default(self):
         return TargetInfo(self, self.basename + '.txt')
 
+class ReStructuredTextInput(ExternalTask):
+    """ReStructuredText plain text documents"""
+    basename= Parameter()
+    def out_default(self):
+        return TargetInfo(self, self.basename + '.rst')
+
 class WordInput(ExternalTask):
     basename= Parameter()
     def out_default(self):
