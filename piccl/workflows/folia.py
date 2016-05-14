@@ -22,11 +22,12 @@ class ConvertToFoLiA(WorkflowTask):
         '.rst': ReStructuredTextInput,
     }
 
-    def workflow(self):
+
+    def setup(self, workflow):
         #detect format of input file by extension
-        initialinput = InitialInput(self.inputfilename, self.inputmap)
+        initialinput = InitialInput(workflow.inputfilename, self.inputmap)
         #Set up initial task
-        initialtask = self.initial_task(initialinput)
+        initialtask = workflow.initial_task(initialinput)
 
         #Conversion to FoLiA, last task in conversion chain *MUST* expose a out_folia slot
         if initialinput.type in (WordInput, TEIInput):
@@ -35,10 +36,11 @@ class ConvertToFoLiA(WorkflowTask):
                 WordInput: 'docx',
                 TEIInput: 'tei',
             }
-            openconvert = self.new_task('openconvert',OpenConvert_folia,from_format=formatmap[initialinput.type])
+            openconvert = workflow.new_task('openconvert',OpenConvert_folia,from_format=formatmap[initialinput.type])
             openconvert.in_any = initialtask.out_default
+            return openconvert #always return last task
         elif initialinput.type is ReStructuredTextInput:
-            rst2folia = self.new_task('rst2folia',Rst2folia)
+            rst2folia = workflow.new_task('rst2folia',Rst2folia)
             rst2folia.in_rst = initialtask.out_default
+            return rst2folia #always return last task
 
-        return locals()[self.task] #returns last task (mandatory)

@@ -20,6 +20,7 @@ class InitialInput:
                     self.extension = extension
 
 class WorkflowTask(sciluigi.WorkflowTask):
+
     def initial_task(self, initialinput, **kwargs):
         if 'id' in kwargs:
             initialtask_id = kwargs['id']
@@ -36,6 +37,15 @@ class WorkflowTask(sciluigi.WorkflowTask):
             if isinstance(attr,luigi.Parameter) and not hasattr(cls,key):
                 setattr(cls,key, attr)
 
+    def setup(self,workflow):
+        raise NotImplementedError("Override the setup method for your workflow " + self.__class__.__name__)
+
+    def workflow(self):
+        return self.setup(self)
+
+    def new_subworkflow(self, Class, *args, **kwargs):
+        wf = Class(*args,**kwargs)
+        return wf.setup(self)
 
 class Task(sciluigi.Task):
     def ex(self, *args, **kwargs):

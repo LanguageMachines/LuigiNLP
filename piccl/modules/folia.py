@@ -12,7 +12,7 @@ class Rst2folia(Task):
     in_rst = None #will be linked to an out_* slot of another module in the workflow specification
 
     def out_folia(self):
-        return TargetInfo( replaceextension(self.in_rst().path, '.rst','.folia.xml'))
+        return TargetInfo(self, replaceextension(self.in_rst().path, '.rst','.folia.xml'))
 
     def run(self):
         self.ex(self.in_rst().path, self.out_folia().path,
