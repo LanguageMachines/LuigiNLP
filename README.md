@@ -11,11 +11,15 @@ Goals
 
  * Abstraction of workflow/pipeline logic: a generic, scalable and adaptable solution
  * Modularisation; clear separation of all components from the workflow system itself
- * Explicit workflow definition (as opposed to automatic workflow discovery based on the specification of the components)
+ * Automatic dependency resolution (similar to Makefile, top-down)
+ * Robust failure recovery: when failures occur, allow to continue. No re-run of the whole workflow necessary.
  * Easy to extend with new modules or workflows. Workflows can also be recombined (meta-workflows, a feature of sciluigi)
- * Automatic parallellisation where possible (due to luigi)
- * Keep it simple, minimize overhead for the developer of the workflow
- * Runnable standalone from command-line as well as through CLAM
+ * Explicit workflow definitions 
+ * Automatic parallellisation where possible
+ * Keep it simple, minimize overhead for the developer of the workflow. 
+ * Python-based, workflow and component specifications are in Python rather than external.
+ * Runnable standalone from command-line 
+ * Runnable as a CLAM webservice 
     * Not sure yet whether to expose multiple CLAM webservices (one per workflow), or one monolithic one, leaning towards the former.
 
 Architecture

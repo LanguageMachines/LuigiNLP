@@ -44,13 +44,6 @@ class Frog(WorkflowTask):
                 convert2folia = workflow.new_subworkflow(ConvertToFoLiA, inputfilename=self.inputfilename)
                 out = convert2folia.out_folia
 
-                #convert2folia = self.new_task('converttofolia',ConvertToFoLiA,inputfilename=self.inputfilename)
-                #print(dir(convert2folia))
-                #print(repr(type(convert2folia)))
-                #print(repr(convert2folia.output))
-                #print("workflow: ", dir(convert2folia.workflow))
-                #out = convert2folia.out_folia
-
             #Stage 2/2 - Call Frog
             frog = workflow.new_task('frog', Frog_folia2folia,skip=self.skip )
             frog.in_folia = out
