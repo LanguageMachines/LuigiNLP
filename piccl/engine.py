@@ -27,17 +27,14 @@ class WorkflowTask(sciluigi.WorkflowTask):
         else:
             initialtask_id = 'initialinput'
         assert isinstance(initialinput, InitialInput)
-        if Inputclass is not None:
-            return self.new_task(initialtask_id, initialinput.type, initialinput.basename), Inputclass
-        else:
-            raise Exception("Input file does not match any known pattern for this workflow")
+        return self.new_task(initialtask_id, initialinput.type, initialinput.basename)
 
     @classmethod
-    def inherit_parameters(Class, ChildClass):
+    def inherit_parameters(cls, ChildClass):
         for key in dir(ChildClass):
             attr = getattr(ChildClass, key)
-            if isinstance(attr,luigi.Parameter):
-                setattr(Class,key, attr)
+            if isinstance(attr,luigi.Parameter) and not hasattr(cls,key):
+                setattr(cls,key, attr)
 
 
 class Task(sciluigi.Task):
