@@ -16,7 +16,7 @@ class Frog_txt2folia(Task):
     in_txt = None #will be linked to an out_* slot of another module in the workflow specification
 
     def out_folia(self):
-        return TargetInfo( replaceextension(self.in_txt().path, '.txt','.frogged.folia.xml'))
+        return TargetInfo(self, replaceextension(self.in_txt().path, '.txt','.frogged.folia.xml'))
 
     def run(self):
         self.ex(
@@ -37,7 +37,7 @@ class Frog_folia2folia(Task):
     in_folia = None #will be linked to an out_* slot of another module in the workflow specification
 
     def out_folia(self):
-        return TargetInfo( replaceextension(self.in_txt().path, '.folia.xml','.frogged.folia.xml'))
+        return TargetInfo(self, replaceextension(self.in_txt().path, '.folia.xml','.frogged.folia.xml'))
 
     def run(self):
         self.ex(

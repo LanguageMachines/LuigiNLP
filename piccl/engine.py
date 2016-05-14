@@ -39,7 +39,7 @@ class WorkflowTask(sciluigi.WorkflowTask):
 
 class Task(sciluigi.Task):
     def ex(self, *args, **kwargs):
-        if hasattr(self,'executable'):
+        if not hasattr(self,'executable'):
             raise Exception("No executable defined for Task " + self.__class__.__name__)
 
         if self.executable[-4:] == '.jar':

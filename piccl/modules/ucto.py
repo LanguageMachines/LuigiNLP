@@ -15,7 +15,7 @@ class Ucto_txt2folia(Task):
     in_txt = None #will be linked to an out_* slot of another module in the workflow specification
 
     def out_folia(self):
-        return TargetInfo( replaceextension(self.in_txt().path, '.txt','.folia.xml'))
+        return TargetInfo(self, replaceextension(self.in_txt().path, '.txt','.folia.xml'))
 
     def run(self):
         self.ex(self.in_txt().path(), self.out_folia().path,
@@ -35,7 +35,7 @@ class Ucto_txt2tok(Task):
     in_txt = None #will be linked to an out_* slot of another module in the workflow specification
 
     def out_tok(self):
-        return TargetInfo( replaceextension(self.in_txt().path, '.txt','.tok'))
+        return TargetInfo(self, replaceextension(self.in_txt().path, '.txt','.tok'))
 
     def run(self):
         self.ex(self.in_txt().path(), self.out_tok().path,
@@ -53,7 +53,7 @@ class Ucto_folia2folia(Task):
     in_folia = None #will be linked to an out_* slot of another module in the workflow specification
 
     def out_folia(self):
-        return TargetInfo( replaceextension(self.in_folia().path, '.folia.xml','.tok.folia.xml'))
+        return TargetInfo(self, replaceextension(self.in_folia().path, '.folia.xml','.tok.folia.xml'))
 
     def run(self):
         self.ex(self.in_txt().path(), self.out_folia().path,

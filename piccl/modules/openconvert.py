@@ -15,7 +15,7 @@ class OpenConvert_folia(Task):
     in_any = None #will be linked to an out_* slot of another module in the workflow specification
 
     def out_folia(self):
-        return TargetInfo( replaceextension(self.in_any().path, ['.tei.xml', '.alto.xml','.tei', '.alto', '.xml', '.doc','.docx','.html', '.epub'],'.openconvert.folia.xml'))
+        return TargetInfo(self, replaceextension(self.in_any().path, ['.tei.xml', '.alto.xml','.tei', '.alto', '.xml', '.doc','.docx','.html', '.epub'],'.openconvert.folia.xml'))
 
     def run(self):
         self.ex(
@@ -33,7 +33,7 @@ class OpenConvert_tei(Task):
     in_any = None #will be linked to an out_* slot of another module in the workflow specification
 
     def out_tei(self):
-        return TargetInfo( replaceextension(self.in_txt().path, ['.folia.xml', '.alto.xml','.tei', '.alto', '.xml', '.doc','.docx','.html', '.epub'],'.openconvert.tei.xml'))
+        return TargetInfo(self, replaceextension(self.in_txt().path, ['.folia.xml', '.alto.xml','.tei', '.alto', '.xml', '.doc','.docx','.html', '.epub'],'.openconvert.tei.xml'))
 
     def run(self):
         self.ex(
