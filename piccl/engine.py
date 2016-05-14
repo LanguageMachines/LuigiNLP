@@ -1,26 +1,44 @@
+import luigi
 import sciluigi
 import logging
 from piccl.util import shellsafe
 
 log = logging.getLogger('mainlog')
 
+class InitialInput:
+    def __init__(self, inputfilename, *inputmaps):
+        self.filename = inputfilename
+        self.inputmaps= inputmaps
+
+        self.type = None
+        self.basename = self.extension = ""
+        for inputmap in inputmaps:
+            for extension, inputclass in inputmap.items():
+                if inputfilename.endswith(extension):
+                    self.type = inputclass
+                    self.basename = inputfilename[:-len(extension)]
+                    self.extension = extension
+
 class WorkflowTask(sciluigi.WorkflowTask):
-    def initial_task(self, inputfilename, *inputmaps, **kwargs):
+    def initial_task(self, initialinput, **kwargs):
         if 'id' in kwargs:
             initialtask_id = kwargs['id']
             del kwargs['id']
         else:
             initialtask_id = 'initialinput'
-        Inputclass = None
-        for inputmap in inputmaps:
-            for extension, inputclass in inputmap.items():
-                if inputfilename.endswith(extension):
-                    basename  = self.inputfilename[:-len(extension)]
-                    Inputclass = inputclass
+        assert isinstance(initialinput, InitialInput)
         if Inputclass is not None:
-            return self.new_task(initialtask_id, Inputclass, basename), Inputclass
+            return self.new_task(initialtask_id, initialinput.type, initialinput.basename), Inputclass
         else:
             raise Exception("Input file does not match any known pattern for this workflow")
+
+    @classmethod
+    def inherit_parameters(Class, ChildClass):
+        for key in dir(ChildClass):
+            attr = getattr(ChildClass, key)
+            if isinstance(attr,luigi.Parameter):
+                setattr(Class,key, attr)
+
 
 class Task(sciluigi.Task):
     def ex(self, *args, **kwargs):
@@ -53,6 +71,14 @@ class Task(sciluigi.Task):
             cmd += ' ' + ' '.join(args)
         log.info("Running " + self.__class__.__name__ + ': ' + cmd)
         super(Task, self).ex(cmd)
+
+    @classmethod
+    def inherit_parameters(Class, *ChildClasses):
+        for ChildClass in ChildClasses:
+            for key in dir(ChildClass):
+                attr = getattr(ChildClass, key)
+                if isinstance(attr,luigi.Parameter) and not hasattr(Class, key):
+                    setattr(Class,key, attr)
 
 class TargetInfo(sciluigi.TargetInfo):
     pass

@@ -1,7 +1,7 @@
 import os
 import logging
 from luigi import Parameter, BoolParameter
-from piccl.engine import WorkflowTask, TargetInfo
+from piccl.engine import WorkflowTask, TargetInfo, InitialInput
 from piccl.modules.openconvert import OpenConvert_folia
 from piccl.modules.folia import Rst2folia
 from piccl.inputs import WordInput, TEIInput, ReStructuredTextInput
@@ -24,18 +24,20 @@ class ConvertToFoLiA(WorkflowTask):
 
     def workflow(self):
         #detect format of input file by extension
-        initialtask, inputtype = self.initial_task(self.inputfilename, self.inputmap)
+        initialinput = InitialInput(self.inputfilename, self.inputmap)
+        #Set up initial task
+        initialtask = self.initial_task(initialinput)
 
         #Conversion to FoLiA, last task in conversion chain *MUST* expose a out_folia slot
-        if inputtype in (WordInput, TEIInput):
+        if initialinput.type in (WordInput, TEIInput):
             #Input is something OpenConvert can handle: convert to FoLiA first
-            formatmap = { #translates format classes to those expected by openconvert
+            formatmap = { #translates format classes to values expected in --from parameter of openconvert
                 WordInput: 'docx',
                 TEIInput: 'tei',
             }
-            openconvert = self.new_task('openconvert',OpenConvert_folia,from_format=formatmap[inputtype])
+            openconvert = self.new_task('openconvert',OpenConvert_folia,from_format=formatmap[initialinput.type])
             openconvert.in_any = initialtask.out_default
-        elif inputtype is ReStructuredTextInput:
+        elif initialinput.type is ReStructuredTextInput:
             rst2folia = self.new_task('rst2folia',Rst2folia)
             rst2folia.in_rst = initialtask.out_default
 
