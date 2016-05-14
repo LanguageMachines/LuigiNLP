@@ -14,6 +14,7 @@ Goals
  * Automatic dependency resolution (similar to GNU Make, top-down)
  * Robust failure recovery: when failures occur, fix the problem and run the workflow again, tasks that have completed will not be rerun.
  * Easy to extend with new modules or workflows. Workflows can also be recombined (meta-workflows, a feature of sciluigi)
+ * Traceability of all intermediate steps, retain intermediate results until explicitly discarded
  * Explicit workflow definitions 
  * Automatic parallellisation where possible
  * Keep it simple, minimize overhead for the developer of the workflow. 
