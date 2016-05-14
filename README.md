@@ -11,13 +11,14 @@ Goals
 
  * Abstraction of workflow/pipeline logic: a generic, scalable and adaptable solution
  * Modularisation; clear separation of all components from the workflow system itself
- * Automatic dependency resolution (similar to Makefile, top-down)
- * Robust failure recovery: when failures occur, allow to continue. No re-run of the whole workflow necessary.
+ * Automatic dependency resolution (similar to GNU Make, top-down)
+ * Robust failure recovery: when failures occur, fix the problem and run the workflow again, tasks that have completed will not be rerun.
  * Easy to extend with new modules or workflows. Workflows can also be recombined (meta-workflows, a feature of sciluigi)
  * Explicit workflow definitions 
  * Automatic parallellisation where possible
  * Keep it simple, minimize overhead for the developer of the workflow. 
- * Python-based, workflow and component specifications are in Python rather than external.
+ * Python-based, all workflow and component specifications are in Python rather than external.
+ * Protection against shell injection attacks
  * Runnable standalone from command-line 
  * Runnable as a CLAM webservice 
     * Not sure yet whether to expose multiple CLAM webservices (one per workflow), or one monolithic one, leaning towards the former.
@@ -46,3 +47,19 @@ Structure
  * ``piccl/util.py`` - Auxiliary functions
  * ``setup.py`` - Installation script for PICCL (only covers PICCL and its direct python dependencies)
  * ``bootstrap.sh`` - Full installation script, pulls in all necessary dependencies and runs ``setup.py``, to be invoked by or from within [LaMachine](https://github.com/proycon/LaMachine)
+
+Installation
+---------------
+
+To be used within LaMachine (https://proycon.github.io/LaMachine). This system
+is not included yet at this stage so install with:
+
+    $ python setup.py install
+
+Usage
+---------
+
+Example, specify a workflow corresponding to your intended goal and an input file:
+
+    $ piccl --module piccl.workflows.frog Frog --inputfilename test.rst 
+
