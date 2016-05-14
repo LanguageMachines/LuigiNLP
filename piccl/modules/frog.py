@@ -41,7 +41,7 @@ class Frog_folia2folia(Task):
 
     def run(self):
         self.ex(
-            t=self.in_folia().path,
+            x=self.in_folia().path,
             X=self.out_folia().path,
             skip=self.skip if self.skip else None,
         )
