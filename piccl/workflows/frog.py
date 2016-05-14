@@ -50,4 +50,4 @@ class Frog(WorkflowTask):
 
         return frog #return the last task (mandatory!)
 
-Frog.inherit_parameters(ConvertToFoLiA) #inherit parameters from any dependencies
+Frog.inherit_parameters(ConvertToFoLiA) #inherit additional parameters from the specified dependency
