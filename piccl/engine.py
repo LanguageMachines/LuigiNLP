@@ -27,7 +27,7 @@ class WorkflowTask(sciluigi.WorkflowTask):
         else:
             initialtask_id = 'initialinput'
         assert isinstance(initialinput, InitialInput)
-        return self.new_task(initialtask_id, initialinput.type, initialinput.basename)
+        return self.new_task(initialtask_id, initialinput.type, basename=initialinput.basename)
 
     @classmethod
     def inherit_parameters(cls, ChildClass):
