@@ -54,6 +54,12 @@ Limitations
 * Workflow components form a sequence (no forks/parallellisation).  Parallellisation can only occur within a worfklow component, at the task level.
 * Parameters from possible subworkflows may be inherited, even if they are not used eventually. Set default values for parameters wherever as possible.
 
+Plans/TODO
+-------------
+
+* Support for multi-file input and output in workflow components
+* Further testing...
+
 Directory Structure
 ---------------------
 
