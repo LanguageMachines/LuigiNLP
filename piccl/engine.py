@@ -1,25 +1,45 @@
 import luigi
 import sciluigi
 import logging
+import inspect
+import piccl.inputs
 from piccl.util import shellsafe
 
 log = logging.getLogger('mainlog')
 
+class InvalidInput(Exception):
+    pass
+
 class InitialInput:
     def __init__(self, inputfilename, *inputmaps):
         self.filename = inputfilename
-        self.inputmaps= inputmaps
 
         self.type = None
         self.basename = self.extension = ""
-        for inputmap in inputmaps:
-            for extension, inputclass in inputmap.items():
-                if inputfilename.endswith(extension):
-                    self.type = inputclass
-                    self.basename = inputfilename[:-len(extension)]
-                    self.extension = extension
+        for inputclass in dir(piccl.inputs):
+            if inspect.isclass(inputclass) and issubclass(inputclass, InputFormat):
+                if inputfilename.endswith('.' +inputclass.extension):
+                    self.type = inputclass.id
+                    self.basename = inputfilename[:-(len(inputclass.extension)+1)]
+                    self.extension = '.' + inputclass.extension
 
-class WorkflowTask(sciluigi.WorkflowTask):
+class InputWorkflow:
+    def __init__(self, Class, *args,**kwargs):
+        assert inspect.isclass(Class) and issubclass(Class,WorkflowTask)
+        self.Class = Class
+        self.args = args
+        self.kwargs = kwargs
+
+
+class InputFormat:
+    def target(self):
+            return TargetInfo(self, self.basename + '.' + self.extension)
+
+    def matches(self, filename):
+        return filename.endswith('.' + self.extension)
+
+class WorkflowModule(sciluigi.WorkflowTask):
+    inputfilename = luigi.Parameter()
 
     def initial_task(self, initialinput, **kwargs):
         if 'id' in kwargs:
@@ -37,15 +57,38 @@ class WorkflowTask(sciluigi.WorkflowTask):
             if isinstance(attr,luigi.Parameter) and not hasattr(cls,key):
                 setattr(cls,key, attr)
 
-    def setup(self,workflow):
+    def setup(self,workflow, input_type, input_slot):
+
         raise NotImplementedError("Override the setup method for your workflow " + self.__class__.__name__)
+
+    def setup_input(self, workflow):
+        #Can we handle the input directly?
+        for input in self.accepts():
+            if issubclass(input, InputFormat) and input.matches(self.inputfilename):
+                initialinput = InitialInput(self.inputfilename)
+                initialtask = workflow.initial_task(initialinput)
+                return initialinput.type, getattr(initialtask,'out_' + initialinput.type)
+
+        for input in self.accepts():
+            if issubclass(input, InputWorkflow):
+                swf = input.Cls(*input.args, **input.kwargs)
+            elif issubclass(input, WorkflowTask):
+                #setup sub-workflow
+                swf = input()
+            else:
+                raise TypeError
+
+            try:
+                return swf.setup(workflow)
+            except InvalidInput:
+                pass #try next one
+
+        #input was not handled, raise error
+        raise InvalidInput("Unable to handle input " + self.inputfilename)
+
 
     def workflow(self):
         return self.setup(self)
-
-    def new_subworkflow(self, Class, *args, **kwargs):
-        wf = Class(*args,**kwargs)
-        return wf.setup(self)
 
 class Task(sciluigi.Task):
     def ex(self, *args, **kwargs):

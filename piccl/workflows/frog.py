@@ -22,7 +22,32 @@ class Frog(WorkflowTask):
         '.txt': PlainTextInput,
     }
 
-    def setup(self, workflow):
+    accepts = [FoLiAInput, ConvertToFoLiA]
+
+    def setup(self, workflow, input_type, input_slot):
+        if input_type == 'txt':
+            #Frog itself calls ucto to tokenize plaintext, no need to solve it here:
+            frog = workflow.new_task('frog', Frog_txt2folia,skip=self.skip )
+            frog.in_txt = input_slot
+        elif input_type == 'folia':
+            frog = workflow.new_task('frog', Frog_folia2folia,skip=self.skip )
+            frog.in_folia = out
+
+        return frog #return the last task (mandatory!)
+
+
+
+
+
+
+
+
+
+
+
+
+
+    def setup_old(self,workflow):
         #detect format of input file by extension, we pass both our inputmap as well as that of ConvertToFoLiA, adding more possible input formats
         initialinput = InitialInput(self.inputfilename, self.inputmap, ConvertToFoLiA.inputmap)
 

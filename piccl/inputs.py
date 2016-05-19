@@ -1,34 +1,46 @@
 from sciluigi import ExternalTask, TargetInfo
 from luigi import Parameter
+from piccl.engine import InputFormat
 
-class FoLiAInput(ExternalTask):
+class FoLiAInput(InputFormat):
+    id='folia'
+    extension='folia.xml'
     basename= Parameter()
-    def out_default(self):
-        return TargetInfo(self, self.basename + '.folia.xml')
 
-class TEIInput(ExternalTask):
+    def out_folia(self):
+        return self.target()
+
+class TEIInput(InputFormat):
+    id='tei'
+    extension='tei.xml'
     basename= Parameter()
-    def out_default(self):
-        return TargetInfo(self, self.basename + '.tei.xml')
 
-class PlainTextInput(ExternalTask):
+    def out_tei(self):
+        return self.target()
+
+class PlainTextInput(InputFormat):
     """Untokenised plain text documents"""
+    id='txt'
+    extension = 'txt'
     basename= Parameter()
-    def out_default(self):
-        return TargetInfo(self, self.basename + '.txt')
 
-class ReStructuredTextInput(ExternalTask):
+    def out_txt(self):
+        return self.target()
+
+class ReStructuredTextInput(InputFormat):
     """ReStructuredText plain text documents"""
+    id='rst'
+    extension='rst'
     basename= Parameter()
-    def out_default(self):
-        return TargetInfo(self, self.basename + '.rst')
 
-class WordInput(ExternalTask):
-    basename= Parameter()
-    def out_default(self):
-        return TargetInfo(self, self.basename + '.docx')
+    def out_rst(self):
+        return self.target()
 
-class WordInput_legacy(ExternalTask):
+class WordInput(InputFormat):
+    id='docx'
+    extension='docx'
     basename= Parameter()
-    def out_default(self):
-        return TargetInfo(self, self.basename + '.doc')
+
+    def out_docx(self):
+        return self.target()
+
