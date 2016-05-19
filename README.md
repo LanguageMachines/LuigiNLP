@@ -31,15 +31,17 @@ The pipeline follows a goal-oriented paradigm, in which a target workflow is
 specified along with an initial input, dependency workflows needed to get from
 input to the target workflow are automatically found and executed.
 
- * A **module** (``piccl/modules/*.py``) is a collection of **workflow components** and **tasks**.
+ * A **module** (``piccl/modules/*.py``) is a collection of **workflow components** and/or **tasks**.
  * A **task** takes input files, parameters and produces output files, in a
    deterministic fashion, and gets an actual job done, either by invoking an
    external tool or by running Python code.  Each task defines input and output slots that correspond to input/output
-   files in specific formats.
+   files in specific formats. These are defined as ``in_*`` and ``out_*``
+   methods on the task's class.
  * A **workflow component** chains one or more of tasks together for a specific
-   purpose. Workflow components accept initial input (files) or the output of other specified workflow
-   components. A workflow definition connects the input and
-   output slots of different tasks.
+   purpose. Workflow components accept initial input (files) or the output of
+   other specified workflow components. A workflow definition connects the
+   input and output slots of different tasks by connecting the input slot of
+   one to the output slot of another (through simple assignment).
  * Tasks and components may specify parameters
  * The user (or an intermediary) selects target workflow and provides input and
    initial parameters. 
