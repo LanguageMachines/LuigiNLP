@@ -58,6 +58,7 @@ Plans/TODO
 -------------
 
 * Support for multi-file input and output in workflow components
+* Make certain accepted subworkflows either mandatory or forbidden based on parameter values
 * Further testing...
 
 Directory Structure
