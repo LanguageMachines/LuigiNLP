@@ -8,7 +8,7 @@ from piccl.inputs import TEIInput, WordInput, ReStructuredTextInput
 
 log = logging.getLogger('mainlog')
 
-class ConvertToFoliA(WorkflowComponent):
+class ConvertToFoLiA(WorkflowComponent):
     def accepts(self):
         return (TEIInput,WordInput,ReStructuredTextInput)
 

@@ -20,7 +20,7 @@ setup(
     license = "GPL",
     keywords = "nlp computational_linguistics",
     url = "https://github.com/LanguageMachines/piccl_proofofconcept",
-    packages=['piccl','piccl.workflows','piccl.modules'],
+    packages=['piccl','piccl.modules'],
     long_description=read('README.md'),
     classifiers=[
         "Development Status :: 1 -Alpha",

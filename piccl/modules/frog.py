@@ -1,7 +1,7 @@
 import os
 import logging
 from luigi import Parameter, BoolParameter
-from piccl.engine import Task, TargetInfo, InputWorkflow, WorkflowModule
+from piccl.engine import Task, TargetInfo, InputWorkflow, WorkflowComponent
 from piccl.util import replaceextension
 from piccl.modules.folia import ConvertToFoLiA
 from piccl.inputs import FoLiAInput, PlainTextInput
@@ -23,6 +23,8 @@ class Frog(WorkflowComponent):
             frog = workflow.new_task('frog', Frog_folia2folia,skip=self.skip )
             frog.in_folia = input_slot
         return 'folia', frog #return the type of output and the last task (mandatory!)
+
+Frog.inherit_parameters(ConvertToFoLiA)
 
 class Frog_txt2folia(Task):
     executable = 'frog' #external executable (None if n/a)

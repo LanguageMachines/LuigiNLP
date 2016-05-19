@@ -1,6 +1,6 @@
 from sciluigi import ExternalTask, TargetInfo
 from luigi import Parameter
-from piccl.engine import InputFormat
+from piccl.engine import InputFormat, registerformat
 
 class FoLiAInput(InputFormat):
     id='folia'
@@ -10,6 +10,8 @@ class FoLiAInput(InputFormat):
     def out_folia(self):
         return self.target()
 
+registerformat(FoLiAInput)
+
 class TEIInput(InputFormat):
     id='tei'
     extension='tei.xml'
@@ -17,6 +19,8 @@ class TEIInput(InputFormat):
 
     def out_tei(self):
         return self.target()
+
+registerformat(TEIInput)
 
 class PlainTextInput(InputFormat):
     """Untokenised plain text documents"""
@@ -27,6 +31,8 @@ class PlainTextInput(InputFormat):
     def out_txt(self):
         return self.target()
 
+registerformat(PlainTextInput)
+
 class ReStructuredTextInput(InputFormat):
     """ReStructuredText plain text documents"""
     id='rst'
@@ -36,6 +42,8 @@ class ReStructuredTextInput(InputFormat):
     def out_rst(self):
         return self.target()
 
+registerformat(ReStructuredTextInput)
+
 class WordInput(InputFormat):
     id='docx'
     extension='docx'
@@ -43,4 +51,6 @@ class WordInput(InputFormat):
 
     def out_docx(self):
         return self.target()
+
+registerformat(WordInput)
 

@@ -2,10 +2,14 @@ import luigi
 import sciluigi
 import logging
 import inspect
-import piccl.inputs
 from piccl.util import shellsafe
 
 log = logging.getLogger('mainlog')
+
+INPUTFORMATS = []
+def registerformat(f):
+    if f not in INPUTFORMATS:
+        INPUTFORMATS.append(f)
 
 class InvalidInput(Exception):
     pass
@@ -18,7 +22,7 @@ class InitialInput:
 
         self.type = None
         self.basename = self.extension = ""
-        for inputclass in dir(piccl.inputs):
+        for inputclass in INPUTFORMATS:
             if inspect.isclass(inputclass) and issubclass(inputclass, InputFormat):
                 if inputfilename.endswith('.' +inputclass.extension):
                     self.type = inputclass.id
@@ -33,15 +37,15 @@ class InputWorkflow:
         self.args = args
         self.kwargs = kwargs
 
-
 class InputFormat(sciluigi.ExternalTask):
     """InputFormat, an external task""" 
 
     def target(self):
             return TargetInfo(self, self.basename + '.' + self.extension)
 
-    def matches(self, filename):
-        return filename.endswith('.' + self.extension)
+    @classmethod
+    def matches(cls, filename):
+        return filename.endswith('.' + cls.extension)
 
 class WorkflowComponent(sciluigi.WorkflowTask):
     """A workflow component"""
@@ -76,13 +80,15 @@ class WorkflowComponent(sciluigi.WorkflowTask):
                 return initialinput.type, getattr(initialtask,'out_' + initialinput.type)
 
         for input in self.accepts():
-            if issubclass(input, InputWorkflow):
-                swf = input.Cls(*input.args, **input.kwargs)
-            elif issubclass(input, WorkflowComponent):
+            if isinstance(input, InputWorkflow):
+                swf = input.Class(*input.args, **input.kwargs)
+            elif inspect.isclass(input) and issubclass(input, WorkflowComponent):
                 #setup sub-workflow directly
                 swf = input()
+            elif inspect.isclass(input) and issubclass(input, InputFormat):
+                continue
             else:
-                raise TypeError
+                raise TypeError("Invalid element in accepts(): " + str(type(input)))
 
             try:
                 return swf.setup(workflow)
