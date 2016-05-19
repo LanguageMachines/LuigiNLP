@@ -27,20 +27,31 @@ Goals
 Architecture
 ----------------
 
+The pipeline follows a goal-oriented paradigm, in which a target workflow is
+specified along with an initial input, dependency workflows needed to get from
+input to the target workflow are automatically found and executed.
+
  * A **module** (``piccl/modules/*.py``) is a collection of **workflow components** and **tasks**.
  * A **task** takes input files, parameters and produces output files, in a
-   deterministic fashion. Each task defines input and output slots and either
-   defers work to an external tool, or contains the implementation directly.
+   deterministic fashion, and gets an actual job done, either by invoking an
+   external tool or by running Python code.  Each task defines input and output slots that correspond to input/output
+   files in specific formats.
  * A **workflow component** chains one or more of tasks together for a specific
-   purpose. Workflow components accept initial input or the output of workflow
-   components. The accepted initial input formats or workflow components are
-   explicitly stated.  A workflow definition connects the input and
+   purpose. Workflow components accept initial input (files) or the output of other specified workflow
+   components. A workflow definition connects the input and
    output slots of different tasks.
- * The user (or an intermediary) selects a workflow and provides input and
-   initial parameters.
+ * Tasks and components may specify parameters
+ * The user (or an intermediary) selects target workflow and provides input and
+   initial parameters. 
 
-Structure
-----------
+Limitations
+------------
+
+* Intermediate files are not open for inspection in workflow specifications,
+  only in tasks.
+
+Directory Structure
+---------------------
 
  * ``piccl/piccl.py`` - Main tool
  * ``piccl/modules/`` - Modules, each addressing a specific tool/goal. A module
