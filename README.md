@@ -13,15 +13,15 @@ Goals
  * Modularisation; clear separation of all components from the workflow system itself
  * Automatic dependency resolution (similar to GNU Make, top-down)
  * Robust failure recovery: when failures occur, fix the problem and run the workflow again, tasks that have completed will not be rerun.
- * Easy to extend with new modules or workflows. Workflows can also be recombined (meta-workflows, a feature of sciluigi)
+ * Easy to extend with new modules (workflow componentes & tasks).
  * Traceability of all intermediate steps, retain intermediate results until explicitly discarded
  * Explicit workflow definitions 
- * Automatic parallellisation where possible
- * Keep it simple, minimize overhead for the developer of the workflow. 
+ * Automatic parallellisation of tasks where possible
+ * Keep it simple, minimize overhead for the developer of the workflow, use Pythonic principles,
  * Python-based, all workflow and component specifications are in Python rather than external.
- * Protection against shell injection attacks
+ * Protection against shell injection attacks in tasks
  * Runnable standalone from command-line 
- * Runnable as a CLAM webservice 
+ * Runnable as a CLAM webservice  (TODO later)
     * Not sure yet whether to expose multiple CLAM webservices (one per workflow), or one monolithic one, leaning towards the former.
 
 Architecture
