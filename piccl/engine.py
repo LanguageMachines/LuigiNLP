@@ -25,7 +25,7 @@ class InitialInput:
         for inputclass in INPUTFORMATS:
             if inspect.isclass(inputclass) and issubclass(inputclass, InputFormat):
                 if inputfilename.endswith('.' +inputclass.extension):
-                    self.type = inputclass.id
+                    self.type = inputclass
                     self.basename = inputfilename[:-(len(inputclass.extension)+1)]
                     self.extension = '.' + inputclass.extension
 
@@ -82,14 +82,15 @@ class WorkflowComponent(sciluigi.WorkflowTask):
             if issubclass(input, InputFormat) and input.matches(self.inputfilename):
                 initialinput = InitialInput(self.inputfilename)
                 initialtask = workflow.initial_task(initialinput)
-                return initialinput.type, getattr(initialtask,'out_' + initialinput.type)
+                return initialinput.type.id, getattr(initialtask,'out_' + initialinput.type.id)
 
         for input in self.accepts():
             if isinstance(input, InputWorkflow):
                 swf = input.Class(*input.args, **input.kwargs)
             elif inspect.isclass(input) and issubclass(input, WorkflowComponent):
-                #setup sub-workflow directly
-                swf = input()
+                #not encapsulated in InputWorkflow yet, do now
+                iwf = InputWorkflow(self, input)
+                swf = iwf.Class(*input.args, **input.kwargs)
             elif inspect.isclass(input) and issubclass(input, InputFormat):
                 continue
             else:
@@ -105,7 +106,8 @@ class WorkflowComponent(sciluigi.WorkflowTask):
 
 
     def workflow(self):
-        return self.setup(self)
+        outputtype, task = self.setup(self)
+        return task
 
 class Task(sciluigi.Task):
     def ex(self, *args, **kwargs):
