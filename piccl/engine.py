@@ -97,7 +97,8 @@ class WorkflowComponent(sciluigi.WorkflowTask):
                 raise TypeError("Invalid element in accepts(): " + str(type(input)))
 
             try:
-                return swf.setup(workflow)
+                inputtype, inputtask = swf.setup(workflow)
+                return inputtype, getattr(inputtask, 'out_' + inputtype)
             except InvalidInput:
                 pass #try next one
 
