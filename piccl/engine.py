@@ -11,7 +11,9 @@ class InvalidInput(Exception):
     pass
 
 class InitialInput:
-    def __init__(self, inputfilename, *inputmaps):
+    """Class that encapsulates the filename of the initial input and associates proper format classes"""
+
+    def __init__(self, inputfilename):
         self.filename = inputfilename
 
         self.type = None
@@ -24,21 +26,26 @@ class InitialInput:
                     self.extension = '.' + inputclass.extension
 
 class InputWorkflow:
+    """A class that encapsulates a WorkflowComponent and is used by other components to list possible dependencies, used in WorkflowComponent.accepts(), holds parameter information to pass to sub-workflows"""
     def __init__(self, Class, *args,**kwargs):
-        assert inspect.isclass(Class) and issubclass(Class,WorkflowTask)
+        assert inspect.isclass(Class) and issubclass(Class,WorkflowComponent)
         self.Class = Class
         self.args = args
         self.kwargs = kwargs
 
 
-class InputFormat:
+class InputFormat(sciluigi.ExternalTask):
+    """InputFormat, an external task""" 
+
     def target(self):
             return TargetInfo(self, self.basename + '.' + self.extension)
 
     def matches(self, filename):
         return filename.endswith('.' + self.extension)
 
-class WorkflowModule(sciluigi.WorkflowTask):
+class WorkflowComponent(sciluigi.WorkflowTask):
+    """A workflow component"""
+
     inputfilename = luigi.Parameter()
 
     def initial_task(self, initialinput, **kwargs):
@@ -57,13 +64,12 @@ class WorkflowModule(sciluigi.WorkflowTask):
             if isinstance(attr,luigi.Parameter) and not hasattr(cls,key):
                 setattr(cls,key, attr)
 
-    def setup(self,workflow, input_type, input_slot):
-
+    def setup(self,workflow):
         raise NotImplementedError("Override the setup method for your workflow " + self.__class__.__name__)
 
     def setup_input(self, workflow):
         #Can we handle the input directly?
-        for input in self.accepts():
+        for input in self.accepts(): #pylint: disable=redefined-builtin
             if issubclass(input, InputFormat) and input.matches(self.inputfilename):
                 initialinput = InitialInput(self.inputfilename)
                 initialtask = workflow.initial_task(initialinput)
@@ -72,8 +78,8 @@ class WorkflowModule(sciluigi.WorkflowTask):
         for input in self.accepts():
             if issubclass(input, InputWorkflow):
                 swf = input.Cls(*input.args, **input.kwargs)
-            elif issubclass(input, WorkflowTask):
-                #setup sub-workflow
+            elif issubclass(input, WorkflowComponent):
+                #setup sub-workflow directly
                 swf = input()
             else:
                 raise TypeError

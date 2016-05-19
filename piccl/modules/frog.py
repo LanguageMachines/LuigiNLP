@@ -3,11 +3,12 @@ import logging
 from luigi import Parameter, BoolParameter
 from piccl.engine import Task, TargetInfo, InputWorkflow, WorkflowModule
 from piccl.util import replaceextension
+from piccl.modules.folia import ConvertToFoLiA
 from piccl.inputs import FoLiAInput, PlainTextInput
 
 log = logging.getLogger('mainlog')
 
-class Frog(WorkflowModule):
+class Frog(WorkflowComponent):
     skip = Parameter(default="")
 
     def accepts(self):
