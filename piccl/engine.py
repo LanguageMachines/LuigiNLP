@@ -31,11 +31,16 @@ class InitialInput:
 
 class InputWorkflow:
     """A class that encapsulates a WorkflowComponent and is used by other components to list possible dependencies, used in WorkflowComponent.accepts(), holds parameter information to pass to sub-workflows"""
-    def __init__(self, Class, *args,**kwargs):
+    def __init__(self, parentcomponent, Class, *args,**kwargs):
         assert inspect.isclass(Class) and issubclass(Class,WorkflowComponent)
         self.Class = Class
         self.args = args
         self.kwargs = kwargs
+        #automatically transfer parameters
+        for key in dir(self.Class):
+            attr = getattr(self.Class, key)
+            if isinstance(attr,luigi.Parameter) and key not in self.kwargs and hasattr(parentcomponent ,key):
+                self.kwargs[key] = getattr(parentcomponent, key)
 
 class InputFormat(sciluigi.ExternalTask):
     """InputFormat, an external task""" 

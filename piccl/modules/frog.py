@@ -12,7 +12,7 @@ class Frog(WorkflowComponent):
     skip = Parameter(default="")
 
     def accepts(self):
-        return (FoLiAInput, PlainTextInput, InputWorkflow(ConvertToFoLiA) )
+        return (FoLiAInput, PlainTextInput, InputWorkflow(self, ConvertToFoLiA) )
 
     def setup(self, workflow):
         input_type, input_slot = self.setup_input(workflow)
