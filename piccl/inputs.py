@@ -2,6 +2,7 @@ from sciluigi import ExternalTask, TargetInfo
 from luigi import Parameter
 from piccl.engine import InputFormat, registerformat
 
+@registerformat
 class FoLiAInput(InputFormat):
     id='folia'
     extension='folia.xml'
@@ -10,8 +11,7 @@ class FoLiAInput(InputFormat):
     def out_folia(self):
         return self.target()
 
-registerformat(FoLiAInput)
-
+@registerformat
 class TEIInput(InputFormat):
     id='tei'
     extension='tei.xml'
@@ -20,8 +20,8 @@ class TEIInput(InputFormat):
     def out_tei(self):
         return self.target()
 
-registerformat(TEIInput)
 
+@registerformat
 class PlainTextInput(InputFormat):
     """Untokenised plain text documents"""
     id='txt'
@@ -31,8 +31,8 @@ class PlainTextInput(InputFormat):
     def out_txt(self):
         return self.target()
 
-registerformat(PlainTextInput)
 
+@registerforamt
 class ReStructuredTextInput(InputFormat):
     """ReStructuredText plain text documents"""
     id='rst'
@@ -42,8 +42,8 @@ class ReStructuredTextInput(InputFormat):
     def out_rst(self):
         return self.target()
 
-registerformat(ReStructuredTextInput)
 
+@registerformat
 class WordInput(InputFormat):
     id='docx'
     extension='docx'
@@ -52,8 +52,8 @@ class WordInput(InputFormat):
     def out_docx(self):
         return self.target()
 
-registerformat(WordInput)
 
+@registerformat
 class PdfInput(InputFormat):
     id='pdf'
     extension='pdf'
@@ -62,8 +62,8 @@ class PdfInput(InputFormat):
     def out_pdf(self):
         return self.target()
 
-registerformat(PdfInput)
 
+@registerformat
 class TiffDocDirInput(InputFormat):
     """A collection of TIFF images for document pages"""
     id='tiffdocdir'
@@ -75,6 +75,7 @@ class TiffDocDirInput(InputFormat):
 
 registerformat(TiffDocDirInput)
 
+@registerformat
 class AlpinoDocDirInput(InputFormat):
     """Represents a directory, corresponding to a document, with Alpino XML files, one per sentence, numbered"""
     id='alpinodocdir'
@@ -84,5 +85,3 @@ class AlpinoDocDirInput(InputFormat):
 
     def out_alpinodocdir(self):
         return self.target()
-
-registerformat(AlpinoDocDirInput)

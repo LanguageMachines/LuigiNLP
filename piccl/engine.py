@@ -7,9 +7,12 @@ from piccl.util import shellsafe
 log = logging.getLogger('mainlog')
 
 INPUTFORMATS = []
-def registerformat(f):
-    if f not in INPUTFORMATS:
-        INPUTFORMATS.append(f)
+
+def registerformat(Class):
+    assert inspect.isclass(Class) and issubclass(Class,InputFormat)
+    if Class not in INPUTFORMATS:
+        INPUTFORMATS.append(Class)
+    return Class
 
 class InvalidInput(Exception):
     pass
