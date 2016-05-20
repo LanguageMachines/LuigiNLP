@@ -49,10 +49,10 @@ class Alpino2folia(Task):
     in_alpinodocdir = None
 
     def out_folia(self):
-        return TargetInfo(self, replaceextension(self.in_alpinocollection().path, '.alpinodocdir','.folia.xml'))
+        return TargetInfo(self, replaceextension(self.in_alpinodocdir().path, '.alpinodocdir','.folia.xml'))
 
     def run(self):
-        alpinofiles = [ alpinofile for alpinofile in sorted(glob.glob(self.in_alpinocollection().path + '/*.xml'),key=lambda x: int(x.split('.')[0])) ] #collect all alpino files in collection
+        alpinofiles = [ alpinofile for alpinofile in sorted(glob.glob(self.in_alpinodocdir().path + '/*.xml'),key=lambda x: int(os.path.basename(x).split('.')[0])) ] #collect all alpino files in collection
         args = alpinofiles + [self.out_folia().path] #last argument is folia output
         self.ex(*args)
 

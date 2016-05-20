@@ -63,3 +63,5 @@ class AlpinoDocDirInput(InputFormat):
 
     def out_alpinodocdir(self):
         return self.target()
+
+registerformat(AlpinoDocDirInput)
