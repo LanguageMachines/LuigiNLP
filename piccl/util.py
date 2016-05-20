@@ -1,3 +1,6 @@
+import os
+import shutil
+
 DISALLOWINSHELLSAFE = ('|','&',';','!','<','>','{','}','`','\n','\r','\t')
 
 def replaceextension(filename, oldextensions, newextension):
@@ -45,3 +48,23 @@ def shellsafe(s, quote="'", doescape=True):
             if c in DISALLOWINSHELLSAFE:
                 raise ValueError("Variable value rejected for security reasons: " + s)
         return s
+
+class DirectoryHandler:
+    """DirectoryHandler abstracts for a process that output to a directory. It uses a temporary directory and renames it to the final result only when all is completed successfully"""
+
+    def __init__(self, destinationdir):
+        self.destinationdir = destinationdir
+        self.directory = destinationdir + '.tmp'
+
+    def __enter__(self):
+        if os.path.exists(self.tmpdir):
+            shutil.rmtree(self.tmpdir)
+        os.mkdir(self.tmpdir)
+
+    def __leave__(self, type, value, traceback):
+        if not isinstance(value, Exception):
+            os.rename(self.directory,self.destinationdir)
+        else:
+            shutil.rmtree(self.directory)
+
+
