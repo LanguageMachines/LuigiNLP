@@ -123,18 +123,26 @@ class Task(sciluigi.Task):
         for key, value in kwargs.items():
             if value is None or value is False:
                 continue #no value, ignore this one
+            if key.startswith('__'): #internal option: ignore
+                continue
+            delimiter = ' '
             if key[0] == '_':
                 key = key[1:]
-            if len(key) == 1:
+            if '__nospace' in kwargs and kwargs['__nospace']:
+                delimiter = ''
+            if len(key) == 1 or ('__singlehyphen' in kwargs and kwargs['__singlehyphen']):
                 key = '-' + key
             else:
                 key = '--' + key
+                if '__useequals' in kwargs and kwargs['__useequals']:
+                    delimiter = '='
+
             if value is True:
                 opts.append(key)
             elif isinstance(value,str):
-                opts.append(key + ' ' + shellsafe(value))
+                opts.append(key + delimiter + shellsafe(value))
             else:
-                opts.append(key + ' ' + str(value))
+                opts.append(key + delimiter + str(value))
         if opts:
             cmd += ' ' + ' '.join(opts)
         if args:
