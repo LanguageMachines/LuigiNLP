@@ -54,6 +54,27 @@ class WordInput(InputFormat):
 
 registerformat(WordInput)
 
+class PdfInput(InputFormat):
+    id='pdf'
+    extension='pdf'
+    basename= Parameter()
+
+    def out_pdf(self):
+        return self.target()
+
+registerformat(PdfInput)
+
+class TiffDocDirInput(InputFormat):
+    """A collection of TIFF images for document pages"""
+    id='tiffdocdir'
+    extension='tiffdocdir'
+    basename= Parameter()
+
+    def out_tiffdir(self):
+        return self.target()
+
+registerformat(TiffDocDirInput)
+
 class AlpinoDocDirInput(InputFormat):
     """Represents a directory, corresponding to a document, with Alpino XML files, one per sentence, numbered"""
     id='alpinodocdir'
