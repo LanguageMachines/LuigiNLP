@@ -64,6 +64,16 @@ class PdfInput(InputFormat):
 
 
 @registerformat
+class TiffInput(InputFormat):
+    """A collection of TIFF images for document pages"""
+    id='tiff'
+    extension='tif'
+    basename= Parameter()
+
+    def out_tiff(self):
+        return self.target()
+
+@registerformat
 class TiffDocDirInput(InputFormat):
     """A collection of TIFF images for document pages"""
     id='tiffdocdir'
@@ -73,7 +83,6 @@ class TiffDocDirInput(InputFormat):
     def out_tiffdir(self):
         return self.target()
 
-registerformat(TiffDocDirInput)
 
 @registerformat
 class AlpinoDocDirInput(InputFormat):
