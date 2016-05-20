@@ -2,6 +2,8 @@ import logging
 from luigi import Parameter, BoolParameter
 from piccl.engine import Task, TargetInfo
 from piccl.util import replaceextension
+from piccl.modules.folia import ConvertToFoLiA
+from piccl.inputs import FoLiAInput, PlainTextInput
 
 log = logging.getLogger('mainlog')
 
@@ -61,3 +63,22 @@ class Ucto_folia2folia(Task):
                 F=True, #folia input
                 X=True, #folia output
         )
+
+#################################################################################################################
+# Workflow Components
+#################################################################################################################
+
+class Ucto(WorkflowComponent):
+    """A workflow component for Ucto"""
+
+    skip = Parameter(default="") #A parameter for the workflow, will be passed on to the tasks
+
+    language = Parameter()
+    tok_input_sentenceperline = BoolParameter(default=False)
+    tok_output_sentenceperline = BoolParameter(default=False)
+
+    autosetup = (Ucto_txt2folia, Ucto_folia2folia)
+
+    def accepts(self):
+        """Returns a tuple of all the initial inputs and other workflows this component accepts as input (a disjunction)"""
+        return (FoLiAInput, PlainTextInput, InputWorkflow(self, ConvertToFoLiA) )
