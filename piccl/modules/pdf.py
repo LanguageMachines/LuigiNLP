@@ -15,8 +15,8 @@ class Pdf2images(Task):
 
     in_pdf = None #will be linked to an out_* slot of another module in the workflow specification
 
-    def out_tiffdir(self):
-        return TargetInfo(self, replaceextension(self.in_rst().path, '.pdf','.tiffdir'))
+    def out_tiffdocdir(self):
+        return TargetInfo(self, replaceextension(self.in_rst().path, '.pdf','.tiffdocdir'))
 
     def run(self):
         #we use a DirectoryHandler that takes care of creating a temporary directory to hold all output and renames it to the final directory when all succeeds, and cleaning up otherwise
