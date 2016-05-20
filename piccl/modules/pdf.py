@@ -5,14 +5,12 @@ import natsort
 from luigi import Parameter, BoolParameter
 from piccl.engine import Task, TargetInfo, WorkflowComponent
 from piccl.util import replaceextension, DirectoryHandler
-from piccl.modules.openconvert import OpenConvert_folia
-from piccl.inputs import TEIInput, WordInput, ReStructuredTextInput,AlpinoDocDirInput
 
 log = logging.getLogger('mainlog')
 
 
-class pdf2images(Task):
-    """Converts a PDF document to a set of TIFF images (one per page)"""
+class Pdf2images(Task):
+    """Extract images from a PDF document to a set of TIFF images"""
     executable = 'pdfimages' #external executable (None if n/a)
 
     in_pdf = None #will be linked to an out_* slot of another module in the workflow specification
@@ -21,19 +19,18 @@ class pdf2images(Task):
         return TargetInfo(self, replaceextension(self.in_rst().path, '.pdf','.tiffdir'))
 
     def run(self):
-        #we use a DirectoryHandler that takes care of creating a temporary directory, renaming it to the final directory when all succeeds, and cleaning up otherwise
+        #we use a DirectoryHandler that takes care of creating a temporary directory to hold all output and renames it to the final directory when all succeeds, and cleaning up otherwise
         with DirectoryHandler(self.out_tiffdir().path) as dirhandler:
-            self.ex(self.in_pdf().path, dirhandler.directory, #output to temporary directory
+            self.ex(self.in_pdf().path, dirhandler.directory+'/', #output to temporary directory
                 tiff=True,
-                p=True, #include page numbers in output filenames
                 __singlehyphen=True, #use single-hypens even for multi-letter options
             )
 
-class collatepdf(Task):
+class CollatePDF(Task):
     """Collate multiple PDF files together"""
     executable = 'pdftk'
 
-    naturalsort = luigi.BoolParameter(default=True) #do a natural sort of all pdfs in the input directory
+    naturalsort = BoolParameter(default=True) #do a natural sort of all pdfs in the input directory
 
     in_pdfdir = None
 
