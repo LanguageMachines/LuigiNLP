@@ -32,7 +32,7 @@ class PlainTextInput(InputFormat):
         return self.target()
 
 
-@registerforamt
+@registerformat
 class ReStructuredTextInput(InputFormat):
     """ReStructuredText plain text documents"""
     id='rst'
