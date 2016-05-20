@@ -14,6 +14,9 @@ def registerformat(f):
 class InvalidInput(Exception):
     pass
 
+class AutoSetupError(Exception):
+    pass
+
 class InitialInput:
     """Class that encapsulates the filename of the initial input and associates proper format classes"""
 
@@ -74,7 +77,26 @@ class WorkflowComponent(sciluigi.WorkflowTask):
                 setattr(cls,key, attr)
 
     def setup(self,workflow):
-        raise NotImplementedError("Override the setup method for your workflow " + self.__class__.__name__)
+        if hasattr(self, 'autosetup'):
+            input_type, input_slot = self.setup_input(workflow)
+            for TaskClass in self.autosetup:
+                if not inspect.isclass(TaskClass) or not issubclass(TaskClass,Task):
+                    raise AutoSetupError("AutoSetup expected a Task class, got " + str(type(TaskClass)))
+                if hasattr(TaskClass, 'in_' + input_type):
+                    passparameters = {}
+                    for key in dir(TaskClass):
+                        if isinstance(key, luigi.Parameter):
+                            if hasattr(self, key):
+                                passparameters[key] = getattr(self,key)
+                    task = workflow.new_task(TaskClass.__name__, TaskClass,**passparameters)
+                    setattr(task, 'in_' + input_type, input_slot)
+                    for key in dir(TaskClass):
+                        if key.startswith('out_'):
+                            return key[4:], task
+                    raise AutoSetupError("No output slots found on " + TaskClass.__name__)
+            raise AutoSetupError("No matching input slots found on specified task (looking for " + input_type + ")")
+        else:
+            raise NotImplementedError("Override the setup method for your workflow " + self.__class__.__name__ + " or set autosetup")
 
     def setup_input(self, workflow):
         #Can we handle the input directly?
