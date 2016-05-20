@@ -1,16 +1,17 @@
 import os
 import logging
+import glob
 from luigi import Parameter, BoolParameter
 from piccl.engine import Task, TargetInfo, WorkflowComponent
 from piccl.util import replaceextension
 from piccl.modules.openconvert import OpenConvert_folia
-from piccl.inputs import TEIInput, WordInput, ReStructuredTextInput
+from piccl.inputs import TEIInput, WordInput, ReStructuredTextInput,AlpinoDocDirInput
 
 log = logging.getLogger('mainlog')
 
 class ConvertToFoLiA(WorkflowComponent):
     def accepts(self):
-        return (TEIInput,WordInput,ReStructuredTextInput)
+        return (TEIInput,WordInput,ReStructuredTextInput,AlpinoDocDirInput)
 
     def setup(self, workflow):
         input_type, input_slot = self.setup_input(workflow)
@@ -23,6 +24,10 @@ class ConvertToFoLiA(WorkflowComponent):
             rst2folia = workflow.new_task('rst2folia',Rst2folia)
             rst2folia.in_rst = input_slot
             return 'folia', rst2folia #always return last task
+        elif input_type == 'alpinodocdir':
+            alpino2folia = workflow.new_task('alpino2folia',Alpino2folia)
+            alpino2folia.in_alpinodocdir = input_slot
+            return 'folia',  alpino2folia #always return last task
 
 
 class Rst2folia(Task):
@@ -37,4 +42,19 @@ class Rst2folia(Task):
         self.ex(self.in_rst().path, self.out_folia().path,
             docid=os.path.basename(self.in_rst().path).split('.')[0], #first component of input filename (up to first period) will be FoLiA ID
         )
+
+class Alpino2folia(Task):
+    executable = 'alpino2folia'
+
+    in_alpinodocdir = None
+
+    def out_folia(self):
+        return TargetInfo(self, replaceextension(self.in_alpinocollection().path, '.alpinodocdir','.folia.xml'))
+
+    def run(self):
+        alpinofiles = [ alpinofile for alpinofile in sorted(glob.glob(self.in_alpinocollection().path + '/*.xml'),key=lambda x: int(x.split('.')[0])) ] #collect all alpino files in collection
+        args = alpinofiles + [self.out_folia().path] #last argument is folia output
+        self.ex(*args)
+
+
 

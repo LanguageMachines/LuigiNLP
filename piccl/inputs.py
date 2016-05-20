@@ -54,3 +54,12 @@ class WordInput(InputFormat):
 
 registerformat(WordInput)
 
+class AlpinoDocDirInput(InputFormat):
+    """Represents a directory, corresponding to a document, with Alpino XML files, one per sentence, numbered"""
+    id='alpinodocdir'
+    extension='alpinodocdir'
+    basename = Parameter()
+    directory=True
+
+    def out_alpinodocdir(self):
+        return self.target()
