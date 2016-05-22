@@ -1,3 +1,4 @@
+import sys
 import luigi
 import sciluigi
 import logging
@@ -7,11 +8,18 @@ from luiginlp.util import shellsafe
 log = logging.getLogger('mainlog')
 
 INPUTFORMATS = []
+COMPONENTS = []
 
 def registerformat(Class):
     assert inspect.isclass(Class) and issubclass(Class,InputFormat)
     if Class not in INPUTFORMATS:
         INPUTFORMATS.append(Class)
+    return Class
+
+def registercomponent(Class):
+    assert inspect.isclass(Class) and issubclass(Class,WorkflowComponent)
+    if Class not in COMPONENTS:
+        COMPONENTS.append(Class)
     return Class
 
 class InvalidInput(Exception):
@@ -23,16 +31,16 @@ class AutoSetupError(Exception):
 class InitialInput:
     """Class that encapsulates the filename of the initial input and associates proper format classes"""
 
-    def __init__(self, inputfilename):
-        self.filename = inputfilename
+    def __init__(self, inputfile):
+        self.filename = inputfile
 
         self.type = None
         self.basename = self.extension = ""
         for inputclass in INPUTFORMATS:
             if inspect.isclass(inputclass) and issubclass(inputclass, InputFormat):
-                if inputfilename.endswith('.' +inputclass.extension):
+                if inputfile.endswith('.' +inputclass.extension):
                     self.type = inputclass
-                    self.basename = inputfilename[:-(len(inputclass.extension)+1)]
+                    self.basename = inputfile[:-(len(inputclass.extension)+1)]
                     self.extension = '.' + inputclass.extension
 
 class InputWorkflow:
@@ -61,7 +69,7 @@ class InputFormat(sciluigi.ExternalTask):
 class WorkflowComponent(sciluigi.WorkflowTask):
     """A workflow component"""
 
-    inputfilename = luigi.Parameter()
+    inputfile = luigi.Parameter()
 
     def initial_task(self, initialinput, **kwargs):
         if 'id' in kwargs:
@@ -104,8 +112,8 @@ class WorkflowComponent(sciluigi.WorkflowTask):
     def setup_input(self, workflow):
         #Can we handle the input directly?
         for input in self.accepts(): #pylint: disable=redefined-builtin
-            if issubclass(input, InputFormat) and input.matches(self.inputfilename):
-                initialinput = InitialInput(self.inputfilename)
+            if issubclass(input, InputFormat) and input.matches(self.inputfile):
+                initialinput = InitialInput(self.inputfile)
                 initialtask = workflow.initial_task(initialinput)
                 return initialinput.type.id, getattr(initialtask,'out_' + initialinput.type.id)
 
@@ -128,7 +136,7 @@ class WorkflowComponent(sciluigi.WorkflowTask):
                 pass #try next one
 
         #input was not handled, raise error
-        raise InvalidInput("Unable to handle input " + self.inputfilename)
+        raise InvalidInput("Unable to handle input " + self.inputfile)
 
 
     def workflow(self):
@@ -186,15 +194,23 @@ class Task(sciluigi.Task):
 class TargetInfo(sciluigi.TargetInfo):
     pass
 
+
+def getcomponentclass(classname):
+    for Class in COMPONENTS:
+        if Class.__name__ == classname:
+            return Class
+    print(sys.modules)
+    raise Exception("No such component: " + classname)
+
+
 class Parallel(sciluigi.WorkflowTask):
     """Meta workflow"""
     inputfiles = luigi.Parameter()
     component = luigi.Parameter()
-    params = luigi.Parameter()
 
     def workflow(self):
-        tasks = [] 
-        ComponentClass = getcomponent(self.component)
-        for inputfile in self.inputfiles().split(','):
-            tasks.append( self.new_task(component, ComponentClass, **parseparams(params)) )
+        tasks = []
+        ComponentClass = getcomponentclass(self.component)
+        for inputfile in self.inputfiles.split(','):
+            tasks.append( self.new_task(self.component, ComponentClass, inputfile=inputfile) )
         return tasks

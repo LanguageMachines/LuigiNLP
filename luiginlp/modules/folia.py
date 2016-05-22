@@ -2,13 +2,14 @@ import os
 import logging
 import glob
 from luigi import Parameter, BoolParameter
-from luiginlp.engine import Task, TargetInfo, WorkflowComponent
+from luiginlp.engine import Task, TargetInfo, WorkflowComponent, registercomponent
 from luiginlp.util import replaceextension
 from luiginlp.modules.openconvert import OpenConvert_folia
 from luiginlp.inputs import TEIInput, WordInput, ReStructuredTextInput,AlpinoDocDirInput
 
 log = logging.getLogger('mainlog')
 
+@registercomponent
 class ConvertToFoLiA(WorkflowComponent):
     def accepts(self):
         return (TEIInput,WordInput,ReStructuredTextInput,AlpinoDocDirInput)

@@ -1,6 +1,6 @@
 import logging
 from luigi import Parameter, BoolParameter
-from luiginlp.engine import Task, TargetInfo
+from luiginlp.engine import Task, TargetInfo, registercomponent
 from luiginlp.util import replaceextension
 from luiginlp.modules.folia import ConvertToFoLiA
 from luiginlp.inputs import FoLiAInput, PlainTextInput
@@ -68,6 +68,7 @@ class Ucto_folia2folia(Task):
 # Workflow Components
 #################################################################################################################
 
+@registercomponent
 class Ucto(WorkflowComponent):
     """A workflow component for Ucto"""
 

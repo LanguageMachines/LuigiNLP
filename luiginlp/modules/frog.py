@@ -1,7 +1,7 @@
 import os
 import logging
 from luigi import Parameter, BoolParameter
-from luiginlp.engine import Task, TargetInfo, InputWorkflow, WorkflowComponent
+from luiginlp.engine import Task, TargetInfo, InputWorkflow, WorkflowComponent, registercomponent
 from luiginlp.util import replaceextension
 from luiginlp.modules.folia import ConvertToFoLiA
 from luiginlp.inputs import FoLiAInput, PlainTextInput
@@ -58,6 +58,7 @@ class Frog_folia2folia(Task):
 # Workflow Components
 #################################################################################################################
 
+@registercomponent
 class Frog(WorkflowComponent):
     """A workflow component for Frog"""
 
