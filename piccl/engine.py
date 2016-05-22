@@ -185,3 +185,16 @@ class Task(sciluigi.Task):
 
 class TargetInfo(sciluigi.TargetInfo):
     pass
+
+class Parallel(sciluigi.WorkflowTask):
+    """Meta workflow"""
+    inputfiles = luigi.Parameter()
+    component = luigi.Parameter()
+    params = luigi.Parameter()
+
+    def workflow(self):
+        tasks = [] 
+        ComponentClass = getcomponent(self.component)
+        for inputfile in self.inputfiles().split(','):
+            tasks.append( self.new_task(component, ComponentClass, **parseparams(params)) )
+        return tasks

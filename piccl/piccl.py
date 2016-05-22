@@ -2,6 +2,7 @@
 
 import luigi
 import logging
+from piccl.engine import Parallel
 
 log = logging.getLogger('mainlog')
 log.level=logging.INFO
