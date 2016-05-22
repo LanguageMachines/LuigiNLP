@@ -1,10 +1,11 @@
-PICCL (proof of concept)
+LuigiNLP (proof of concept)
 ================================
 
-Proof of concept for the PICCL NLP pipeline.
+An NLP workflow system building upon
+[sciluigi](https://github.com/pharmbio/sciluigi), which is in turn based on
+[luigi](https://github.com/spotify/luigi).
 
-Implemented using [sciluigi](https://github.com/pharmbio/sciluigi), which is in turn
-based on [luigi](https://github.com/spotify/luigi).
+Proof of concept to be used for the PICCL and Quoll NLP pipelines.
 
 Goals
 ---------
@@ -31,7 +32,7 @@ The pipeline follows a goal-oriented paradigm, in which a target workflow is
 specified along with an initial input, dependency workflows needed to get from
 input to the target workflow are automatically found and executed.
 
- * A **module** (``piccl/modules/*.py``) is a collection of **workflow components** and/or **tasks**.
+ * A **module** (``luiginlp/modules/*.py``) is a collection of **workflow components** and/or **tasks**.
  * A **task** takes input files, parameters and produces output files, in a
    deterministic fashion, and gets an actual job done, either by invoking an
    external tool or by running Python code.  Each task defines input and output slots that correspond to input/output
@@ -64,12 +65,12 @@ Plans/TODO
 Directory Structure
 ---------------------
 
- * ``piccl/piccl.py`` - Main tool
- * ``piccl/modules/`` - Modules, each addressing a specific tool/goal. A module
+ * ``luiginlp/luiginlp.py`` - Main tool
+ * ``luiginlp/modules/`` - Modules, each addressing a specific tool/goal. A module
    consists of workflow components and tasks.
- * ``piccl/inputs.py`` - Definition of initial inputs, to be used by the workflows
- * ``piccl/util.py`` - Auxiliary functions
- * ``setup.py`` - Installation script for PICCL (only covers PICCL and its direct python dependencies)
+ * ``luiginlp/inputs.py`` - Definition of initial inputs, to be used by the workflows
+ * ``luiginlp/util.py`` - Auxiliary functions
+ * ``setup.py`` - Installation script for LuigiNLP (only covers LuigiNLP and its direct python dependencies)
  * ``bootstrap.sh`` - Full installation script, pulls in all necessary dependencies and runs ``setup.py``, to be invoked by or from within [LaMachine](https://github.com/proycon/LaMachine)
 
 Installation
@@ -85,5 +86,5 @@ Usage
 
 Example, specify a workflow corresponding to your intended goal and an input file:
 
-    $ piccl --module piccl.modules.frog Frog --inputfilename test.rst 
+    $ luiginlp --module luiginlp.modules.frog Frog --inputfilename test.rst 
 

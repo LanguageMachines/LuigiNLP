@@ -2,9 +2,9 @@ import os
 import logging
 import glob
 from luigi import Parameter, BoolParameter
-from piccl.engine import Task, TargetInfo, WorkflowComponent, InputWorkflow, SubWorkflow
-from piccl.util import replaceextension, DirectoryHandler
-from piccl.modules.pdf import Pdf2images
+from luiginlp.engine import Task, TargetInfo, WorkflowComponent, InputWorkflow, SubWorkflow
+from luiginlp.util import replaceextension, DirectoryHandler
+from luiginlp.modules.pdf import Pdf2images
 
 log = logging.getLogger('mainlog')
 
@@ -44,7 +44,7 @@ class TesseractOCR_doc(Task):
     def run(self):
         with DirectoryHandler(self.out_hocrdocdir().path) as dirhandler:
             inputfiles = [ filename for filename in glob.glob(self.in_tiffdocdir().path + '/*.' + self.tiff_extension) ]
-            subworkflow = Subworkflow('piccl.modules.ocr',OCR_singlepage,
+            subworkflow = Subworkflow('luiginlp.modules.ocr',OCR_singlepage,
                     *inputfiles,
                     cwd=self.in_tiffdocdir().path
             )

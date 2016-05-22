@@ -1,8 +1,8 @@
 import os
 import logging
 from luigi import Parameter, BoolParameter
-from piccl.engine import Task, TargetInfo
-from piccl.util import replaceextension
+from luiginlp.engine import Task, TargetInfo
+from luiginlp.util import replaceextension
 
 log = logging.getLogger('mainlog')
 

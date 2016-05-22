@@ -1,6 +1,6 @@
 from sciluigi import ExternalTask, TargetInfo
 from luigi import Parameter
-from piccl.engine import InputFormat, registerformat
+from luiginlp.engine import InputFormat, registerformat
 
 @registerformat
 class FoLiAInput(InputFormat):

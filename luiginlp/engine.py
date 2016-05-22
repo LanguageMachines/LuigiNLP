@@ -2,7 +2,7 @@ import luigi
 import sciluigi
 import logging
 import inspect
-from piccl.util import shellsafe
+from luiginlp.util import shellsafe
 
 log = logging.getLogger('mainlog')
 

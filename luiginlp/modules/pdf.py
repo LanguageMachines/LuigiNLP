@@ -3,8 +3,8 @@ import logging
 import glob
 import natsort
 from luigi import Parameter, BoolParameter
-from piccl.engine import Task, TargetInfo, WorkflowComponent
-from piccl.util import replaceextension, DirectoryHandler
+from luiginlp.engine import Task, TargetInfo, WorkflowComponent
+from luiginlp.util import replaceextension, DirectoryHandler
 
 log = logging.getLogger('mainlog')
 

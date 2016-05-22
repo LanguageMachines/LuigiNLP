@@ -2,14 +2,14 @@
 
 import luigi
 import logging
-from piccl.engine import Parallel
+from luiginlp.engine import Parallel
 
 log = logging.getLogger('mainlog')
 log.level=logging.INFO
 
 
 def main():
-    log.info("Starting PICCL")
+    log.info("Starting LuigiNLP")
     luigi.run(local_scheduler=True)
 
 

@@ -1,10 +1,10 @@
 import os
 import logging
 from luigi import Parameter, BoolParameter
-from piccl.engine import Task, TargetInfo, InputWorkflow, WorkflowComponent
-from piccl.util import replaceextension
-from piccl.modules.folia import ConvertToFoLiA
-from piccl.inputs import FoLiAInput, PlainTextInput
+from luiginlp.engine import Task, TargetInfo, InputWorkflow, WorkflowComponent
+from luiginlp.util import replaceextension
+from luiginlp.modules.folia import ConvertToFoLiA
+from luiginlp.inputs import FoLiAInput, PlainTextInput
 
 log = logging.getLogger('mainlog')
 

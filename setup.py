@@ -12,18 +12,18 @@ def read(fname):
 
 
 setup(
-    name = "PICCL",
+    name = "LuigiNLP",
     version = "0.1", #edit version in __init__.py as well!
     author = "Maarten van Gompel",
     author_email = "proycon@anaproy.nl",
-    description = ("PICCL - Pipeline for Natural Language Processing - Proof of Concept"),
+    description = ("LuigiNLP - Pipeline for Natural Language Processing"),
     license = "GPL",
     keywords = "nlp computational_linguistics",
-    url = "https://github.com/LanguageMachines/piccl_proofofconcept",
-    packages=['piccl','piccl.modules'],
+    url = "https://github.com/LanguageMachines/LuigiNLP",
+    packages=['luiginlp','luiginlp.modules'],
     long_description=read('README.md'),
     classifiers=[
-        "Development Status :: 1 -Alpha",
+        "Development Status :: 1 - Alpha",
         "Topic :: Text Processing :: Linguistic",
         "Programming Language :: Python :: 3",
         "Operating System :: POSIX",
@@ -36,7 +36,7 @@ setup(
     #package_data = {'': ['*.wsgi','*.js','*.xsl','*.gif','*.png','*.xml','*.html','*.jpg','*.svg','*.rng'] },
     install_requires=['lxml >= 2.2','sciluigi','natsort'],
     entry_points = {    'console_scripts': [
-            'piccl = piccl.piccl:main',
+            'luiginlp = luiginlp.luiginlp:main',
     ]
     }
 )

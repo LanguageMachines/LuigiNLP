@@ -2,10 +2,10 @@ import os
 import logging
 import glob
 from luigi import Parameter, BoolParameter
-from piccl.engine import Task, TargetInfo, WorkflowComponent
-from piccl.util import replaceextension
-from piccl.modules.openconvert import OpenConvert_folia
-from piccl.inputs import TEIInput, WordInput, ReStructuredTextInput,AlpinoDocDirInput
+from luiginlp.engine import Task, TargetInfo, WorkflowComponent
+from luiginlp.util import replaceextension
+from luiginlp.modules.openconvert import OpenConvert_folia
+from luiginlp.inputs import TEIInput, WordInput, ReStructuredTextInput,AlpinoDocDirInput
 
 log = logging.getLogger('mainlog')
 
