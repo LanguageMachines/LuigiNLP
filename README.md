@@ -76,10 +76,14 @@ Directory Structure
 Installation
 ---------------
 
-To be used within LaMachine (https://proycon.github.io/LaMachine). This system
-is not included yet at this stage so install with:
+Install as follows:
 
     $ python setup.py install
+
+Many of the implemented modules rely on software distributed as part LaMachine
+(https://proycon.github.io/LaMachine), so LuigiNLP is best used from within a
+LaMachine installation. LuigiNLP itself will be included in LaMachine when it
+is mature enough.
 
 Usage
 ---------
