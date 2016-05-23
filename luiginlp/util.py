@@ -1,5 +1,6 @@
 import os
 import shutil
+import glob
 
 DISALLOWINSHELLSAFE = ('|','&',';','!','<','>','{','}','`','\n','\r','\t')
 
@@ -66,5 +67,10 @@ class DirectoryHandler:
             os.rename(self.directory,self.destinationdir)
         else:
             shutil.rmtree(self.directory)
+
+    def collectoutput(self, mask):
+        for file in glob.glob(mask):
+            shutil.move(file, self.directory)
+
 
 
