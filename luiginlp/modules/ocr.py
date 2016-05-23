@@ -18,7 +18,7 @@ class TesseractOCR_tiff2hocr(Task):
     in_tiff = None #input slot
 
     def out_hocr(self):
-        return TargetInfo(self, replaceextension(self.in_rst().path, ('.tif','.tiff'),'.hocr'))
+        return TargetInfo(self, replaceextension(self.in_tiff().path, ('.tif','.tiff'),'.hocr'))
 
     def run(self):
         self.ex(self.in_tiff().path, self.out_hocr().path,
@@ -42,7 +42,7 @@ class TesseractOCR_document(Task):
     in_tiffdocdir = None #input slot
 
     def out_hocrdocdir(self):
-        return TargetInfo(self, replaceextension(self.in_rst().path, '.tiffdocdir','.hocrdocdir'))
+        return TargetInfo(self, replaceextension(self.in_tiffdocdir().path, '.tiffdocdir','.hocrdocdir'))
 
     def run(self):
         with DirectoryHandler(self.out_hocrdocdir().path) as dirhandler:
