@@ -46,7 +46,7 @@ class TesseractOCR_doc(Task):
             #gather input files
             inputfiles = [ filename for filename in glob.glob(self.in_tiffdocdir().path + '/*.' + self.tiff_extension) ]
             #inception: we run the workflow system with a new (sub)-workflow (luiginlp.run)
-            run(Parallel(component='OCR_singlepage', inputfiles=','.join(inputfiles)), module='luiginlp.modules.ocr')
+            run(Parallel(component='OCR_singlepage', inputfiles=','.join(inputfiles)))
             #collect all output files
             dirhandler.collectoutput(self.in_tiffdocdir().path + '/*.hocr')
 
