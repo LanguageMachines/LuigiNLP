@@ -91,3 +91,7 @@ Example, specify a workflow corresponding to your intended goal and an input fil
 A workflow can be run parallelised for multiple input files as well:
 
     $ luiginlp --module luiginlp.modules.frog Parallel --component Frog --inputfiles test.rst,test2.rst
+
+You can always pass component-specific parameters by using the component name
+as a prefix. For instance, the Frog component takes an option ``skip``, you can
+use ``--Frog-skip`` to explicitly set it.
