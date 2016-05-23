@@ -2,7 +2,7 @@ import os
 import logging
 import glob
 from luigi import Parameter, BoolParameter
-from luiginlp.engine import Task, TargetInfo, WorkflowComponent, InputWorkflow, SubWorkflow
+from luiginlp.engine import Task, TargetInfo, WorkflowComponent, InputWorkflow, SubWorkflow, Parallel, run
 from luiginlp.util import replaceextension, DirectoryHandler
 from luiginlp.modules.pdf import Pdf2images
 
@@ -43,11 +43,11 @@ class TesseractOCR_doc(Task):
 
     def run(self):
         with DirectoryHandler(self.out_hocrdocdir().path) as dirhandler:
+            #gather input files
             inputfiles = [ filename for filename in glob.glob(self.in_tiffdocdir().path + '/*.' + self.tiff_extension) ]
-            subworkflow = Subworkflow('luiginlp.modules.ocr',OCR_singlepage,
-                    *inputfiles,
-                    cwd=self.in_tiffdocdir().path
-            )
+            #inception: we run the workflow system with a new (sub)-workflow (luiginlp.run)
+            run(Parallel(component='OCR_singlepage', inputfiles=','.join(inputfiles)), module='luiginlp.modules.ocr')
+            #collect all output files
             dirhandler.collectoutput(self.in_tiffdocdir().path + '/*.hocr')
 
 

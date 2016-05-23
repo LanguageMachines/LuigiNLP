@@ -51,14 +51,14 @@ Limitations
 ------------
 
 * No circular dependencies allowed in workflow components
-* Intermediate files are not open for inspection in workflow specifications, only in tasks
+* Intermediate files are not open for inspection in workflow specifications, only within ``Task.run()``
 * Parameters may not clash between workflow components, if they have the same ID, they should describe the same thing in the same manner. This does not apply to task parameters, as explicit translation may be done from component parameters to task parameters.
 * Parameters from possible subworkflows may be inherited, even if they are not used eventually. Set default values for parameters wherever as possible.
 
 Plans/TODO
 -------------
 
-* Support for multi-file input and output in workflow components
+* Expand autosetup to build longer sequential chains of tasks (a2b b2c c2d)
 * Make certain accepted subworkflows either mandatory or forbidden based on parameter values
 * Further testing...
 
@@ -100,3 +100,26 @@ of workers can be explicitly set:
 You can always pass component-specific parameters by using the component name
 as a prefix. For instance, the Frog component takes an option ``skip``, you can
 use ``--Frog-skip`` to explicitly set it.
+
+You can also invoke LuigiNLP from within Python of course:
+
+    import luiginlp
+    from luiginlp.modules.frog import Frog
+    luiginlp.run(Frog(inputfile="test.rst"))
+
+To parallelize multiple tasks you can just do:
+
+    import luiginlp
+    from luiginlp.modules.frog import Frog
+    luiginlp.run(Frog(inputfile="test.rst"), Frog(inputfile="test2.rst"))
+
+Or use the ``Parallel`` interface:
+
+    import luiginlp
+    from luiginlp.modules.frog import Frog
+    from luiginlp.engine import Parallel
+    luiginlp.run(Parallel(component="Frog",inputfiles="test.rst,test.rst2"))
+
+
+
+

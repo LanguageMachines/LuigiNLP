@@ -214,3 +214,32 @@ class Parallel(sciluigi.WorkflowTask):
         for inputfile in self.inputfiles.split(','):
             tasks.append( self.new_task(self.component, ComponentClass, inputfile=inputfile) )
         return tasks
+
+def run(*args, **kwargs):
+    if 'local_scheduler' in kwargs:
+        if not args:
+            luigi.run(**kwargs)
+        else:
+            luigi.build(args,**kwargs)
+    else:
+        if not args:
+            luigi.run(local_scheduler=True,**kwargs)
+        else:
+            luigi.build(args,local_scheduler=True,**kwargs)
+
+def run_cmdline(TaskClass,**kwargs):
+    if 'local_scheduler' in kwargs:
+        local_scheduler = kwargs['local_scheduler']
+        return local_scheduler
+    else:
+        local_scheduler=True
+    cmdline_args = []
+    for key, value in kwargs.items():
+        if inspect.isclass(value):
+            value = value.__name__
+        cmdline_args.append('--' + key + ' ' + str(shellsafe(value)))
+    luigi.run(main_task_cls=TaskClass,cmdline_args=' '.join(cmdline_args), local_scheduler=local_scheduler)
+
+
+
+
