@@ -205,11 +205,19 @@ def getcomponentclass(classname):
             return Class
     raise Exception("No such component: " + classname)
 
+class ComponentParameters(dict):
+    def __init__(self, **kwargs):
+        super().__init__()
+        self.update(kwargs)
+
+    def __hash__(self):
+        return hash(tuple(iter(self.items())))
+
 class Parallel(sciluigi.WorkflowTask):
     """Meta workflow"""
     inputfiles = luigi.Parameter()
     component = luigi.Parameter()
-    component_parameters = luigi.Parameter(default={})
+    component_parameters = luigi.Parameter(default=ComponentParameters())
 
     def workflow(self):
         tasks = []
