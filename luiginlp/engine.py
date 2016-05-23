@@ -29,6 +29,9 @@ class InvalidInput(Exception):
 class AutoSetupError(Exception):
     pass
 
+class SchedulingError(Exception):
+    pass
+
 class InitialInput:
     """Class that encapsulates the filename of the initial input and associates proper format classes"""
 
@@ -220,12 +223,16 @@ def run(*args, **kwargs):
         if not args:
             luigi.run(**kwargs)
         else:
-            luigi.build(args,**kwargs)
+            success = luigi.build(args,**kwargs)
+            if not success:
+                raise SchedulingError("There were errors in scheduling the workflow")
     else:
         if not args:
             luigi.run(local_scheduler=True,**kwargs)
         else:
-            luigi.build(args,local_scheduler=True,**kwargs)
+            success = luigi.build(args,local_scheduler=True,**kwargs)
+            if not success:
+                raise SchedulingError("There were errors in scheduling the workflow")
 
 def run_cmdline(TaskClass,**kwargs):
     if 'local_scheduler' in kwargs:
