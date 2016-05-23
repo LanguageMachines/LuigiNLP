@@ -21,7 +21,7 @@ class TesseractOCR_tiff2hocr(Task):
         return TargetInfo(self, replaceextension(self.in_tiff().path, ('.tif','.tiff'),'.hocr'))
 
     def run(self):
-        self.ex(self.in_tiff().path, self.out_hocr().path,
+        self.ex(self.in_tiff().path, self.out_hocr().path[:-5], #output path without hocr extension (-5), Tesseract adds it already
                 l=self.language,
                 c="tessedit_create_hocr=T",
         )
