@@ -88,14 +88,14 @@ is mature enough.
 Usage
 ---------
 
-Example, specify a workflow corresponding to your intended goal and an input file:
+Example, specify a workflow corresponding to your intended goal and an input file. Workflows may take extra parameters (``--skip`` for Frog in this case):
 
-    $ luiginlp --module luiginlp.modules.frog Frog --inputfile test.rst 
+    $ luiginlp --module luiginlp.modules.frog Frog --inputfile test.rst --skip p
 
 A workflow can be run parallelised for multiple input files as well, the number
 of workers can be explicitly set:
 
-    $ luiginlp --module luiginlp.modules.frog Parallel --component Frog --inputfiles test.rst,test2.rst --workers 2
+    $ luiginlp --module luiginlp.modules.frog Parallel --component Frog --inputfiles test.rst,test2.rst --workers 2 --skip p
 
 You can always pass component-specific parameters by using the component name
 as a prefix. For instance, the Frog component takes an option ``skip``, you can
@@ -105,20 +105,26 @@ You can also invoke LuigiNLP from within Python of course:
 
     import luiginlp
     from luiginlp.modules.frog import Frog
-    luiginlp.run(Frog(inputfile="test.rst"))
+    luiginlp.run(Frog(inputfile="test.rst",skip='p'))
 
 To parallelize multiple tasks you can just do:
 
     import luiginlp
     from luiginlp.modules.frog import Frog
-    luiginlp.run(Frog(inputfile="test.rst"), Frog(inputfile="test2.rst"))
+    luiginlp.run(
+        Frog(inputfile="test.rst",skip='p'),
+        Frog(inputfile="test2.rst",skip='p')
+    )
+        
 
 Or use the ``Parallel`` interface:
 
     import luiginlp
     from luiginlp.modules.frog import Frog
     from luiginlp.engine import Parallel
-    luiginlp.run(Parallel(component="Frog",inputfiles="test.rst,test2.rst"))
+    luiginlp.run(
+        Parallel(component="Frog",inputfiles="test.rst,test2.rst", component_parameters={'skip':'p'})
+    )
 
 
 

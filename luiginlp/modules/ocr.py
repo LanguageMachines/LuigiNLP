@@ -27,6 +27,8 @@ class TesseractOCR_tiff2ocr(Task):
 
 
 class OCR_singlepage(WorkflowComponent):
+    language = Parameter()
+
     autosetup = (TesseractOCR_tiff2hocr,)
 
     def accepts(self):
@@ -35,6 +37,7 @@ class OCR_singlepage(WorkflowComponent):
 class TesseractOCR_doc(Task):
     """OCR for a while document (input is a directory of tiff image files (pages), output is a directory of hOCR files"""
     tiff_extension=Parameter(default='tif')
+    language = Parameter()
 
     in_tiffdocdir = None #input slot
 
@@ -46,7 +49,7 @@ class TesseractOCR_doc(Task):
             #gather input files
             inputfiles = [ filename for filename in glob.glob(self.in_tiffdocdir().path + '/*.' + self.tiff_extension) ]
             #inception: we run the workflow system with a new (sub)-workflow (luiginlp.run)
-            run(Parallel(component='OCR_singlepage', inputfiles=','.join(inputfiles)))
+            run(Parallel(component='OCR_singlepage', inputfiles=','.join(inputfiles))) #TODO: pass language parameter
             #collect all output files
             dirhandler.collectoutput(self.in_tiffdocdir().path + '/*.hocr')
 
@@ -61,8 +64,9 @@ class ConvertToTiffDocDir(WorkflowComponent):
         return (PdfInput,)
 
 
-class OCR_multi(WorkflowComponent):
+class OCR_document(WorkflowComponent):
 
+    language = Parameter()
     autosetup = (TesseractOCR_multi,)
 
     def accepts(self):

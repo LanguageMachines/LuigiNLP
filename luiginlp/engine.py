@@ -209,13 +209,13 @@ class Parallel(sciluigi.WorkflowTask):
     """Meta workflow"""
     inputfiles = luigi.Parameter()
     component = luigi.Parameter()
-    parameters = luigi.Parameter(default="")
+    component_parameters = luigi.Parameter(default={})
 
     def workflow(self):
         tasks = []
         ComponentClass = getcomponentclass(self.component)
         for inputfile in self.inputfiles.split(','):
-            tasks.append( self.new_task(self.component, ComponentClass, inputfile=inputfile) )
+            tasks.append( self.new_task(self.component, ComponentClass, inputfile=inputfile,**self.component_parameters) )
         return tasks
 
 def run(*args, **kwargs):
