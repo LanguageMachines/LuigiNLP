@@ -7,6 +7,10 @@ An NLP workflow system building upon
 
 Proof of concept to be used for the PICCL and Quoll NLP pipelines.
 
+This is a solution for either a single computing node or a cluster of nodes
+(Hadoop, SLURM, not tested yet). The individual components are not webservices,
+nor is data passed around. This ensures minimal overhead and higher performance.
+
 Goals
 ---------
 
@@ -22,8 +26,6 @@ Goals
  * Python-based, all workflow and component specifications are in Python rather than external.
  * Protection against shell injection attacks in tasks
  * Runnable standalone from command-line 
- * Runnable as a CLAM webservice  (TODO later)
-    * Not sure yet whether to expose multiple CLAM webservices (one per workflow), or one monolithic one, leaning towards the former.
 
 Architecture
 ----------------
@@ -60,6 +62,8 @@ Plans/TODO
 
 * Expand autosetup to build longer sequential chains of tasks (a2b b2c c2d)
 * Make certain accepted subworkflows either mandatory or forbidden based on parameter values
+* Integration with [CLAM](https://github.com/proycon/clam) to automatically
+  create webservices of workflow components
 * Further testing...
 
 Directory Structure
@@ -113,7 +117,7 @@ To parallelize multiple tasks you can just do:
     from luiginlp.modules.frog import Frog
     luiginlp.run(
         Frog(inputfile="test.rst",skip='p'),
-        Frog(inputfile="test2.rst",skip='p')
+        Frog(inputfile="test2.rst",skip='p'),
     )
         
 

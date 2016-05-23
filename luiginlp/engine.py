@@ -211,7 +211,7 @@ class ComponentParameters(dict):
         self.update(kwargs)
 
     def __hash__(self):
-        return hash(tuple(iter(self.items())))
+        return hash(tuple(sorted(self.items())))
 
 class Parallel(sciluigi.WorkflowTask):
     """Meta workflow"""
