@@ -58,11 +58,12 @@ class DirectoryHandler:
         self.directory = destinationdir + '.tmp'
 
     def __enter__(self):
-        if os.path.exists(self.tmpdir):
-            shutil.rmtree(self.tmpdir)
-        os.mkdir(self.tmpdir)
+        if os.path.exists(self.directory):
+            shutil.rmtree(self.directory)
+        os.mkdir(self.directory)
+        return self
 
-    def __leave__(self, type, value, traceback):
+    def __exit__(self, type, value, traceback):
         if not isinstance(value, Exception):
             os.rename(self.directory,self.destinationdir)
         else:
