@@ -3,6 +3,7 @@ import luigi
 import sciluigi
 import logging
 import inspect
+import argparse
 from luiginlp.util import shellsafe
 
 log = logging.getLogger('mainlog')
@@ -57,7 +58,7 @@ class InputWorkflow:
                 self.kwargs[key] = getattr(parentcomponent, key)
 
 class InputFormat(sciluigi.ExternalTask):
-    """InputFormat, an external task""" 
+    """InputFormat, an external task"""
 
     def target(self):
             return TargetInfo(self, self.basename + '.' + self.extension)
@@ -96,7 +97,7 @@ class WorkflowComponent(sciluigi.WorkflowTask):
                 if hasattr(TaskClass, 'in_' + input_type):
                     passparameters = {}
                     for key in dir(TaskClass):
-                        if isinstance(key, luigi.Parameter):
+                        if key not in ('instance_name', 'workflow_task') and isinstance(getattr(TaskClass,key), luigi.Parameter):
                             if hasattr(self, key):
                                 passparameters[key] = getattr(self,key)
                     task = workflow.new_task(TaskClass.__name__, TaskClass,**passparameters)
@@ -199,14 +200,13 @@ def getcomponentclass(classname):
     for Class in COMPONENTS:
         if Class.__name__ == classname:
             return Class
-    print(sys.modules)
     raise Exception("No such component: " + classname)
-
 
 class Parallel(sciluigi.WorkflowTask):
     """Meta workflow"""
     inputfiles = luigi.Parameter()
     component = luigi.Parameter()
+    parameters = luigi.Parameter(default="")
 
     def workflow(self):
         tasks = []

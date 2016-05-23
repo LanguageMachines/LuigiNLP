@@ -86,5 +86,8 @@ Usage
 
 Example, specify a workflow corresponding to your intended goal and an input file:
 
-    $ luiginlp --module luiginlp.modules.frog Frog --inputfilename test.rst 
+    $ luiginlp --module luiginlp.modules.frog Frog --inputfile test.rst 
 
+A workflow can be run parallelised for multiple input files as well:
+
+    $ luiginlp --module luiginlp.modules.frog Parallel --component Frog --inputfiles test.rst,test2.rst
