@@ -50,9 +50,9 @@ input to the target workflow are automatically found and executed.
 Limitations
 ------------
 
+* No circular dependencies allowed in workflow components
 * Intermediate files are not open for inspection in workflow specifications, only in tasks
 * Parameters may not clash between workflow components, if they have the same ID, they should describe the same thing in the same manner. This does not apply to task parameters, as explicit translation may be done from component parameters to task parameters.
-* Workflow components are executed sequentially (no forks/parallellisation).  Parallellisation can only occur within a worfklow component, at the task level.
 * Parameters from possible subworkflows may be inherited, even if they are not used eventually. Set default values for parameters wherever as possible.
 
 Plans/TODO
