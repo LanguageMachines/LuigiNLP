@@ -4,6 +4,7 @@ import sciluigi
 import logging
 import inspect
 import argparse
+import importlib
 from luiginlp.util import shellsafe
 
 log = logging.getLogger('mainlog')
@@ -248,6 +249,9 @@ def run_cmdline(TaskClass,**kwargs):
         return local_scheduler
     else:
         local_scheduler=True
+    if 'module' in kwargs:
+        importlib.import_module(kwargs['module'])
+        del kwargs['module']
     cmdline_args = []
     for key, value in kwargs.items():
         if inspect.isclass(value):

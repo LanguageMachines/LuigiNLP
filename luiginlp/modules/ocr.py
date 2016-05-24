@@ -2,7 +2,7 @@ import os
 import logging
 import glob
 from luigi import Parameter, BoolParameter
-from luiginlp.engine import Task, TargetInfo, WorkflowComponent, InputWorkflow, Parallel, run, ComponentParameters
+from luiginlp.engine import Task, TargetInfo, WorkflowComponent, registercomponent, InputWorkflow, Parallel, run, ComponentParameters
 from luiginlp.util import replaceextension, DirectoryHandler
 from luiginlp.inputs import PdfInput, TiffInput, TiffDocDirInput
 from luiginlp.modules.pdf import Pdf2images
@@ -26,6 +26,7 @@ class TesseractOCR_tiff2hocr(Task):
                 c="tessedit_create_hocr=T",
         )
 
+@registercomponent
 class OCR_singlepage(WorkflowComponent):
     language = Parameter()
 
@@ -64,6 +65,7 @@ class ConvertToTiffDocDir(WorkflowComponent):
         return (PdfInput,)
 
 
+@registercomponent
 class OCR_document(WorkflowComponent):
 
     language = Parameter()
