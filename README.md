@@ -30,24 +30,55 @@ Goals
 Architecture
 ----------------
 
-The pipeline follows a goal-oriented paradigm, in which a target workflow is
-specified along with an initial input, dependency workflows needed to get from
-input to the target workflow are automatically found and executed.
+LuigiNLP follows a **goal-oriented** paradigm. The user invokes the workflow
+system by specifying a target **workflow component** along with an initial
+input file. Given the target and an initial input file, a sequence of workflow
+components will be automatically found that leads from initial input to the
+desired goal, processing the data each step of the way. Workflow components are
+defined in a *backwards* manner, as is also common in tools such as GNU Make.
+Each component expresses which other components it **accepts** as input, or
+which input files it accepts directly. This enables you to either run the
+component either directly on an input file, or have the input go through other
+components first for necessary preprocessing. The dependency resolution
+mechanism will automatically chose a path based on the specified input and
+selected parameters.
 
- * A **module** (``luiginlp/modules/*.py``) is a collection of **workflow components** and/or **tasks**.
- * A **task** takes input files, parameters and produces output files, in a
-   deterministic fashion, and gets an actual job done, either by invoking an
-   external tool or by running Python code.  Each task defines input and output slots that correspond to input/output
-   files in specific formats. These are defined as ``in_*`` and ``out_*``
-   methods on the task's class.
- * A **workflow component** chains one or more of tasks together for a specific
-   purpose. Workflow components accept initial input (files) or the output of
-   other specified workflow components. A workflow definition connects the
-   input and output slots of different tasks by connecting the input slot of
-   one to the output slot of another (through simple assignment).
- * Tasks and components may specify parameters
- * The user (or an intermediary) selects target workflow and provides input and
-   initial parameters. 
+A workflow component consists of a specification that chains together
+**tasks**. Whereas a workflow component represents a more comprehensive piece
+of work that is defined in a context of other components, a **task** represents
+the smallest unit of work and is defined **independently** of any other tasks
+or components.  A task consists of one or more input slots, corresponding to
+input files of a particular type, one or more output slots corresponding to
+output files of a particular type, and parameters. The task performs an actual
+job, either by invoking an external tool, or by running Python code directly.
+Chaining together tasks in the definition of the workflow component is done by
+connecting output slots of one task, to input slots of the other. 
+
+The simplest instance of a workflow component is just one that accepts one
+particular type of input file and sets up just a single task. 
+
+The architecture is visualised in the following scheme:
+
+![LuigiNLP Architecture](architecture.svg)
+
+Tasks and workflow components may take **parameters**. These are available
+within a task's ``run()`` method to either be propagated on to an external tool
+or to steer the code itself. At the component level, parameters may also be used to influence
+task composition, though often they are just passed on the the tasks. 
+
+Both tasks and workflow components are defined in a **module** (in the Python
+sense of the word), which simply groups several tasks and workflow components together.
+
+LuigiNLP relies heavily on filename extensions. Input formats are matched on
+the basis of an extension, and generally each task reads a file and outputs
+a file with a new extension. Re-use of the same filename (i.e. writing output to the
+input file), is **strictly forbidden**! 
+
+It is important to understand that the actual input files are only open for
+inspection when a Task in executed (its ``run()`` method is invoked).  During
+workflow composition in a component (in its ``setup()`` method),  files can not
+be inspected as the composition by definition preceeds the existence of any
+files, and the process has to proceed deterministically.
 
 Limitations
 ------------
@@ -55,16 +86,8 @@ Limitations
 * No circular dependencies allowed in workflow components
 * Intermediate files are not open for inspection in workflow specifications, only within ``Task.run()``
 * Parameters may not clash between workflow components, if they have the same ID, they should describe the same thing in the same manner. This does not apply to task parameters, as explicit translation may be done from component parameters to task parameters.
-* Parameters from possible subworkflows may be inherited, even if they are not used eventually. Set default values for parameters wherever as possible.
+* Parameters from possible subworkflows may be inherited, even if they are not used eventually, set default values for parameters wherever as possible.
 
-Plans/TODO
--------------
-
-* Expand autosetup to build longer sequential chains of tasks (a2b b2c c2d)
-* Make certain accepted subworkflows either mandatory or forbidden based on parameter values
-* Integration with [CLAM](https://github.com/proycon/clam) to automatically
-  create webservices of workflow components
-* Further testing...
 
 Directory Structure
 ---------------------
@@ -138,6 +161,23 @@ Here's an example of running an OCR workflow for a scanned PDF file (requires th
 
     $ luiginlp --module luiginlp.modules.ocr OCR_document --inputfile OllevierGeets.pdf --language eng
 
+Writing tasks and components for LuigiNLP
+=============================================
 
+In order to plug in your own tools into LuigiNLP, you will need to do
+several things:
 
+* Create a new module that groups your code (inside LuigiNLP these reside in ``luiginlp/modules/*.py``, but you may just as well have a module in an external Python project)
+* Write one or more tasks, tasks are classes derived from ``luiginlp.engine.Task``
+* Write one or more workflow components that chain tasks together, workflow components are classes derived from ``luiginlp.engine.WorkflowComponent``
 
+..TODO..
+
+Plans/TODO
+-------------
+
+* Expand autosetup to build longer sequential chains of tasks (a2b b2c c2d)
+* Make certain accepted subworkflows either mandatory or forbidden based on parameter values
+* Integration with [CLAM](https://github.com/proycon/clam) to automatically
+  create webservices of workflow components
+* Further testing...
