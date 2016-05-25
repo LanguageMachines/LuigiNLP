@@ -133,5 +133,11 @@ Or use the ``Parallel`` interface:
     )
 
 
+Here's an example of running an OCR workflow for a scanned PDF file (requires the tools ``pdfimages`` and
+``Tesseract``):
+
+    $ luiginlp --module luiginlp.modules.ocr OCR_document --inputfile OllevierGeets.pdf --language eng
+
+
 
 
