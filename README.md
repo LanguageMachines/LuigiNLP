@@ -59,7 +59,7 @@ particular type of input file and sets up just a single task.
 
 The architecture is visualised in the following scheme:
 
-![LuigiNLP Architecture](https://raw.githubusercontent.com/LanguageMachines/LuigiNLP/master/architecture.svg)
+![LuigiNLP Architecture](https://raw.githubusercontent.com/LanguageMachines/LuigiNLP/master/architecture.png)
 
 Tasks and workflow components may take **parameters**. These are available
 within a task's ``run()`` method to either be propagated on to an external tool
