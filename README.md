@@ -62,9 +62,9 @@ The architecture is visualised in the following scheme:
 ![LuigiNLP Architecture](https://raw.githubusercontent.com/LanguageMachines/LuigiNLP/master/architecture.png)
 
 Tasks and workflow components may take **parameters**. These are available
-within a task's ``run()`` method to either be propagated on to an external tool
-or to steer the code itself. At the component level, parameters may also be used to influence
-task composition, though often they are just passed on the the tasks. 
+within a task's ``run()`` method to either be propagated to an external tool
+or to be handled within Python directly. At the component level, parameters may also be used to influence
+task composition, though often they are just passed on to the tasks. 
 
 Both tasks and workflow components are defined in a **module** (in the Python
 sense of the word), which simply groups several tasks and workflow components together.
