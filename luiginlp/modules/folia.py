@@ -1,6 +1,7 @@
 import os
 import logging
 import glob
+import natsort
 from luigi import Parameter, BoolParameter
 from luiginlp.engine import Task, TargetInfo, InputFormat, WorkflowComponent, registercomponent
 from luiginlp.util import replaceextension
@@ -63,4 +64,37 @@ class Alpino2folia(Task):
         self.ex(*args)
 
 
+class Foliacat(Task):
+    executable = 'foliacat'
 
+    in_foliadir = None
+
+    def out_folia(self):
+        return TargetInfo(self, replaceextension(self.in_foliadir().path, '.foliadir','.folia.xml'))
+
+    def run(self):
+        foliafiles = [ filename for filename in natsort.natsorted(glob.glob(self.in_foliadir().path + '/*.folia.xml')) ]
+        self.ex(*foliafiles,
+                o=self.out_folia().path,
+                i=self.out_folia().path.split('.')[0], #first component of filename acts as document ID
+        )
+
+
+class FoliaHOCR(Task):
+    """Converts a directory of hocr files to a directory of FoLiA files"""
+    executable = "FoLiA-hocr"
+
+    threads = Parameter(threads=1)
+
+    in_hocrdir = None
+
+    def out_foliadir(self):
+        """Directory of FoLiA document, one per hOCR file"""
+        return TargetInfo(self, replaceextension(self.in_tiff().path, ('.hocrdir'),'.foliadir'))
+
+    def run(self):
+        with DirectoryHandler(self.out_foliadir().path) as dirhandler:
+            self.ex(self.in_hocrdir().path,
+                    threads=self.threads,
+                    O=dirhandler.directory
+            )

@@ -5,6 +5,7 @@ from luigi import Parameter, BoolParameter
 from luiginlp.engine import Task, TargetInfo, WorkflowComponent, registercomponent, InputComponent, Parallel, run, ComponentParameters, InputFormat
 from luiginlp.util import replaceextension, DirectoryHandler
 from luiginlp.modules.pdf import Pdf2images
+from luiginlp.modules.folia import Foliacat
 
 log = logging.getLogger('mainlog')
 
@@ -41,23 +42,24 @@ class TesseractOCR_document(Task):
     tiff_extension=Parameter(default='tif')
     language = Parameter()
 
-    in_tiffdocdir = None #input slot
+    in_tiffdir = None #input slot
 
-    def out_hocrdocdir(self):
-        return TargetInfo(self, replaceextension(self.in_tiffdocdir().path, '.tiffdocdir','.hocrdocdir'))
+    def out_hocrdir(self):
+        return TargetInfo(self, replaceextension(self.in_tiffdir().path, '.tiffdir','.hocrdir'))
 
     def run(self):
-        with DirectoryHandler(self.out_hocrdocdir().path) as dirhandler:
+        with DirectoryHandler(self.out_hocrdir().path) as dirhandler:
             #gather input files
-            inputfiles = [ filename for filename in glob.glob(self.in_tiffdocdir().path + '/*.' + self.tiff_extension) ]
+            inputfiles = [ filename for filename in glob.glob(self.in_tiffdir().path + '/*.' + self.tiff_extension) ]
             #inception: we run the workflow system with a new (sub)-workflow (luiginlp.run)
             run(Parallel(component='OCR_singlepage', inputfiles=','.join(inputfiles), component_parameters=ComponentParameters(language=self.language, tiff_extension=self.tiff_extension)))
             #collect all output files
-            dirhandler.collectoutput(self.in_tiffdocdir().path + '/*.hocr')
+            dirhandler.collectoutput(self.in_tiffdir().path + '/*.hocr')
 
 
 
-class ConvertToTiffDocDir(WorkflowComponent):
+@registercomponent
+class ConvertToTiffDir(WorkflowComponent):
     """Convert input to a collection of TIFF images"""
 
     def autosetup(self):
@@ -77,6 +79,26 @@ class OCR_document(WorkflowComponent):
     def accepts(self):
         """Returns a tuple of all the initial inputs and other workflows this component accepts as input (a disjunction, only one will be selected)"""
         return (
-            InputFormat(self, format_id='tiffdocdir', extension='tiffdocdir', directory=True),
-            InputComponent(self, ConvertToTiffDocDir)
+            InputFormat(self, format_id='tiffdir', extension='tiffdir', directory=True),
+            InputComponent(self, ConvertToTiffDir)
         )
+
+
+
+
+@registercomponent
+class OCR_folia(WorkflowComponent):
+    """OCR with FoLiA output"""
+    language = Parameter()
+
+    def setup(self, workflow):
+        input_format_id, input_slot = self.setup_input(workflow)
+        foliahocr = workflow.new_task('foliahocr', FoliaHOCR)
+        foliahocr.in_hocrdir = input_slot
+        foliacat = workflow.new_task('foliacat', Foliacat)
+        foliacat.in_foliadir = foliahocr.out_foliadir
+        return 'folia', foliacat
+
+    def accepts(self):
+        """Returns a tuple of all the initial inputs and other workflows this component accepts as input (a disjunction, only one will be selected)"""
+        return InputComponent(self, OCR_document)
