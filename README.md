@@ -37,7 +37,7 @@ components will be automatically found that leads from initial input to the
 desired goal, processing the data each step of the way. Workflow components are
 defined in a *backwards* manner, as is also common in tools such as GNU Make.
 Each component expresses which other components it **accepts** as input, or
-which input files it accepts directly. This enables you to either run the
+which input files it accepts directly. This enables you to run the
 component either directly on an input file, or have the input go through other
 components first for necessary preprocessing. The dependency resolution
 mechanism will automatically chose a path based on the specified input and
