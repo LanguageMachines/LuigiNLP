@@ -5,7 +5,7 @@ from luigi import Parameter, BoolParameter
 from luiginlp.engine import Task, TargetInfo, WorkflowComponent, registercomponent, InputComponent, Parallel, run, ComponentParameters, InputFormat
 from luiginlp.util import replaceextension, DirectoryHandler
 from luiginlp.modules.pdf import Pdf2images
-from luiginlp.modules.folia import Foliacat
+from luiginlp.modules.folia import Foliacat, FoliaHOCR
 
 log = logging.getLogger('mainlog')
 
