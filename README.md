@@ -18,7 +18,7 @@ Goals
  * Modularisation; clear separation of all components from the workflow system itself
  * Automatic dependency resolution (similar to GNU Make, top-down)
  * Robust failure recovery: when failures occur, fix the problem and run the workflow again, tasks that have completed will not be rerun.
- * Easy to extend with new modules (workflow componentes & tasks).
+ * Easy to extend with new modules (i.e. workflow components & tasks).
  * Traceability of all intermediate steps, retain intermediate results until explicitly discarded
  * Explicit workflow definitions 
  * Automatic parallellisation of tasks where possible
