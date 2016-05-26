@@ -1,9 +1,8 @@
 import logging
 from luigi import Parameter, BoolParameter
-from luiginlp.engine import Task, TargetInfo, registercomponent
+from luiginlp.engine import Task, TargetInfo, registercomponent, WorkflowComponent, Inputcomponent, InputFormat
 from luiginlp.util import replaceextension
 from luiginlp.modules.folia import ConvertToFoLiA
-from luiginlp.inputs import FoLiAInput, PlainTextInput
 
 log = logging.getLogger('mainlog')
 
@@ -78,8 +77,13 @@ class Ucto(WorkflowComponent):
     tok_input_sentenceperline = BoolParameter(default=False)
     tok_output_sentenceperline = BoolParameter(default=False)
 
-    autosetup = (Ucto_txt2folia, Ucto_folia2folia)
+    def autosetup(self):
+        return (Ucto_txt2folia, Ucto_folia2folia)
 
     def accepts(self):
-        """Returns a tuple of all the initial inputs and other workflows this component accepts as input (a disjunction)"""
-        return (FoLiAInput, PlainTextInput, InputWorkflow(self, ConvertToFoLiA) )
+        """Returns a tuple of all the initial inputs and other workflows this component accepts as input (a disjunction, only one will be selected)"""
+        return (
+            InputFormat(self, format_id='folia', extension='folia.xml'),
+            InputFormat(self, format_id='txt', extension='txt'),
+            InputComponent(self, ConvertToFoLiA)
+        )

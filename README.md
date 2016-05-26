@@ -95,7 +95,6 @@ Directory Structure
  * ``luiginlp/luiginlp.py`` - Main tool
  * ``luiginlp/modules/`` - Modules, each addressing a specific tool/goal. A module
    consists of workflow components and tasks.
- * ``luiginlp/inputs.py`` - Definition of initial inputs, to be used by the workflows
  * ``luiginlp/util.py`` - Auxiliary functions
  * ``setup.py`` - Installation script for LuigiNLP (only covers LuigiNLP and its direct python dependencies)
  * ``bootstrap.sh`` - Full installation script, pulls in all necessary dependencies and runs ``setup.py``, to be invoked by or from within [LaMachine](https://github.com/proycon/LaMachine)

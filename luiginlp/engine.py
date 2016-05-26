@@ -48,7 +48,7 @@ class InitialInput:
                     self.basename = inputfile[:-(len(inputclass.extension)+1)]
                     self.extension = '.' + inputclass.extension
 
-class InputWorkflow:
+class InputComponent:
     """A class that encapsulates a WorkflowComponent and is used by other components to list possible dependencies, used in WorkflowComponent.accepts(), holds parameter information to pass to sub-workflows"""
     def __init__(self, parentcomponent, Class, *args,**kwargs):
         assert inspect.isclass(Class) and issubclass(Class,WorkflowComponent)
@@ -61,29 +61,44 @@ class InputWorkflow:
             if isinstance(attr,luigi.Parameter) and key not in self.kwargs and hasattr(parentcomponent ,key):
                 self.kwargs[key] = getattr(parentcomponent, key)
 
-class InputFormat(sciluigi.ExternalTask):
-    """InputFormat, an external task"""
+class InputTask(sciluigi.ExternalTask):
+    """InputTask, an external task"""
 
-    def target(self):
-            return TargetInfo(self, self.basename + '.' + self.extension)
+    format_id=luigi.Parameter()
+    basename = luigi.Parameter()
+    extension = luigi.Parameter()
+    directory = luigi.BoolParameter()
 
-    @classmethod
-    def matches(cls, filename):
-        return filename.endswith('.' + cls.extension)
+    def out_default(self):
+        return TargetInfo(self, self.basename + '.' + self.extension)
+
+
+class InputFormat:
+    """A class that encapsulates an initial task"""
+
+    def __init__(self, workflow, format_id, extension, inputparameter='inputfile', directory=False):
+        assert isinstance(workflow,WorkflowComponent)
+        self.inputtask = None
+        self.valid = False
+        self.format_id = format_id
+        self.extension = extension
+        self.directory = directory
+        if getattr(workflow,inputparameter).endswith('.' + extension):
+            self.basename =  getattr(workflow,inputparameter)[:-(len(extension) + 1)]
+            self.valid = True
+
+    def task(self, workflow):
+        if self.valid:
+            return workflow.new_task('inputtask_' + self.format_id, InputTask, basename=self.basename, format_id=self.format_id,extension=self.extension, directory=self.directory)
+        else:
+            raise Exception("Can't produce task for an invalid inputformat!")
+
+
 
 class WorkflowComponent(sciluigi.WorkflowTask):
     """A workflow component"""
 
     inputfile = luigi.Parameter()
-
-    def initial_task(self, initialinput, **kwargs):
-        if 'id' in kwargs:
-            initialtask_id = kwargs['id']
-            del kwargs['id']
-        else:
-            initialtask_id = 'initialinput'
-        assert isinstance(initialinput, InitialInput)
-        return self.new_task(initialtask_id, initialinput.type, basename=initialinput.basename)
 
     @classmethod
     def inherit_parameters(cls, ChildClass):
@@ -95,7 +110,9 @@ class WorkflowComponent(sciluigi.WorkflowTask):
     def setup(self,workflow):
         if hasattr(self, 'autosetup'):
             input_type, input_slot = self.setup_input(workflow)
-            for TaskClass in self.autosetup:
+            autosetup = self.autosetup()
+            if not isinstance(autosetup, (list, tuple)): autosetup = (autosetup,)
+            for TaskClass in autosetup:
                 if not inspect.isclass(TaskClass) or not issubclass(TaskClass,Task):
                     raise AutoSetupError("AutoSetup expected a Task class, got " + str(type(TaskClass)))
                 if hasattr(TaskClass, 'in_' + input_type):
@@ -116,21 +133,20 @@ class WorkflowComponent(sciluigi.WorkflowTask):
 
     def setup_input(self, workflow):
         #Can we handle the input directly?
-        for input in self.accepts(): #pylint: disable=redefined-builtin
-            if issubclass(input, InputFormat) and input.matches(self.inputfile):
-                initialinput = InitialInput(self.inputfile)
-                initialtask = workflow.initial_task(initialinput)
-                return initialinput.type.id, getattr(initialtask,'out_' + initialinput.type.id)
-
-        for input in self.accepts():
-            if isinstance(input, InputWorkflow):
+        accepts = self.accepts()
+        if not isinstance(accepts, (list, tuple)): accepts = (accepts,)
+        for input in accepts: #pylint: disable=redefined-builtin
+            if isinstance(input, InputFormat):
+                if input.valid:
+                    return input.format_id, input.task(workflow).out_default
+                else:
+                    continue
+            elif isinstance(input, InputComponent):
                 swf = input.Class(*input.args, **input.kwargs)
             elif inspect.isclass(input) and issubclass(input, WorkflowComponent):
                 #not encapsulated in InputWorkflow yet, do now
                 iwf = InputWorkflow(self, input)
                 swf = iwf.Class(*input.args, **input.kwargs)
-            elif inspect.isclass(input) and issubclass(input, InputFormat):
-                continue
             else:
                 raise TypeError("Invalid element in accepts(): " + str(type(input)))
 

@@ -1,10 +1,9 @@
 import os
 import logging
 from luigi import Parameter, BoolParameter
-from luiginlp.engine import Task, TargetInfo, InputWorkflow, WorkflowComponent, registercomponent
+from luiginlp.engine import Task, TargetInfo, InputComponent, InputFormat, WorkflowComponent, registercomponent
 from luiginlp.util import replaceextension
 from luiginlp.modules.folia import ConvertToFoLiA
-from luiginlp.inputs import FoLiAInput, PlainTextInput
 
 log = logging.getLogger('mainlog')
 
@@ -64,11 +63,16 @@ class Frog(WorkflowComponent):
 
     skip = Parameter(default="") #A parameter for the workflow, will be passed on to the tasks
 
-    autosetup = (Frog_txt2folia, Frog_folia2folia)
+    def autosetup(self):
+        return (Frog_txt2folia, Frog_folia2folia)
 
     def accepts(self):
-        """Returns a tuple of all the initial inputs and other workflows this component accepts as input (a disjunction)"""
-        return (FoLiAInput, PlainTextInput, InputWorkflow(self, ConvertToFoLiA) )
+        """Returns a tuple of all the initial inputs and other workflows this component accepts as input (a disjunction, only one will be selected)"""
+        return (
+            InputFormat(self, format_id='folia', extension='folia.xml'),
+            InputFormat(self, format_id='txt', extension='txt'),
+            InputComponent(self, ConvertToFoLiA)
+        )
 
 
     #Commented out the below setup() method because autosetup generates this code automatically now
@@ -86,4 +90,3 @@ class Frog(WorkflowComponent):
     #        frog.in_folia = input_slot #set the input slot of the task to that of the workflow component
     #    return 'folia', frog #return the type of output  and the last task of the workflow (mandatory!), the last task must have an out_* slot named as specified here.
 
-Frog.inherit_parameters(ConvertToFoLiA) #important, inherit parameters of all our possible dependencies

@@ -2,7 +2,7 @@ import os
 import logging
 import glob
 from luigi import Parameter, BoolParameter
-from luiginlp.engine import Task, TargetInfo, WorkflowComponent, registercomponent
+from luiginlp.engine import Task, TargetInfo, InputFormat, WorkflowComponent, registercomponent
 from luiginlp.util import replaceextension
 from luiginlp.modules.openconvert import OpenConvert_folia
 from luiginlp.inputs import TEIInput, WordInput, ReStructuredTextInput,AlpinoDocDirInput
@@ -12,20 +12,25 @@ log = logging.getLogger('mainlog')
 @registercomponent
 class ConvertToFoLiA(WorkflowComponent):
     def accepts(self):
-        return (TEIInput,WordInput,ReStructuredTextInput,AlpinoDocDirInput)
+        return (
+            InputFormat(self, format_id='tei', extension='tei.xml'),
+            InputFormat(self, format_id='docx', extension='docx'),
+            InputFormat(self, format_id='rst', extension='rst'),
+            InputFormat(self, format_id='alpinodocdir', extension='alpinodocdir',directory=True),
+        )
 
     def setup(self, workflow):
-        input_type, input_slot = self.setup_input(workflow)
-        if input_type in ('docx', 'tei'):
+        input_format_id, input_slot = self.setup_input(workflow)
+        if input_format_id in ('docx', 'tei'):
             #Input is something OpenConvert can handle: convert to FoLiA first
-            openconvert = workflow.new_task('openconvert',OpenConvert_folia,from_format=input_type)
+            openconvert = workflow.new_task('openconvert',OpenConvert_folia,from_format=input_format_id)
             openconvert.in_any = input_slot
             return 'folia', openconvert #always return last task
-        elif input_type == 'rst':
+        elif input_format_id == 'rst':
             rst2folia = workflow.new_task('rst2folia',Rst2folia)
             rst2folia.in_rst = input_slot
             return 'folia', rst2folia #always return last task
-        elif input_type == 'alpinodocdir':
+        elif input_format_id == 'alpinodocdir':
             alpino2folia = workflow.new_task('alpino2folia',Alpino2folia)
             alpino2folia.in_alpinodocdir = input_slot
             return 'folia',  alpino2folia #always return last task
