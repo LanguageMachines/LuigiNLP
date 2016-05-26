@@ -226,7 +226,7 @@ class Ucto(WorkflowComponent):
 
     #The accepts methods return what input formats or other input components are accepted as input. It may return multiple values (in a tuple/list), the one that matches with the specified input is chosen
     def accepts(self):
-        return InputFormat(format_id='txt',extension='txt')
+        return InputFormat(self, format_id='txt',extension='txt')
 
     #Autosetup constructs a workflow for you automatically based on the tasks you specify. If you specify a tuple of multiple tasks, the one fitting the input will be executed.
     def autosetup(self):
@@ -237,6 +237,45 @@ Assuming you wrote all this in a ``mymodule.py`` file, you now can invoke this
 workflow component on a text document as follows:
 
     $ luiginlp --module mymodule Ucto --inputfile test.txt --language en
+
+Ucto does not just support plain text input, it can also handle input in the
+[FoLiA](https://proycon.github.io/folia) format, an XML-based format for linguistic
+annotation. We could write a task ``Ucto_folia2tok`` that runs ucto in this
+manner. Suppose we did that, we could extend our workflow component as
+follows:
+
+```python
+    def accepts(self):
+        return InputFormat(self, format_id='txt',extension='txt'), InputFormat(self, format_id='folia', extension='folia.xml')
+
+    def autosetup(self):
+        return Ucto_txt2tok, Ucto_folia2tok
+```
+
+Now the workflow component will be able automatically figure out which of the tasks to run based on the supplied input, allowing us to do:
+
+    $ luiginlp --module mymodule Ucto --inputfile test.folia.xml --language en
+
+What about any other file format? Ucto itself can only handle plain text or
+FoLiA. What if our input text is in PDF format, MarkDown format, or God forbid,
+in MS Word format? We could solve this problem by writing a
+``ConvertToPlaintext`` component that handles a multitude of formats and simply
+instruct ucto to accept output from that component. We need some extra import
+and would then modify the ``accepts()``, if such a component existed: 
+
+```python
+from luiginlp.engine import InputComponent
+from some.other.module import ConvertToPlaintext
+```
+
+```python
+    def accepts(self):
+        return (
+            InputFormat(self, format_id='txt',extension='txt'),
+            InputFormat(self, format_id='folia', extension='folia.xml'), 
+            InputComponent(self, ConvertToPlaintext) #you can pass parameters using keyword arguments here
+        )
+```
 
 
 
