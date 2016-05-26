@@ -24,7 +24,7 @@ Goals
  * Automatic parallellisation of tasks where possible
  * Keep it simple, minimize overhead for the developer of the workflow, use Pythonic principles,
  * Python-based, all workflow and component specifications are in Python rather than external.
- * Protection against shell injection attacks in tasks
+ * Protection against shell injection attacks for tasks that invoke external tools
  * Runnable standalone from command-line 
 
 Architecture
@@ -85,9 +85,6 @@ Limitations
 
 * No circular dependencies allowed in workflow components
 * Intermediate files are not open for inspection in workflow specifications, only within ``Task.run()``
-* Parameters may not clash between workflow components, if they have the same ID, they should describe the same thing in the same manner. This does not apply to task parameters, as explicit translation may be done from component parameters to task parameters.
-* Parameters from possible subworkflows may be inherited, even if they are not used eventually, set default values for parameters wherever as possible.
-
 
 Directory Structure
 ---------------------
