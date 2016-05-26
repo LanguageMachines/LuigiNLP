@@ -47,15 +47,14 @@ A workflow component consists of a specification that chains together
 **tasks**. Whereas a workflow component represents a more comprehensive piece
 of work that is defined in a context of other components, a **task** represents
 the smallest unit of work and is defined **independently** of any other tasks
-or components.  A task consists of one or more input slots, corresponding to
-input files of a particular type, one or more output slots corresponding to
-output files of a particular type, and parameters. The task performs an actual
-job, either by invoking an external tool, or by running Python code directly.
-Chaining together tasks in the definition of the workflow component is done by
-connecting output slots of one task, to input slots of the other. 
-
-The simplest instance of a workflow component is just one that accepts one
-particular type of input file and sets up just a single task. 
+or components, making it a highly reusable part. A task consists of one or more
+input slots, corresponding to input files of a particular type, one or more
+output slots corresponding to output files of a particular type, and
+parameters. A workflow component only glues together different tasks, the task
+performs an actual job, either by invoking an external tool, or by running
+Python code directly. Chaining together tasks in the definition of the
+workflow component is done by connecting output slots of one task, to input
+slots of the other. 
 
 The architecture is visualised in the following scheme:
 
@@ -66,6 +65,9 @@ within a task's ``run()`` method to either be propagated to an external tool
 or to be handled within Python directly. At the component level, parameters may also be used to influence
 task composition, though often they are just passed on to the tasks. 
 
+The simplest instance of a workflow component is just one that accepts one
+particular type of input file and sets up just a single task. 
+
 Both tasks and workflow components are defined in a **module** (in the Python
 sense of the word), which simply groups several tasks and workflow components together.
 
@@ -75,10 +77,10 @@ a file with a new extension. Re-use of the same filename (i.e. writing output to
 input file), is **strictly forbidden**! 
 
 It is important to understand that the actual input files are only open for
-inspection when a Task in executed (its ``run()`` method is invoked).  During
-workflow composition in a component (in its ``setup()`` method),  files can not
+inspection when a Task is executed (its ``run()`` method is invoked).  During
+workflow composition in a component (in its ``setup()/autosetup()`` method),  files can not
 be inspected as the composition by definition preceeds the existence of any
-files, and the process has to proceed deterministically.
+files, and the whole process has to proceed deterministically.
 
 Limitations
 ------------
@@ -173,7 +175,6 @@ Plans/TODO
 -------------
 
 * Expand autosetup to build longer sequential chains of tasks (a2b b2c c2d)
-* Make certain accepted subworkflows either mandatory or forbidden based on parameter values
-* Integration with [CLAM](https://github.com/proycon/clam) to automatically
+* [tentative] Integration with [CLAM](https://github.com/proycon/clam) to automatically
   create webservices of workflow components
 * Further testing...
