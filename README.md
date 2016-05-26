@@ -128,30 +128,35 @@ use ``--Frog-skip`` to explicitly set it.
 
 You can also invoke LuigiNLP from within Python of course:
 
-    import luiginlp
-    from luiginlp.modules.frog import Frog
-    luiginlp.run(Frog(inputfile="test.rst",skip='p'))
+```python
+import luiginlp
+from luiginlp.modules.frog import Frog
+luiginlp.run(Frog(inputfile="test.rst",skip='p'))
+```
 
 To parallelize multiple tasks you can just do:
 
-    import luiginlp
-    from luiginlp.modules.frog import Frog
-    luiginlp.run(
-        Frog(inputfile="test.rst",skip='p'),
-        Frog(inputfile="test2.rst",skip='p'),
-    )
+```python
+import luiginlp
+from luiginlp.modules.frog import Frog
+luiginlp.run(
+    Frog(inputfile="test.rst",skip='p'),
+    Frog(inputfile="test2.rst",skip='p'),
+)
+```
         
-
 Or use the ``Parallel`` interface:
 
-    import luiginlp
-    from luiginlp.modules.frog import Frog
-    from luiginlp.engine import Parallel, ComponentParameters
-    luiginlp.run(
-        Parallel(component="Frog",inputfiles="test.rst,test2.rst",
-            component_parameters=ComponentParameters(skip='p')
-        )
+```python
+import luiginlp
+from luiginlp.modules.frog import Frog
+from luiginlp.engine import Parallel, ComponentParameters
+luiginlp.run(
+    Parallel(component="Frog",inputfiles="test.rst,test2.rst",
+        component_parameters=ComponentParameters(skip='p')
     )
+)
+```
 
 
 Here's an example of running an OCR workflow for a scanned PDF file (requires the tools ``pdfimages`` and
@@ -169,7 +174,74 @@ several things:
 * Write one or more tasks, tasks are classes derived from ``luiginlp.engine.Task``
 * Write one or more workflow components that chain tasks together, workflow components are classes derived from ``luiginlp.engine.WorkflowComponent``
 
-..TODO..
+Let's begin by writing a simple task that invokes the tokeniser
+[ucto](https://languagemachines.github.io/ucto) to convert plain text to
+tokenised plain text. We prescribe that the plain text document has the
+extension ``txt`` and tokenised text has the extension ``tok``. The tokeniser
+takes one mandatory parameter: the language the text is in.
+
+```python
+from luiginlp.engine import Task
+from luigi import Parameter
+
+class Ucto_txt2tok(Task):
+    #This task invokes an external tool (ucto), set the executable to invoke
+    executable = 'ucto' 
+
+    #Parameters for this task
+    language = Parameter()
+
+    #this is the input slot for plaintext files, input slots are always set
+    #to None and are connected to output slots of other tasks by a workflow
+    #component
+    in_txt = None 
+
+    #Define an output slot, output slots are methods that start with out_
+    def out_tok(self): 
+        #Output slots always return TargetInfo instances pointing to the
+        #output file, we derive the name of the output file from the input
+        #file, and replace the extension
+        return TargetInfo(self, replaceextension(self.in_txt().path, '.txt','.tok')) 
+
+    #Define the run method, this will be called to do the actual work
+    def run(self):
+        #Here we run the external tool. This will invoke the executable
+        #specified. Keyword arguments are passed as option flags (-L in
+        #this case). Positional arguments are passed as such (after option flags).
+        #All parameters are available on the Task instance
+        #Values will be passed in a shell-safe manner, protecting against injection attacks
+: Not finished yet
+        self.ex(self.in_txt().path, self.out_tok().path,
+                L=self.language,
+        )
+```
+
+We can now turn this task into a simple component that we can invoke:
+
+```python
+from luiginlp.engine import WorkflowComponent, InputFormat
+
+class Ucto(WorkflowComponent):
+    #parameters for the task, most are just passed on to the task(s)
+    language = Parameter()
+
+    #The accepts methods return what input formats or other input components are accepted as input. It may return multiple values (in a tuple/list), the one that matches with the specified input is chosen
+    def accepts(self):
+        return InputFormat(format_id='txt',extension='txt')
+
+    #Autosetup constructs a workflow for you automatically based on the tasks you specify. If you specify a tuple of multiple tasks, the one fitting the input will be executed.
+    def autosetup(self):
+        return Ucto_txt2tok
+```
+
+Assuming you wrote all this in a ``mymodule.py`` file, you now can invoke this
+workflow component on a text document as follows:
+
+    $ luiginlp --module mymodule Ucto --inputfile test.txt --language en
+
+
+
+..TODO: Not finished yet..
 
 Plans/TODO
 -------------
