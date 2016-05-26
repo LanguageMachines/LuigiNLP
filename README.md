@@ -210,7 +210,6 @@ class Ucto_txt2tok(Task):
         #this case). Positional arguments are passed as such (after option flags).
         #All parameters are available on the Task instance
         #Values will be passed in a shell-safe manner, protecting against injection attacks
-: Not finished yet
         self.ex(self.in_txt().path, self.out_tok().path,
                 L=self.language,
         )
