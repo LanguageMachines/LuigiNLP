@@ -277,9 +277,81 @@ from some.other.module import ConvertToPlaintext
         )
 ```
 
+Our ucto component thus-far has been fairly simple, we first used ``autosetup()`` to
+wrap a single task, and later to choose amongst two tasks. Let's look at a more
+explicit example with actual task chaining. 
+
+Suppose we want the Ucto component to lowercase our text before passing it on
+to the actual task that invokes ucto. We can write a simple lowercase task as
+follows, for this one we just use Python and invoke no external tools (we
+set no ``executable`` and do not call ``ex()``):
+
+```python
+from luiginlp.engine import Task
+from luigi import Parameter
+
+class LowercaseText(Task):
+    #Parameters for this task
+    language = Parameter()
+    encoding = Parameter(default='utf-8')
+
+    in_txt = None 
+
+    #Define an output slot, output slots are methods that start with out_
+    def out_txt(self): 
+        #We add a lowercased prefix to the extension
+        #The output file may NEVER be equal to the input file
+        return TargetInfo(self, replaceextension(self.in_txt().path, '.txt','.lowercased.txt')) 
+
+    #Define the run method, this will be called to do the actual work
+    def run(self):
+        #We do the work in Python itself
+        #TargetInfo instances can be opened as file objects
+        with self.in_txt().open('r',encoding=self.encoding) as inputfile
+            with self.out_txt().open('w',encoding=self.encoding) as outputfile:
+                outputfile.write(inputfile.read().lower())
+                    
+```
+
+Now we go back to our Ucto component, we forget about the FoLiA part for a
+bit, and we set up explicit chaining using ``setup()`` instead of
+``autosetup()``, which is a bit more work but gives us complete control over
+everything.
 
 
-..TODO: Not finished yet..
+```python
+from luiginlp.engine import WorkflowComponent, InputFormat
+
+class Ucto(WorkflowComponent):
+    #parameters for the task, most are just passed on to the task(s)
+    language = Parameter()
+
+    #The accepts methods return what input formats or other input components are accepted as input. It may return multiple values (in a tuple/list), the one that matches with the specified input is chosen
+    def accepts(self):
+        return (
+            InputFormat(self, format_id='txt',extension='txt'),
+            InputComponent(self, ConvertToPlaintext) #you can pass parameters using keyword arguments here
+        )
+
+    #Setup a workflow chain manually
+    def setup(self, workflow):
+        #obtain the input
+        input_format_id, input_slot = self.setup_input(workflow)
+
+        #set up the lower caser and feed the input to it
+        lowercaser = workflow.new_task('lowercaser',LowercaseText)
+        lowercaser.in_txt = input_slot
+
+        #set up ucto and feed the output of the lower caser to it
+        #explicitly pass any parameters we want to propagate
+        ucto = workflow.new_task('ucto', Ucto_txt2tok, language=self.language) 
+        ucto.in_txt = lowercaser.out_txt
+
+        #always return the output format id and the last task
+        return 'txt', ucto
+```
+
+
 
 Plans/TODO
 -------------
