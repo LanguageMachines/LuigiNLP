@@ -172,7 +172,7 @@ several things:
 
 * Create a new module that groups your code (inside LuigiNLP these reside in ``luiginlp/modules/*.py``, but you may just as well have a module in an external Python project)
 * Write one or more tasks, tasks are classes derived from ``luiginlp.engine.Task``
-* Write one or more workflow components that chain tasks together, workflow components are classes derived from ``luiginlp.engine.WorkflowComponent``
+* Write one or more workflow components that chain tasks together, workflow components are classes derived from ``luiginlp.engine.WorkflowComponent``, you usually want to derive from ``luiginlp.engine.StandardWorkflowComponent`` which is a standard component that takes one inputfile as parameter.
 
 Let's begin by writing a simple task that invokes the tokeniser
 [ucto](https://languagemachines.github.io/ucto) to convert plain text to
@@ -218,9 +218,9 @@ class Ucto_txt2tok(Task):
 We can now turn this task into a simple component that we can invoke:
 
 ```python
-from luiginlp.engine import WorkflowComponent, InputFormat
+from luiginlp.engine import StandardWorkflowComponent, InputFormat
 
-class Ucto(WorkflowComponent):
+class Ucto(StandardWorkflowComponent):
     #parameters for the task, most are just passed on to the task(s)
     language = Parameter()
 
@@ -320,9 +320,9 @@ everything.
 
 
 ```python
-from luiginlp.engine import WorkflowComponent, InputFormat
+from luiginlp.engine import StandardWorkflowComponent, InputFormat
 
-class Ucto(WorkflowComponent):
+class Ucto(StandardWorkflowComponent):
     #parameters for the task, most are just passed on to the task(s)
     language = Parameter()
 
