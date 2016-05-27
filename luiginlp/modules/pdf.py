@@ -1,6 +1,7 @@
 import logging
 import glob
 import natsort
+import os
 from luigi import Parameter, BoolParameter
 from luiginlp.engine import Task, TargetInfo, StandardWorkflowComponent
 from luiginlp.util import replaceextension, DirectoryHandler
@@ -14,14 +15,15 @@ class Pdf2images(Task):
 
     in_pdf = None #will be linked to an out_* slot of another module in the workflow specification
 
-    def out_tiffdocdir(self):
-        return TargetInfo(self, replaceextension(self.in_pdf().path, '.pdf','.tiffdocdir'))
+    def out_tiffdir(self):
+        return TargetInfo(self, replaceextension(self.in_pdf().path, '.pdf','.tiffdir'))
 
     def run(self):
         #we use a DirectoryHandler that takes care of creating a temporary directory to hold all output and renames it to the final directory when all succeeds, and cleaning up otherwise
-        with DirectoryHandler(self.out_tiffdocdir().path) as dirhandler:
-            self.ex(self.in_pdf().path, dirhandler.directory+'/', #output to temporary directory
+        with DirectoryHandler(self.out_tiffdir().path) as dirhandler:
+            self.ex(self.in_pdf().path, dirhandler.directory+'/' + os.path.basename(self.in_pdf().path).split('.')[0] , #output to temporary directory and a file prefix
                 tiff=True,
+                p=True,
                 __singlehyphen=True, #use single-hypens even for multi-letter options
             )
 

@@ -159,10 +159,10 @@ luiginlp.run(
 ```
 
 
-Here's an example of running an OCR workflow for a scanned PDF file (requires the tools ``pdfimages`` and
-``Tesseract``):
+Here's an example of running an OCR workflow for a scanned PDF file (requires the tools ``pdfimages``, 
+``Tesseract``, ``FoLiA-hocr`` and ``foliacat``, the latter two are a part of LaMachine):
 
-    $ luiginlp --module luiginlp.modules.ocr OCR_document --inputfile OllevierGeets.pdf --language eng
+    $ luiginlp --module luiginlp.modules.ocr OCR_folia --inputfile OllevierGeets.pdf --language eng
 
 Writing tasks and components for LuigiNLP
 =============================================

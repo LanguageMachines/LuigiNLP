@@ -132,7 +132,7 @@ class WorkflowComponent(sciluigi.WorkflowTask):
                         raise AutoSetupError("No output slots found on " + TaskClass.__name__)
                     else:
                         return task
-            raise AutoSetupError("No matching input slots found on specified task (looking for " + input_type + ")")
+            raise AutoSetupError("No matching input slots found for the specified task (looking for " + input_type + " on " + TaskClass.__name__ + ")")
         else:
             raise NotImplementedError("Override the setup method for your workflow " + self.__class__.__name__ + " or set autosetup")
 

@@ -4,7 +4,7 @@ import glob
 import natsort
 from luigi import Parameter, BoolParameter
 from luiginlp.engine import Task, TargetInfo, InputFormat, StandardWorkflowComponent, registercomponent
-from luiginlp.util import replaceextension
+from luiginlp.util import replaceextension, DirectoryHandler
 from luiginlp.modules.openconvert import OpenConvert_folia
 from luiginlp.inputs import TEIInput, WordInput, ReStructuredTextInput,AlpinoDocDirInput
 
@@ -90,11 +90,11 @@ class FoliaHOCR(Task):
 
     def out_foliadir(self):
         """Directory of FoLiA document, one per hOCR file"""
-        return TargetInfo(self, replaceextension(self.in_tiff().path, ('.hocrdir'),'.foliadir'))
+        return TargetInfo(self, replaceextension(self.in_hocrdir().path, ('.hocrdir'),'.foliadir'))
 
     def run(self):
         with DirectoryHandler(self.out_foliadir().path) as dirhandler:
             self.ex(self.in_hocrdir().path,
-                    threads=self.threads,
+                    t=self.threads,
                     O=dirhandler.directory
             )
