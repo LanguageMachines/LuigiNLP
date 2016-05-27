@@ -260,8 +260,8 @@ What about any other file format? Ucto itself can only handle plain text or
 FoLiA. What if our input text is in PDF format, MarkDown format, or God forbid,
 in MS Word format? We could solve this problem by writing a
 ``ConvertToPlaintext`` component that handles a multitude of formats and simply
-instruct ucto to accept output from that component. We need some extra import
-and would then modify the ``accepts()``, if such a component existed: 
+instructs ucto to accept the plaintext output from that component. We need some extra imports
+and would then modify the ``accepts()`` to tie in the component: 
 
 ```python
 from luiginlp.engine import InputComponent
@@ -283,7 +283,7 @@ explicit example with actual task chaining.
 
 Suppose we want the Ucto component to lowercase our text before passing it on
 to the actual task that invokes ucto. We can write a simple lowercase task as
-follows, for this one we just use Python and invoke no external tools (we
+follows, for this one we just use Python and call no external tools (i.e. we
 set no ``executable`` and do not call ``ex()``):
 
 ```python
@@ -335,7 +335,7 @@ class Ucto(WorkflowComponent):
 
     #Setup a workflow chain manually
     def setup(self, workflow, input_feeds):
-        #obtain the input
+        #input_feeds will be a dictionary of format_id => output_slot 
 
         #set up the lower caser and feed the input to it
         lowercaser = workflow.new_task('lowercaser',LowercaseText)
