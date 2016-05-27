@@ -2,7 +2,7 @@ import os
 import logging
 import glob
 from luigi import Parameter, BoolParameter
-from luiginlp.engine import Task, TargetInfo, WorkflowComponent, registercomponent, InputComponent, Parallel, run, ComponentParameters, InputFormat
+from luiginlp.engine import Task, TargetInfo, StandardWorkflowComponent, registercomponent, InputComponent, Parallel, run, ComponentParameters, InputFormat
 from luiginlp.util import replaceextension, DirectoryHandler
 from luiginlp.modules.pdf import Pdf2images
 from luiginlp.modules.folia import Foliacat, FoliaHOCR
@@ -27,7 +27,7 @@ class TesseractOCR_tiff2hocr(Task):
         )
 
 @registercomponent
-class OCR_singlepage(WorkflowComponent):
+class OCR_singlepage(StandardWorkflowComponent):
     language = Parameter()
     tiff_extension=Parameter(default='tif')
 
@@ -59,7 +59,7 @@ class TesseractOCR_document(Task):
 
 
 @registercomponent
-class ConvertToTiffDir(WorkflowComponent):
+class ConvertToTiffDir(StandardWorkflowComponent):
     """Convert input to a collection of TIFF images"""
 
     def autosetup(self):
@@ -69,7 +69,7 @@ class ConvertToTiffDir(WorkflowComponent):
         return InputFormat(self, format_id='pdf',extension='pdf')
 
 @registercomponent
-class OCR_document(WorkflowComponent):
+class OCR_document(StandardWorkflowComponent):
 
     language = Parameter()
 
@@ -87,7 +87,7 @@ class OCR_document(WorkflowComponent):
 
 
 @registercomponent
-class OCR_folia(WorkflowComponent):
+class OCR_folia(StandardWorkflowComponent):
     """OCR with FoLiA output"""
     language = Parameter()
 

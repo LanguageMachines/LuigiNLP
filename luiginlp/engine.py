@@ -98,8 +98,6 @@ class InputFormat:
 class WorkflowComponent(sciluigi.WorkflowTask):
     """A workflow component"""
 
-    inputfile = luigi.Parameter()
-
     @classmethod
     def inherit_parameters(cls, ChildClass):
         for key in dir(ChildClass):
@@ -180,7 +178,7 @@ class WorkflowComponent(sciluigi.WorkflowTask):
                 pass #try next one
 
         #input was not handled, raise error
-        raise InvalidInput("Unable to handle input " + self.inputfile)
+        raise InvalidInput("Unable to handle input")
 
     def workflow(self):
         input_feeds = self.setup_input(self)
@@ -236,6 +234,11 @@ class Task(sciluigi.Task):
                 attr = getattr(ChildClass, key)
                 if isinstance(attr,luigi.Parameter) and not hasattr(Class, key):
                     setattr(Class,key, attr)
+
+class StandardWorkflowComponent(sciluigi.WorkflowTask):
+    """A workflow component that takes one inputfile"""
+
+    inputfile = luigi.Parameter()
 
 class TargetInfo(sciluigi.TargetInfo):
     pass

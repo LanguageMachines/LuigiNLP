@@ -1,6 +1,6 @@
 import logging
 from luigi import Parameter, BoolParameter
-from luiginlp.engine import Task, TargetInfo, registercomponent, WorkflowComponent, Inputcomponent, InputFormat
+from luiginlp.engine import Task, TargetInfo, registercomponent, StandardWorkflowComponent, Inputcomponent, InputFormat
 from luiginlp.util import replaceextension
 from luiginlp.modules.folia import ConvertToFoLiA
 
@@ -68,7 +68,7 @@ class Ucto_folia2folia(Task):
 #################################################################################################################
 
 @registercomponent
-class Ucto(WorkflowComponent):
+class Ucto(StandardWorkflowComponent):
     """A workflow component for Ucto"""
 
     skip = Parameter(default="") #A parameter for the workflow, will be passed on to the tasks

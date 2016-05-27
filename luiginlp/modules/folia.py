@@ -3,7 +3,7 @@ import logging
 import glob
 import natsort
 from luigi import Parameter, BoolParameter
-from luiginlp.engine import Task, TargetInfo, InputFormat, WorkflowComponent, registercomponent
+from luiginlp.engine import Task, TargetInfo, InputFormat, StandardWorkflowComponent, registercomponent
 from luiginlp.util import replaceextension
 from luiginlp.modules.openconvert import OpenConvert_folia
 from luiginlp.inputs import TEIInput, WordInput, ReStructuredTextInput,AlpinoDocDirInput
@@ -11,7 +11,7 @@ from luiginlp.inputs import TEIInput, WordInput, ReStructuredTextInput,AlpinoDoc
 log = logging.getLogger('mainlog')
 
 @registercomponent
-class ConvertToFoLiA(WorkflowComponent):
+class ConvertToFoLiA(StandardWorkflowComponent):
     def accepts(self):
         return (
             InputFormat(self, format_id='tei', extension='tei.xml'),

@@ -2,7 +2,7 @@ import logging
 import glob
 import natsort
 from luigi import Parameter, BoolParameter
-from luiginlp.engine import Task, TargetInfo, WorkflowComponent
+from luiginlp.engine import Task, TargetInfo, StandardWorkflowComponent
 from luiginlp.util import replaceextension, DirectoryHandler
 
 log = logging.getLogger('mainlog')

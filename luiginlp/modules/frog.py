@@ -1,7 +1,7 @@
 import os
 import logging
 from luigi import Parameter, BoolParameter
-from luiginlp.engine import Task, TargetInfo, InputComponent, InputFormat, WorkflowComponent, registercomponent
+from luiginlp.engine import Task, TargetInfo, InputComponent, InputFormat, StandardWorkflowComponent, registercomponent
 from luiginlp.util import replaceextension
 from luiginlp.modules.folia import ConvertToFoLiA
 
@@ -58,7 +58,7 @@ class Frog_folia2folia(Task):
 #################################################################################################################
 
 @registercomponent
-class Frog(WorkflowComponent):
+class Frog(StandardWorkflowComponent):
     """A workflow component for Frog"""
 
     skip = Parameter(default="") #A parameter for the workflow, will be passed on to the tasks
