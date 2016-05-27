@@ -235,7 +235,7 @@ class Task(sciluigi.Task):
                 if isinstance(attr,luigi.Parameter) and not hasattr(Class, key):
                     setattr(Class,key, attr)
 
-class StandardWorkflowComponent(sciluigi.WorkflowTask):
+class StandardWorkflowComponent(WorkflowComponent):
     """A workflow component that takes one inputfile"""
 
     inputfile = luigi.Parameter()
