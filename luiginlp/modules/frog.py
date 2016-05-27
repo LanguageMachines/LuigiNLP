@@ -78,15 +78,15 @@ class Frog(WorkflowComponent):
     #Commented out the below setup() method because autosetup generates this code automatically now
     #Leaving it here as a reference, as autosetup won't suffice for more complex workflows or when slot/parameter mappings are needed
 
-    #def setup(self, workflow):   
+    #def setup(self, workflow, input_feeds):   
     #    """The actual workflow specification"""
     #    #setup the input, invokes dependency workflows when needed
-    #    input_type, input_slot = self.setup_input(workflow)
-    #    if input_type == 'txt':
-    #        frog = workflow.new_task('frog', Frog_txt2folia,skip=self.skip ) #add a task, passing parameters
-    #        frog.in_txt = input_slot #set the input slot of the task to that of the workflow component
-    #    elif input_type == 'folia':
-    #        frog = workflow.new_task('frog', Frog_folia2folia,skip=self.skip ) #add a task, passing parameters
-    #        frog.in_folia = input_slot #set the input slot of the task to that of the workflow component
-    #    return 'folia', frog #return the type of output  and the last task of the workflow (mandatory!), the last task must have an out_* slot named as specified here.
+    #    for input_type, input_slot in input_feeds.items()
+    #       if input_type == 'txt':
+    #            frog = workflow.new_task('frog', Frog_txt2folia,skip=self.skip ) #add a task, passing parameters
+    #            frog.in_txt = input_slot #set the input slot of the task to that of the workflow component
+    #       elif input_type == 'folia':
+    #            frog = workflow.new_task('frog', Frog_folia2folia,skip=self.skip ) #add a task, passing parameters
+    #            frog.in_folia = input_slot #set the input slot of the task to that of the workflow component
+    #       return frog #return the last task of the workflow (mandatory!)
 

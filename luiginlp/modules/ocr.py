@@ -91,13 +91,12 @@ class OCR_folia(WorkflowComponent):
     """OCR with FoLiA output"""
     language = Parameter()
 
-    def setup(self, workflow):
-        input_format_id, input_slot = self.setup_input(workflow)
+    def setup(self, workflow, input_feeds):
         foliahocr = workflow.new_task('foliahocr', FoliaHOCR)
-        foliahocr.in_hocrdir = input_slot
+        foliahocr.in_hocrdir = input_feeds['hocrdir']
         foliacat = workflow.new_task('foliacat', Foliacat)
         foliacat.in_foliadir = foliahocr.out_foliadir
-        return 'folia', foliacat
+        return foliacat
 
     def accepts(self):
         """Returns a tuple of all the initial inputs and other workflows this component accepts as input (a disjunction, only one will be selected)"""

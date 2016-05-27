@@ -20,21 +20,21 @@ class ConvertToFoLiA(WorkflowComponent):
             InputFormat(self, format_id='alpinodocdir', extension='alpinodocdir',directory=True),
         )
 
-    def setup(self, workflow):
-        input_format_id, input_slot = self.setup_input(workflow)
-        if input_format_id in ('docx', 'tei'):
-            #Input is something OpenConvert can handle: convert to FoLiA first
-            openconvert = workflow.new_task('openconvert',OpenConvert_folia,from_format=input_format_id)
-            openconvert.in_any = input_slot
-            return 'folia', openconvert #always return last task
-        elif input_format_id == 'rst':
-            rst2folia = workflow.new_task('rst2folia',Rst2folia)
-            rst2folia.in_rst = input_slot
-            return 'folia', rst2folia #always return last task
-        elif input_format_id == 'alpinodocdir':
-            alpino2folia = workflow.new_task('alpino2folia',Alpino2folia)
-            alpino2folia.in_alpinodocdir = input_slot
-            return 'folia',  alpino2folia #always return last task
+    def setup(self, workflow, input_feeds):
+        for input_format_id, input_feed in input_feeds.items():
+            if input_format_id in ('docx','tei'):
+                #Input is something OpenConvert can handle: convert to FoLiA first
+                openconvert = workflow.new_task('openconvert',OpenConvert_folia,from_format=input_format_id)
+                openconvert.in_any = input_feed
+                return openconvert #always return last task
+            elif input_format_id == 'rst':
+                rst2folia = workflow.new_task('rst2folia',Rst2folia)
+                rst2folia.in_rst = input_feed
+                return rst2folia #always return last task
+            elif input_format_id == 'alpinodocdir':
+                alpino2folia = workflow.new_task('alpino2folia',Alpino2folia)
+                alpino2folia.in_alpinodocdir = input_feed
+                return alpino2folia #always return last task
 
 
 class Rst2folia(Task):
@@ -84,7 +84,7 @@ class FoliaHOCR(Task):
     """Converts a directory of hocr files to a directory of FoLiA files"""
     executable = "FoLiA-hocr"
 
-    threads = Parameter(threads=1)
+    threads = Parameter(default=1)
 
     in_hocrdir = None
 

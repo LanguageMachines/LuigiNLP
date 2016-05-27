@@ -334,21 +334,20 @@ class Ucto(WorkflowComponent):
         )
 
     #Setup a workflow chain manually
-    def setup(self, workflow):
+    def setup(self, workflow, input_feeds):
         #obtain the input
-        input_format_id, input_slot = self.setup_input(workflow)
 
         #set up the lower caser and feed the input to it
         lowercaser = workflow.new_task('lowercaser',LowercaseText)
-        lowercaser.in_txt = input_slot
+        lowercaser.in_txt = input_feeds['txt']
 
         #set up ucto and feed the output of the lower caser to it
         #explicitly pass any parameters we want to propagate
         ucto = workflow.new_task('ucto', Ucto_txt2tok, language=self.language) 
         ucto.in_txt = lowercaser.out_txt
 
-        #always return the output format id and the last task
-        return 'txt', ucto
+        #always return the last task(s)
+        return ucto
 ```
 
 

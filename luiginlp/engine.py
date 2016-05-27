@@ -107,12 +107,15 @@ class WorkflowComponent(sciluigi.WorkflowTask):
             if isinstance(attr,luigi.Parameter) and not hasattr(cls,key):
                 setattr(cls,key, attr)
 
-    def setup(self,workflow):
+    def setup(self,workflow, input_feeds):
         if hasattr(self, 'autosetup'):
-            input_type, input_slot = self.setup_input(workflow)
-            autosetup = self.autosetup()
-            if not isinstance(autosetup, (list, tuple)): autosetup = (autosetup,)
-            for TaskClass in autosetup:
+            input_feeds = self.setup_input(workflow)
+            if len(input_feeds) > 1:
+                raise AutoSetupError("Autosetup only works for single input/output tasks for now")
+            configuration = self.autosetup()
+            input_type, input_slot = list(input_feeds.items())[0]
+            if not isinstance(configuration, (list, tuple)): configuration = (configuration,)
+            for TaskClass in configuration:
                 if not inspect.isclass(TaskClass) or not issubclass(TaskClass,Task):
                     raise AutoSetupError("AutoSetup expected a Task class, got " + str(type(TaskClass)))
                 if hasattr(TaskClass, 'in_' + input_type):
@@ -123,10 +126,14 @@ class WorkflowComponent(sciluigi.WorkflowTask):
                                 passparameters[key] = getattr(self,key)
                     task = workflow.new_task(TaskClass.__name__, TaskClass,**passparameters)
                     setattr(task, 'in_' + input_type, input_slot)
+                    found = False
                     for key in dir(TaskClass):
                         if key.startswith('out_'):
-                            return key[4:], task
-                    raise AutoSetupError("No output slots found on " + TaskClass.__name__)
+                            found = True
+                    if not found:
+                        raise AutoSetupError("No output slots found on " + TaskClass.__name__)
+                    else:
+                        return task
             raise AutoSetupError("No matching input slots found on specified task (looking for " + input_type + ")")
         else:
             raise NotImplementedError("Override the setup method for your workflow " + self.__class__.__name__ + " or set autosetup")
@@ -138,31 +145,49 @@ class WorkflowComponent(sciluigi.WorkflowTask):
         for input in accepts: #pylint: disable=redefined-builtin
             if isinstance(input, InputFormat):
                 if input.valid:
-                    return input.format_id, input.task(workflow).out_default
+                    return { input.format_id: input.task(workflow).out_default }
                 else:
                     continue
             elif isinstance(input, InputComponent):
                 swf = input.Class(*input.args, **input.kwargs)
             elif inspect.isclass(input) and issubclass(input, WorkflowComponent):
                 #not encapsulated in InputWorkflow yet, do now
-                iwf = InputWorkflow(self, input)
+                iwf = InputComponent(self, input)
                 swf = iwf.Class(*input.args, **input.kwargs)
             else:
                 raise TypeError("Invalid element in accepts(): " + str(type(input)))
 
             try:
-                inputtype, inputtask = swf.setup(workflow)
-                return inputtype, getattr(inputtask, 'out_' + inputtype)
+                input_feeds = swf.setup_input(workflow)
+                inputtasks = swf.setup(workflow, input_feeds)
+                input_feeds = {} #reset
+                if isinstance(inputtasks, Task): inputtasks = (inputtasks,)
+                for inputtask in inputtasks:
+                    if not isinstance(inputtask, Task):
+                        raise TypeError("setup() did not return a Task or a sequence of Tasks")
+                    for attrname in dir(inputtask):
+                        if attrname[:4] == 'out_':
+                            format_id = attrname[4:]
+                            if format_id in input_feeds:
+                                if isinstance(input_feeds[format_id], list):
+                                    input_feeds[format_id] += [getattr(inputtask, attrname)]
+                                else:
+                                    input_feeds[format_id] = [input_feeds[format_id], getattr(inputtask, attrname)]
+                            else:
+                                input_feeds[format_id] = getattr(inputtask, attrname)
+                return input_feeds
             except InvalidInput:
                 pass #try next one
 
         #input was not handled, raise error
         raise InvalidInput("Unable to handle input " + self.inputfile)
 
-
     def workflow(self):
-        outputtype, task = self.setup(self)
-        return task
+        input_feeds = self.setup_input(self)
+        output_task = self.setup(self, input_feeds)
+        if output_task is None:
+            raise ValueError("Workflow setup() did not return a valid last task (or sequence of tasks), got " + str(type(output_task)))
+        return output_task
 
 class Task(sciluigi.Task):
     def ex(self, *args, **kwargs):
