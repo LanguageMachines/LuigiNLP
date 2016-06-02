@@ -196,7 +196,7 @@ class WorkflowComponent(sciluigi.WorkflowTask):
                 if isinstance(attr,luigi.Parameter) and key not in kwargs and hasattr(self,key):
                     kwargs[key] = getattr(self,key)
             del kwargs['autopass']
-        super().new_task(instance_name, cls, **kwargs)
+        return super().new_task(instance_name, cls, **kwargs)
 
 class Task(sciluigi.Task):
     def ex(self, *args, **kwargs):
