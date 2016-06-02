@@ -50,6 +50,39 @@ class Rst2folia(Task):
             docid=os.path.basename(self.in_rst().path).split('.')[0], #first component of input filename (up to first period) will be FoLiA ID
         )
 
+class Folia2html(Task):
+    executable = 'folia2html' #external executable (None if n/a)
+
+    in_folia = None #will be linked to an out_* slot of another module in the workflow specification
+
+    def out_html(self):
+        return TargetInfo(self, replaceextension(self.in_folia().path, '.folia.xml','.html'))
+
+    def run(self):
+        self.ex(self.in_folia().path,
+            o=self.out_html().path,
+        )
+
+class Folia2txt(Task):
+    executable = 'folia2txt' #external executable (None if n/a)
+
+    sentenceperline = BoolParameter(default=False)
+    paragraphperline = BoolParameter(default=False)
+    retaintokenisation = BoolParameter(default=False)
+
+    in_folia = None #will be linked to an out_* slot of another module in the workflow specification
+
+    def out_html(self):
+        return TargetInfo(self, replaceextension(self.in_folia().path, '.folia.xml','.txt'))
+
+    def run(self):
+        self.ex(self.in_folia().path,
+            o=self.out_html().path,
+            s=self.sentenceperline,
+            p=self.paragraphperline,
+            t=self.retaintokenisation
+        )
+
 class Alpino2folia(Task):
     executable = 'alpino2folia'
 
