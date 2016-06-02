@@ -341,14 +341,18 @@ class Ucto(StandardWorkflowComponent):
         lowercaser = workflow.new_task('lowercaser',LowercaseText)
         lowercaser.in_txt = input_feeds['txt']
 
-        #set up ucto and feed the output of the lower caser to it
-        #explicitly pass any parameters we want to propagate
+        #set up ucto and feed the output of the lower caser to it.
+        #we explicitly pass any parameters we want to propagate
+        #if you instead want to implicitly pass all parameters with matching names
+        #between component and task, just set keyword argument autopass=True
         ucto = workflow.new_task('ucto', Ucto_txt2tok, language=self.language) 
         ucto.in_txt = lowercaser.out_txt
 
         #always return the last task(s)
         return ucto
 ```
+
+
 
 
 

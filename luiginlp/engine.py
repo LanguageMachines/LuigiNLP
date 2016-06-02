@@ -99,11 +99,12 @@ class WorkflowComponent(sciluigi.WorkflowTask):
     """A workflow component"""
 
     @classmethod
-    def inherit_parameters(cls, ChildClass):
-        for key in dir(ChildClass):
-            attr = getattr(ChildClass, key)
-            if isinstance(attr,luigi.Parameter) and not hasattr(cls,key):
-                setattr(cls,key, attr)
+    def inherit_parameters(cls, *ChildClasses):
+        for Childlass in ChildClasses:
+            for key in dir(ChildClass):
+                attr = getattr(ChildClass, key)
+                if isinstance(attr,luigi.Parameter) and not hasattr(cls,key):
+                    setattr(cls,key, attr)
 
     def setup(self,workflow, input_feeds):
         if hasattr(self, 'autosetup'):
@@ -187,6 +188,16 @@ class WorkflowComponent(sciluigi.WorkflowTask):
             raise ValueError("Workflow setup() did not return a valid last task (or sequence of tasks), got " + str(type(output_task)))
         return output_task
 
+    def new_task(self, instance_name, cls, **kwargs):
+        #automatically inherit parameters
+        if 'autopass' in kwargs and kwargs['autopass']:
+            for key in dir(cls):
+                attr = getattr(cls, key)
+                if isinstance(attr,luigi.Parameter) and key not in kwargs and hasattr(self,key):
+                    kwargs[key] = getattr(self,key)
+            del kwargs['autopass']
+        super().new_task(instance_name, cls, **kwargs)
+
 class Task(sciluigi.Task):
     def ex(self, *args, **kwargs):
         if not hasattr(self,'executable'):
@@ -224,6 +235,10 @@ class Task(sciluigi.Task):
             cmd += ' ' + ' '.join(opts)
         if args:
             cmd += ' ' + ' '.join(args)
+        if '__stdout_to' in kwargs:
+            cmd += ' > ' + shellsafe(kwargs['__stdout_to'])
+        if '__stderr_to' in kwargs:
+            cmd += ' 2> ' + shellsafe(kwargs['__stderr_to'])
         log.info("Running " + self.__class__.__name__ + ': ' + cmd)
         super(Task, self).ex(cmd)
 
