@@ -6,7 +6,6 @@ from luigi import Parameter, BoolParameter
 from luiginlp.engine import Task, TargetInfo, InputFormat, StandardWorkflowComponent, registercomponent
 from luiginlp.util import replaceextension, DirectoryHandler
 from luiginlp.modules.openconvert import OpenConvert_folia
-from luiginlp.inputs import TEIInput, WordInput, ReStructuredTextInput,AlpinoDocDirInput
 
 log = logging.getLogger('mainlog')
 
