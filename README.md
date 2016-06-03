@@ -352,9 +352,26 @@ class Ucto(StandardWorkflowComponent):
         return ucto
 ```
 
+Dynamic workflows aka Inception
+---------------------------------
 
+Workflows are static in the sense that based on the format of the input file
+and all given parameters, all workflow components and tasks are assembled
+deterministically. This means that, within a components ``setup()`` method, it
+is not possible to inspect input/intermediate files nor adjust the flow based
+on file contents.
 
+At times, however, more dynamic workflows are needed. In such cases, the common
+theme is that input data has to be inspected and decisions made accordingly.
+The **only** stage at which input files can be inspected is in a task's
+``run()`` method. Fortunately, there are facilities here to implement more
+dynamic workflows, a task's ``run()`` method is allowd to **yield** (in the
+Python sense) a list of other tasks that it depends on.
 
+A good example would be if we create a new tokenisation component that does not
+just take an input file, but  takes a directory containing input files. 
+
+(...TODO... finish this section)
 
 Plans/TODO
 -------------
