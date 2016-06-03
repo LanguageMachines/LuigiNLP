@@ -1,13 +1,13 @@
 import os
-import logging
 import glob
+import sys
 from luigi import Parameter, BoolParameter
 from luiginlp.engine import Task, TargetInfo, StandardWorkflowComponent, registercomponent, InputComponent, Parallel, run, ComponentParameters, InputFormat
-from luiginlp.util import replaceextension, DirectoryHandler
+from luiginlp.util import replaceextension, DirectoryHandler, getlog
 from luiginlp.modules.pdf import Pdf2images
 from luiginlp.modules.folia import Foliacat, FoliaHOCR
 
-log = logging.getLogger('mainlog')
+log = getlog()
 
 class TesseractOCR_tiff2hocr(Task):
     """Does OCR on a TIFF image, outputs a hOCR file"""
@@ -52,15 +52,19 @@ class TesseractOCR_document(Task):
             #gather input files
             inputfiles = [ filename for filename in glob.glob(self.in_tiffdir().path + '/*.' + self.tiff_extension) ]
             #inception: we run the workflow system with a new (sub)-workflow (luiginlp.run)
-            run(Parallel(component='OCR_singlepage', inputfiles=','.join(inputfiles), component_parameters=ComponentParameters(language=self.language, tiff_extension=self.tiff_extension)))
+            log.info("Invoking run")
+            for inputfile in inputfiles:
+                yield OCR_singlepage(inputfile=inputfile,language=self.language,tiff_extension=self.tiff_extension)
+            #yield Parallel(component='OCR_singlepage', inputfiles=','.join(inputfiles), component_parameters=ComponentParameters(language=self.language, tiff_extension=self.tiff_extension))
             #collect all output files
+            log.info("Collecting output")
             dirhandler.collectoutput(self.in_tiffdir().path + '/*.hocr')
 
 
 
 @registercomponent
-class ConvertToTiffDir(StandardWorkflowComponent):
-    """Convert input to a collection of TIFF images"""
+class ExtractPages(StandardWorkflowComponent):
+    """Convert input document to a collection of TIFF images"""
 
     def autosetup(self):
         return Pdf2images
@@ -80,7 +84,7 @@ class OCR_document(StandardWorkflowComponent):
         """Returns a tuple of all the initial inputs and other workflows this component accepts as input (a disjunction, only one will be selected)"""
         return (
             InputFormat(self, format_id='tiffdir', extension='tiffdir', directory=True),
-            InputComponent(self, ConvertToTiffDir)
+            InputComponent(self, ExtractPages)
         )
 
 

@@ -1,11 +1,10 @@
 import os
-import logging
 from luigi import Parameter, BoolParameter
 from luiginlp.engine import Task, TargetInfo, InputComponent, InputFormat, StandardWorkflowComponent, registercomponent
-from luiginlp.util import replaceextension
+from luiginlp.util import replaceextension, getlog
 from luiginlp.modules.folia import ConvertToFoLiA
 
-log = logging.getLogger('mainlog')
+log = getlog()
 
 
 class Frog_txt2folia(Task):

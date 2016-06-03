@@ -1,6 +1,7 @@
 import os
 import shutil
 import glob
+import logging
 
 DISALLOWINSHELLSAFE = ('|','&',';','!','<','>','{','}','`','\n','\r','\t')
 
@@ -73,5 +74,8 @@ class DirectoryHandler:
         for file in glob.glob(mask):
             shutil.move(file, self.directory)
 
+
+def getlog():
+    return logging.getLogger('sciluigi-interface')
 
 

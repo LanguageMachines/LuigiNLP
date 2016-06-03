@@ -5,9 +5,9 @@ import logging
 import inspect
 import argparse
 import importlib
-from luiginlp.util import shellsafe
+from luiginlp.util import shellsafe, getlog
 
-log = logging.getLogger('mainlog')
+log = getlog()
 
 INPUTFORMATS = []
 COMPONENTS = []
@@ -179,7 +179,7 @@ class WorkflowComponent(sciluigi.WorkflowTask):
                 pass #try next one
 
         #input was not handled, raise error
-        raise InvalidInput("Unable to handle input")
+        raise InvalidInput("Unable to find an entry point for supplied input")
 
     def workflow(self):
         input_feeds = self.setup_input(self)
@@ -239,7 +239,6 @@ class Task(sciluigi.Task):
             cmd += ' > ' + shellsafe(kwargs['__stdout_to'])
         if '__stderr_to' in kwargs:
             cmd += ' 2> ' + shellsafe(kwargs['__stderr_to'])
-        log.info("Running " + self.__class__.__name__ + ': ' + cmd)
         super(Task, self).ex(cmd)
 
     @classmethod
@@ -287,25 +286,31 @@ class Parallel(sciluigi.WorkflowTask):
         return tasks
 
 def run(*args, **kwargs):
+    log.info("Starting workflow run")
     if 'local_scheduler' in kwargs:
         if not args:
             luigi.run(**kwargs)
         else:
             success = luigi.build(args,**kwargs)
             if not success:
+                log.error("There were errors in scheduling the workflow")
                 raise SchedulingError("There were errors in scheduling the workflow")
+            else:
+                log.info("Workflow run completed")
     else:
         if not args:
             luigi.run(local_scheduler=True,**kwargs)
         else:
             success = luigi.build(args,local_scheduler=True,**kwargs)
             if not success:
+                log.error("There were errors in scheduling the workflow")
                 raise SchedulingError("There were errors in scheduling the workflow")
+            else:
+                log.info("Workflow run completed")
 
 def run_cmdline(TaskClass,**kwargs):
     if 'local_scheduler' in kwargs:
         local_scheduler = kwargs['local_scheduler']
-        return local_scheduler
     else:
         local_scheduler=True
     if 'module' in kwargs:
@@ -316,7 +321,10 @@ def run_cmdline(TaskClass,**kwargs):
         if inspect.isclass(value):
             value = value.__name__
         cmdline_args.append('--' + key + ' ' + str(shellsafe(value)))
-    luigi.run(main_task_cls=TaskClass,cmdline_args=' '.join(cmdline_args), local_scheduler=local_scheduler)
+    kwargs = {}
+    if local_scheduler:
+        kwargs['local_scheduler'] = True
+    luigi.run(main_task_cls=TaskClass,cmdline_args=' '.join(cmdline_args), **kwargs)
 
 
 

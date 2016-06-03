@@ -1,10 +1,9 @@
-import logging
 from luigi import Parameter, BoolParameter
 from luiginlp.engine import Task, TargetInfo, registercomponent, StandardWorkflowComponent, Inputcomponent, InputFormat
-from luiginlp.util import replaceextension
+from luiginlp.util import replaceextension, getlog
 from luiginlp.modules.folia import ConvertToFoLiA
 
-log = logging.getLogger('mainlog')
+log = getlog()
 
 class Ucto_txt2folia(Task):
     executable = 'ucto' #external executable (None if n/a)
