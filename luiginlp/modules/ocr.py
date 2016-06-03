@@ -51,13 +51,11 @@ class TesseractOCR_document(Task):
         with DirectoryHandler(self.out_hocrdir().path) as dirhandler:
             #gather input files
             inputfiles = [ filename for filename in glob.glob(self.in_tiffdir().path + '/*.' + self.tiff_extension) ]
-            #inception: we run the workflow system with a new (sub)-workflow (luiginlp.run)
-            log.info("Invoking run")
+            #inception aka dynamic dependencies: we yield tasks to perform which could not have been predicted statically
+            #in this case we run the OCR_singlepage component for each input file in the directory
             for inputfile in inputfiles:
                 yield OCR_singlepage(inputfile=inputfile,language=self.language,tiff_extension=self.tiff_extension)
-            #yield Parallel(component='OCR_singlepage', inputfiles=','.join(inputfiles), component_parameters=ComponentParameters(language=self.language, tiff_extension=self.tiff_extension))
             #collect all output files
-            log.info("Collecting output")
             dirhandler.collectoutput(self.in_tiffdir().path + '/*.hocr')
 
 
