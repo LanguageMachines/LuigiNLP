@@ -54,8 +54,8 @@ class TesseractOCR_document(Task):
         return TargetInfo(self, replaceextension(self.in_tiffdir().path, '.tiffdir','.hocrdir'))
 
     def run(self):
-        #Initialize output directory, will create it and tear it down on failure automatically
-        self.init_output_dir(self.out_hocrdir().path)
+        #Set up the output directory, will create it and tear it down on failure automatically
+        self.setup_output_dir(self.out_hocrdir().path)
 
         #gather input files
         inputfiles = [ filename for filename in glob.glob(self.in_tiffdir().path + '/*.' + self.tiff_extension) ]
