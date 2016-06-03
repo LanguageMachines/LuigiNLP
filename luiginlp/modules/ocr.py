@@ -1,6 +1,7 @@
 import os
 import glob
 import sys
+import shutil
 from luigi import Parameter, BoolParameter
 from luiginlp.engine import Task, TargetInfo, StandardWorkflowComponent, registercomponent, InputComponent, Parallel, run, ComponentParameters, InputFormat
 from luiginlp.util import replaceextension, DirectoryHandler, getlog
@@ -9,16 +10,20 @@ from luiginlp.modules.folia import Foliacat, FoliaHOCR
 
 log = getlog()
 
-class TesseractOCR_tiff2hocr(Task):
+class Tesseract(Task):
     """Does OCR on a TIFF image, outputs a hOCR file"""
     executable = 'tesseract'
 
     language = Parameter()
+    outputdir = Parameter(default="")
 
     in_tiff = None #input slot
 
     def out_hocr(self):
-        return TargetInfo(self, replaceextension(self.in_tiff().path, ('.tif','.tiff'),'.hocr'))
+        if self.outputdir and self.outputdir != '.':
+            return TargetInfo(self, os.path.join(self.outputdir, os.path.basename(replaceextension(self.in_tiff().path, ('.tif','.tiff'),'.hocr'))))
+        else:
+            return TargetInfo(self, replaceextension(self.in_tiff().path, ('.tif','.tiff'),'.hocr'))
 
     def run(self):
         self.ex(self.in_tiff().path, self.out_hocr().path[:-5], #output path without hocr extension (-5), Tesseract adds it already
@@ -30,9 +35,10 @@ class TesseractOCR_tiff2hocr(Task):
 class OCR_singlepage(StandardWorkflowComponent):
     language = Parameter()
     tiff_extension=Parameter(default='tif')
+    outputdir = Parameter(default="")
 
     def autosetup(self):
-        return TesseractOCR_tiff2hocr
+        return Tesseract
 
     def accepts(self):
         return InputFormat(self, format_id='tiff', extension=self.tiff_extension, directory=True),
@@ -48,15 +54,25 @@ class TesseractOCR_document(Task):
         return TargetInfo(self, replaceextension(self.in_tiffdir().path, '.tiffdir','.hocrdir'))
 
     def run(self):
-        with DirectoryHandler(self.out_hocrdir().path) as dirhandler:
-            #gather input files
-            inputfiles = [ filename for filename in glob.glob(self.in_tiffdir().path + '/*.' + self.tiff_extension) ]
-            #inception aka dynamic dependencies: we yield tasks to perform which could not have been predicted statically
-            #in this case we run the OCR_singlepage component for each input file in the directory
-            for inputfile in inputfiles:
-                yield OCR_singlepage(inputfile=inputfile,language=self.language,tiff_extension=self.tiff_extension)
-            #collect all output files
-            dirhandler.collectoutput(self.in_tiffdir().path + '/*.hocr')
+        #Make output directory
+        if not os.path.exists(self.out_hocrdir().path):
+            os.mkdir(self.out_hocrdir().path)
+
+        #gather input files
+        inputfiles = [ filename for filename in glob.glob(self.in_tiffdir().path + '/*.' + self.tiff_extension) ]
+
+        #inception aka dynamic dependencies: we yield tasks to perform which could not have been predicted statically
+        #in this case we run the OCR_singlepage component for each input file in the directory
+        yield [ OCR_singlepage(inputfile=inputfile,outputdir=self.out_hocrdir().path,language=self.language,tiff_extension=self.tiff_extension) for inputfile in inputfiles ]
+
+    def on_failure(self, exception):
+        #remove output directory if we fail
+        if os.path.exists(self.out_hocrdir().path):
+            shutil.rmtree(self.out_hocrdir().path)
+
+
+
+
 
 
 

@@ -5,6 +5,11 @@ import logging
 
 DISALLOWINSHELLSAFE = ('|','&',';','!','<','>','{','}','`','\n','\r','\t')
 
+def getlog():
+    return logging.getLogger('sciluigi-interface')
+
+log = getlog()
+
 def replaceextension(filename, oldextensions, newextension):
     if newextension[0] != '.':
         newextension = '.' + newextension
@@ -54,28 +59,37 @@ def shellsafe(s, quote="'", doescape=True):
 class DirectoryHandler:
     """DirectoryHandler abstracts for a process that output to a directory. It uses a temporary directory and renames it to the final result only when all is completed successfully"""
 
-    def __init__(self, destinationdir):
+    def __init__(self, destinationdir, persist=False):
         self.destinationdir = destinationdir
-        self.directory = destinationdir + '.tmp'
+        self.usetmp = not os.path.exists(self.destinationdir)
+        if self.usetmp:
+            self.directory = self.destinationdir + '.tmp'
+        else:
+            self.directory = self.destinationdir
+        self.persist=persist
+
+
 
     def __enter__(self):
-        if os.path.exists(self.directory):
+        log.info("Setting up directory handler " + self.directory + " -> "  + self.destinationdir)
+        if self.usetmp and os.path.exists(self.directory) and not self.persist:
             shutil.rmtree(self.directory)
         os.mkdir(self.directory)
         return self
 
     def __exit__(self, type, value, traceback):
-        if not isinstance(value, Exception):
-            os.rename(self.directory,self.destinationdir)
-        else:
-            shutil.rmtree(self.directory)
+        if self.usetmp:
+            if not isinstance(value, Exception):
+                log.info("Cleaning up directory handler " + self.destinationdir + " after success")
+                os.rename(self.directory,self.destinationdir)
+            elif not self.persist:
+                log.info("Removing directory handler " + self.directory + " after failure")
+                shutil.rmtree(self.directory)
 
     def collectoutput(self, mask):
         for file in glob.glob(mask):
             shutil.move(file, self.directory)
 
 
-def getlog():
-    return logging.getLogger('sciluigi-interface')
 
 
