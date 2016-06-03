@@ -1,10 +1,12 @@
 import sys
+import os
 import luigi
 import sciluigi
 import logging
 import inspect
 import argparse
 import importlib
+import shutil
 from luiginlp.util import shellsafe, getlog
 
 log = getlog()
@@ -199,6 +201,23 @@ class WorkflowComponent(sciluigi.WorkflowTask):
         return super().new_task(instance_name, cls, **kwargs)
 
 class Task(sciluigi.Task):
+    def init_output_dir(self, d):
+        #Make output directory
+        if os.path.exists(d):
+            pass
+        elif os.path.exists(d + '.failed'):
+            os.rename(d +'.failed',d)
+        else:
+            os.mkdir(d)
+        self.__output_dir = d
+
+    def on_failure(self, exception):
+        try:
+            if self.__output_dir and os.path.exists(self.__output_dir):
+                os.rename(self.__output_dir, self.__output_dir + '.failed')
+        except AttributeError:
+            pass
+
     def ex(self, *args, **kwargs):
         if not hasattr(self,'executable'):
             raise Exception("No executable defined for Task " + self.__class__.__name__)

@@ -124,8 +124,8 @@ class FoliaHOCR(Task):
         return TargetInfo(self, replaceextension(self.in_hocrdir().path, ('.hocrdir'),'.foliadir'))
 
     def run(self):
-        with DirectoryHandler(self.out_foliadir().path) as dirhandler:
-            self.ex(self.in_hocrdir().path,
-                    t=self.threads,
-                    O=dirhandler.directory
-            )
+        self.init_output_dir(self.out_foliadir().path)
+        self.ex(self.in_hocrdir().path,
+                t=self.threads,
+                O=self.out_foliadir().path,
+        )

@@ -54,9 +54,8 @@ class TesseractOCR_document(Task):
         return TargetInfo(self, replaceextension(self.in_tiffdir().path, '.tiffdir','.hocrdir'))
 
     def run(self):
-        #Make output directory
-        if not os.path.exists(self.out_hocrdir().path):
-            os.mkdir(self.out_hocrdir().path)
+        #Initialize output directory, will create it and tear it down on failure automatically
+        self.init_output_dir(self.out_hocrdir().path)
 
         #gather input files
         inputfiles = [ filename for filename in glob.glob(self.in_tiffdir().path + '/*.' + self.tiff_extension) ]
@@ -65,10 +64,6 @@ class TesseractOCR_document(Task):
         #in this case we run the OCR_singlepage component for each input file in the directory
         yield [ OCR_singlepage(inputfile=inputfile,outputdir=self.out_hocrdir().path,language=self.language,tiff_extension=self.tiff_extension) for inputfile in inputfiles ]
 
-    def on_failure(self, exception):
-        #remove output directory if we fail
-        if os.path.exists(self.out_hocrdir().path):
-            shutil.rmtree(self.out_hocrdir().path)
 
 
 
