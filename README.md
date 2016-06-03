@@ -118,7 +118,7 @@ Example, specify a workflow corresponding to your intended goal and an input fil
     $ luiginlp Frog --module luiginlp.modules.frog --inputfile test.rst --skip p
 
 A workflow can be run parallelised for multiple input files as well, the number
-of workers can be explicitly set:
+of workers should be explicitly set:
 
     $ luiginlp Parallel --module luiginlp.modules.frog --component Frog --inputfiles test.rst,test2.rst --workers 2 --skip p
 
