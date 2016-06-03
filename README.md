@@ -115,12 +115,12 @@ Usage
 
 Example, specify a workflow corresponding to your intended goal and an input file. Workflows may take extra parameters (``--skip`` for Frog in this case):
 
-    $ luiginlp --module luiginlp.modules.frog Frog --inputfile test.rst --skip p
+    $ luiginlp Frog --module luiginlp.modules.frog --inputfile test.rst --skip p
 
 A workflow can be run parallelised for multiple input files as well, the number
 of workers can be explicitly set:
 
-    $ luiginlp --module luiginlp.modules.frog Parallel --component Frog --inputfiles test.rst,test2.rst --workers 2 --skip p
+    $ luiginlp Parallel --module luiginlp.modules.frog --component Frog --inputfiles test.rst,test2.rst --workers 2 --skip p
 
 You can always pass component-specific parameters by using the component name
 as a prefix. For instance, the Frog component takes an option ``skip``, you can
@@ -236,7 +236,7 @@ class Ucto(StandardWorkflowComponent):
 Assuming you wrote all this in a ``mymodule.py`` file, you now can invoke this
 workflow component on a text document as follows:
 
-    $ luiginlp --module mymodule Ucto --inputfile test.txt --language en
+    $ luiginlp Ucto --module mymodule --inputfile test.txt --language en
 
 Ucto does not just support plain text input, it can also handle input in the
 [FoLiA](https://proycon.github.io/folia) format, an XML-based format for linguistic
@@ -254,7 +254,7 @@ follows:
 
 Now the workflow component will be able automatically figure out which of the tasks to run based on the supplied input, allowing us to do:
 
-    $ luiginlp --module mymodule Ucto --inputfile test.folia.xml --language en
+    $ luiginlp Ucto --module mymodule --inputfile test.folia.xml --language en
 
 What about any other file format? Ucto itself can only handle plain text or
 FoLiA. What if our input text is in PDF format, MarkDown format, or God forbid,

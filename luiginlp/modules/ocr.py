@@ -60,7 +60,7 @@ class TesseractOCR_document(Task):
         #gather input files
         inputfiles = [ filename for filename in glob.glob(self.in_tiffdir().path + '/*.' + self.tiff_extension) ]
 
-        #inception aka dynamic dependencies: we yield tasks to perform which could not have been predicted statically
+        #inception aka dynamic dependencies: we yield a list of tasks to perform which could not have been predicted statically
         #in this case we run the OCR_singlepage component for each input file in the directory
         yield [ OCR_singlepage(inputfile=inputfile,outputdir=self.out_hocrdir().path,language=self.language,tiff_extension=self.tiff_extension) for inputfile in inputfiles ]
 
