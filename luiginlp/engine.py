@@ -103,7 +103,7 @@ class WorkflowComponent(sciluigi.WorkflowTask):
 
     @classmethod
     def inherit_parameters(cls, *ChildClasses):
-        for Childlass in ChildClasses:
+        for ChildClass in ChildClasses:
             for key in dir(ChildClass):
                 attr = getattr(ChildClass, key)
                 if isinstance(attr,luigi.Parameter) and not hasattr(cls,key):
