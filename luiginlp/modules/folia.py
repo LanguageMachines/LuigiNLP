@@ -45,8 +45,7 @@ class Rst2folia(Task):
 
     def run(self):
         self.ex(self.in_rst().path, self.out_folia().path,
-            docid=os.path.basename(self.in_rst().path).split('.')[0], #first component of input filename (up to first period) will be FoLiA ID
-        )
+            docid=os.path.basename(self.in_rst().path).split('.')[0]) #first component of input filename (up to first period) will be FoLiA ID
 
 class Folia2html(Task):
     executable = 'folia2html' #external executable (None if n/a)
@@ -58,8 +57,7 @@ class Folia2html(Task):
 
     def run(self):
         self.ex(self.in_folia().path,
-            o=self.out_html().path,
-        )
+            o=self.out_html().path)
 
 class Folia2txt(Task):
     executable = 'folia2txt' #external executable (None if n/a)
@@ -78,8 +76,7 @@ class Folia2txt(Task):
             o=self.out_html().path,
             s=self.sentenceperline,
             p=self.paragraphperline,
-            t=self.retaintokenisation
-        )
+            t=self.retaintokenisation)
 
 class Alpino2folia(Task):
     executable = 'alpino2folia'
@@ -107,8 +104,7 @@ class Foliacat(Task):
         foliafiles = [ filename for filename in natsort.natsorted(glob.glob(self.in_foliadir().path + '/*.folia.xml')) ]
         self.ex(*foliafiles,
                 o=self.out_folia().path,
-                i=self.out_folia().path.split('.')[0], #first component of filename acts as document ID
-        )
+                i=self.out_folia().path.split('.')[0]) #first component of filename acts as document ID
 
 
 class FoliaHOCR(Task):
@@ -127,5 +123,4 @@ class FoliaHOCR(Task):
         self.setup_output_dir(self.out_foliadir().path)
         self.ex(self.in_hocrdir().path,
                 t=self.threads,
-                O=self.out_foliadir().path,
-        )
+                O=self.out_foliadir().path)
