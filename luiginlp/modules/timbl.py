@@ -43,8 +43,7 @@ class Timbl_train(Timbl_base):
             m=self.metric,
             w=self.weighting,
             d=self.distance,
-            __stdout_to=self.out_log().path
-        )
+            __stdout_to=self.out_log().path)
 
 class Timbl_test(Timbl_base):
     in_ibase = None #input slot
@@ -66,8 +65,7 @@ class Timbl_test(Timbl_base):
             k=self.k,
             m=self.metric,
             d=self.distance,
-            __stdout_to=self.out_log().path
-        )
+            __stdout_to=self.out_log().path)
 
 
 class Timbl_crossvalidate(Timbl_base):
@@ -88,8 +86,7 @@ class Timbl_crossvalidate(Timbl_base):
             m=self.metric,
             w=self.in_wgt().path + ':' + self.weighting,
             d=self.distance,
-            __stdout_to=self.out_log().path
-        )
+            __stdout_to=self.out_log().path)
 
 @registercomponent
 class TimblClassifier(WorkflowComponent):
@@ -98,8 +95,7 @@ class TimblClassifier(WorkflowComponent):
     def accepts(self):
         return (
             InputFormat(self, format_id='train', extension='train'),
-            InputFormat(self, format_id='test', extension='test'),
-        )
+            InputFormat(self, format_id='test', extension='test'))
 
     def setup(self, workflow, input_feeds):
         timbl_train = workflow.new_task('timbl_train',Timbl_train, autopass=True)
@@ -123,8 +119,7 @@ class TimblCVClassifier(WorkflowComponent):
     def accepts(self):
         return (
             InputFormat(self, format_id='train', extension='train'),
-            InputFormat(self, format_id='test', extension='test'),
-        )
+            InputFormat(self, format_id='test', extension='test'))
 
     def setup(self, workflow, input_feeds):
         timbl_train = workflow.new_task('timbl_train',Timbl_train, autopass=True)
