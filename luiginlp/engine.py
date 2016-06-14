@@ -21,7 +21,7 @@ def registerformat(Class):
         INPUTFORMATS.append(Class)
     return Class
 
-def registercomponent(Class):c
+def registercomponent(Class):
     assert inspect.isclass(Class) and issubclass(Class,WorkflowComponent)
     if Class not in COMPONENTS:
         COMPONENTS.append(Class)
