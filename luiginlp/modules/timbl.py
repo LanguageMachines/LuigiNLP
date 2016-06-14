@@ -80,7 +80,7 @@ class Timbl_crossvalidate(Timbl_base):
     def run(self):
         self.ex(
             i=self.in_base().path,
-            t="leave_one_out" if self.leaveoneout else "cross_validate"
+            t="leave_one_out" if self.leaveoneout else "cross_validate",
             a=self.algorithm,
             k=self.k,
             m=self.metric,
