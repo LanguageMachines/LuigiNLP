@@ -7,6 +7,7 @@ import inspect
 import argparse
 import importlib
 import shutil
+import glob
 from luiginlp.util import shellsafe, getlog
 
 log = getlog()
@@ -301,6 +302,20 @@ class Parallel(sciluigi.WorkflowTask):
         tasks = []
         ComponentClass = getcomponentclass(self.component)
         for inputfile in self.inputfiles.split(','):
+            tasks.append( self.new_task(self.component, ComponentClass, inputfile=inputfile,**self.component_parameters) )
+        return tasks
+
+class ParallelFromDir(sciluigi.WorkflowTask):
+    """Meta Workflow"""
+    directory = luigi.Parameter()
+    pattern = luigi.Parameter(default="*")
+    component = luigi.Parameter()
+    component_parameters = luigi.Parameter(default=ComponentParameters())
+
+    def workflow(self):
+        tasks = []
+        ComponentClass = getcomponentclass(self.component)
+        for inputfile in glob.glob(os.path.join(self.directory, self.pattern)):
             tasks.append( self.new_task(self.component, ComponentClass, inputfile=inputfile,**self.component_parameters) )
         return tasks
 
