@@ -30,8 +30,7 @@ class Frog_txt2folia(Task):
             X=self.out_folia().path, #the path of the output file (accessed through the output slot)
             id=os.path.basename(self.in_txt().path).split('.')[0], #first component of input filename (up to first period) will be FoLiA ID
             skip=self.skip if self.skip else None,
-            n=self.tok_input_sentenceperline,
-        )
+            n=self.tok_input_sentenceperline)
 
 
 class Frog_folia2folia(Task):
@@ -49,8 +48,7 @@ class Frog_folia2folia(Task):
         self.ex(
             x=self.in_folia().path,
             X=self.out_folia().path,
-            skip=self.skip if self.skip else None,
-        )
+            skip=self.skip if self.skip else None)
 
 #################################################################################################################
 # Workflow Components
