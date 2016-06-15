@@ -79,14 +79,14 @@ class InputTask(sciluigi.ExternalTask):
 class InputFormat:
     """A class that encapsulates an initial task"""
 
-    def __init__(self, workflow, format_id, extension, inputparameter='inputfile', directory=False):
+    def __init__(self, workflow, format_id, extension, inputparameter='inputfile', directory=False, force=False):
         assert isinstance(workflow,WorkflowComponent)
         self.inputtask = None
         self.valid = False
         self.format_id = format_id
         self.extension = extension
         self.directory = directory
-        if getattr(workflow,inputparameter).endswith('.' + extension):
+        if getattr(workflow,inputparameter).endswith('.' + extension) or force:
             self.basename =  getattr(workflow,inputparameter)[:-(len(extension) + 1)]
             self.valid = True
 
@@ -100,6 +100,9 @@ class InputFormat:
 
 class WorkflowComponent(sciluigi.WorkflowTask):
     """A workflow component"""
+
+    startcomponent = luigi.Parameter(default="")
+    inputslot = luigi.Parameter(default="")
 
     @classmethod
     def inherit_parameters(cls, *ChildClasses):
@@ -145,8 +148,8 @@ class WorkflowComponent(sciluigi.WorkflowTask):
         accepts = self.accepts()
         if not isinstance(accepts, (list, tuple)): accepts = (accepts,)
         for input in accepts: #pylint: disable=redefined-builtin
-            if isinstance(input, InputFormat):
-                if input.valid:
+            if isinstance(input, InputFormat) and (not self.startcomponent or self.startcomponent == self.__class__.__name__):
+                if input.valid and (not self.inputslot or self.inputslot == input.format_id):
                     return { input.format_id: input.task(workflow).out_default }
                 else:
                     continue
