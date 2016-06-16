@@ -508,7 +508,6 @@ Plans/TODO
 -------------
 
 * Expand autosetup to build longer sequential chains of tasks (a2b b2c c2d)
-* Support multiple components simulteanously in ``accepts()``
 * [tentative] Integration with [CLAM](https://github.com/proycon/clam) to automatically
   create webservices of workflow components
 * Further testing...
