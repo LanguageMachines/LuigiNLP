@@ -1,7 +1,7 @@
 import os
 from luigi import Parameter, BoolParameter
-from luiginlp.engine import Task, TargetInfo, InputComponent, InputFormat, StandardWorkflowComponent, registercomponent
-from luiginlp.util import replaceextension, getlog
+from luiginlp.engine import Task, InputComponent, InputFormat, StandardWorkflowComponent, registercomponent
+from luiginlp.util import getlog
 from luiginlp.modules.folia import ConvertToFoLiA
 
 log = getlog()

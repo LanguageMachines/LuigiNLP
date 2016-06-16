@@ -3,8 +3,8 @@ import glob
 import sys
 import shutil
 from luigi import Parameter, BoolParameter
-from luiginlp.engine import Task, TargetInfo, StandardWorkflowComponent, registercomponent, InputComponent, Parallel, run, ComponentParameters, InputFormat
-from luiginlp.util import replaceextension, DirectoryHandler, getlog
+from luiginlp.engine import Task, StandardWorkflowComponent, registercomponent, InputComponent, Parallel, run, ComponentParameters, InputFormat
+from luiginlp.util import getlog
 from luiginlp.modules.pdf import Pdf2images
 from luiginlp.modules.folia import Foliacat, FoliaHOCR
 
