@@ -423,9 +423,12 @@ ensuring you can always rerun the pipeline if happens to break off. (in
 technical terms, this preserves idempotency). 
 
 Mext, we construct a list of all the txt files in the directory. We use this
-list to yield a list of components to run, one component for each input file.
+list to yield a **list** of components to run, one component for each input file.
 Now, when the task's ``run()`` method is called, a series of components will be
 scheduled and run **in parallel** (up to the number of workers).
+
+You may be tempted to yield the components individually one by one, but that
+won't result in parallisation, you must really yield an entire list (or tuple).
 
 Note that we added an ``outputdir`` parameter to the Ucto component which we
 hadn't implemented yet. This is necessary to ensure all individual output files
