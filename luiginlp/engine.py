@@ -6,6 +6,7 @@ import logging
 import inspect
 import argparse
 import importlib
+import itertools
 import shutil
 import glob
 from luiginlp.util import shellsafe, getlog, replaceextension
@@ -156,15 +157,11 @@ class WorkflowComponent(sciluigi.WorkflowTask):
     def setup_input(self, workflow):
         #Can we handle the input directly?
         accepts = self.accepts()
-        if isinstance(accepts, list):
-            accepts = tuple(accepts),
-        if not isinstance(accepts, tuple):
+        if not isinstance(accepts, (tuple, list)):
             accepts = (accepts,)
-        accepts += tuple(self.accepted_components)
-        for inputtuple in accepts: #pylint: disable=redefined-builtin
+        for inputtuple in itertools.chain(accepts, self.accepted_components): #pylint: disable=redefined-builtin
             input_feeds = {} #reset
             if not isinstance(inputtuple, tuple): inputtuple = (inputtuple,)
-            #print("RESET INPUT_FEEDS, INPUTTUPLE=", repr(inputtuple),file=sys.stderr)
             for input in inputtuple:
                 if isinstance(input, InputFormat) and (not self.startcomponent or self.startcomponent == self.__class__.__name__):
                     if input.valid and (not self.inputslot or self.inputslot == input.format_id):

@@ -90,6 +90,9 @@ class Timbl_leaveoneout(Timbl_base):
 class TimblClassifier(WorkflowComponent):
     """A Timbl classifier that takes training data, test data, and outputs the test data with classification"""
 
+    trainfile = Parameter()
+    testfile = Parameter()
+
     def accepts(self):
         #Note: tuple in a list, the outer list corresponds to options, while the inner tuples are conjunctions
         return [ ( InputFormat(self, format_id='train', extension='train',inputparameter='trainfile'), InputFormat(self, format_id='test', extension='test',inputparameter='testfile')) ]
