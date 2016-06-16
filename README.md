@@ -455,10 +455,49 @@ one (no parallellisation).
 Troubleshooting
 ------------------
 
-* *RuntimeError: Unfulfilled dependency at run time*: This error says
-  that the specified task or component has not delivered the output files that
-  were promised by the output slots. You should ensure all of the promised
-  files are delivered and there are no typos in the filenames/extensions.
+* *error: unrecognized argument* -- You are passing an argument that
+  is not known to the target component. Perhaps you forgot to inherit certain
+  parameters from tasks to components using ``inherit_parameters()``?
+* *RuntimeError: Unfulfilled dependency at run time* -- This error says that the
+  specified task or component has not delivered the output files that were
+  promised by the output slots. You should ensure all of the promised files are
+  delivered and there are no typos in the filenames/extensions.
+* *InvalidInput: Unable to find an entry point for supplied input* -- The
+  filename you specified can not be matched with one of the input formats. Are
+  you supplying the right file and that your target component has a possible
+  path to that input (through ``accepts()``). Either make sure it has the expected extension
+  so it is automatically detected. You may also explicitly supply an
+  ``inputslot`` parameter with the ID of the format, possibly in combination
+  with a ``startcomponent`` parameter with the name of the component you want
+  to start with. 
+* *ValueError: Workflow setup() did not return a valid last task (or sequence of
+  tasks)* or *TypeError: setup() did not return a Task or a sequence of Tasks* -- At the end of your component's ``setup()``
+  method you must return the last task instance, or a list of the last task
+  instances. Is a return statement missing?
+* *Exception: Input item is neither callable, TargetInfo, nor list: None*. --
+  All ``out_*()`` methods must return a ``TargetInfo`` instance, which is
+  usually achieved by returning whatever ``outputfrominput()`` returns. Is a
+  return statement missing in an output slot?
+* *ValueError: Inputslot .... of ..... is not connected to any output
+  slot!* -- You forgot to connect the specified input slot of the specified
+  task to an output slot (in a components ``setup()`` method). All input slots must be satisfied.
+* *ValueError: Specified inputslot for ... does not exist in ....* -- Your call
+  to ``outputfrominput()`` has a ``inputformat`` argument that does not
+  correspond to any of the input slots. If you have an input slot ``in_x``, the
+  inputformat should be ``x``.
+* *Exception: No executable defined for .....* -- You are invoking the ``ex()``
+  method to execute through the shell but the Task's class does not specify an
+  executable to run. Set ``executable = "yourexecutable"`` in the class.
+* *TypeError: Invalid element in accepts(), must be InputFormat or
+ InputComponent* -- Your component's accepts() method returns something it
+ shouldn't, you may return a list/tuple of InputFormat or InputComponent
+ instances, you may also includes tuples grouping multiple InputFormats or
+ InputComponents in case the component takes multiple input files.
+* *AutoSetupError: AutoSetup expected a Task class* -- Your components ``autosetup()`` method must return either a single Task class (not an instance) or a list/tuple of Task classes.
+* *AutoSetupError: No outputslot found on ....* -- The task you are returning in a component's ``autosetup()`` method has no output slots (one or more ``out_*()`` methods).
+* *AutoSetupError: AutoSetup only works for single input/output tasks now* -- You can not use ``autosetup()`` for components that take multiple input files, use ``setup()`` instead.
+* *AutoSetupError: No matching input slots found for the specified task*  -- Autosetup was not able to automatically connect any of the supplied input formats or input components (those in ``accept()``) to one of the tasks defined in ``autosetup()``, there is probably a mismatch between format names (outputslot using a different format id than the inputslot). Use the ``setup()`` method instead of ``autosetup()`` and connect everything explicitly there.
+* *NotImplementedError: Override the setup() or autosetup() method for your workflow component* -- Each component must define a ``setup()`` or ``autosetup()`` method, it is missing here.
 
 
 Plans/TODO

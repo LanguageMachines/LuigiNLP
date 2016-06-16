@@ -152,7 +152,7 @@ class WorkflowComponent(sciluigi.WorkflowTask):
                         return task
             raise AutoSetupError("No matching input slots found for the specified task (looking for " + input_type + " on " + TaskClass.__name__ + ")")
         else:
-            raise NotImplementedError("Override the setup method for your workflow " + self.__class__.__name__ + " or set autosetup")
+            raise NotImplementedError("Override the setup() or autosetup() method for your workflow component " + self.__class__.__name__)
 
     def setup_input(self, workflow):
         #Can we handle the input directly?
@@ -178,7 +178,7 @@ class WorkflowComponent(sciluigi.WorkflowTask):
                     iwf = InputComponent(self, input)
                     swf = iwf.Class(*input.args, **input.kwargs)
                 else:
-                    raise TypeError("Invalid element in accepts(): " + str(type(input)))
+                    raise TypeError("Invalid element in accepts(), must be Inputformat or InputComponent, got " + str(type(input)))
 
                 try:
                     new_input_feeds = swf.setup_input(workflow)
@@ -303,13 +303,13 @@ class Task(sciluigi.Task):
         """Derives the output filename from the input filename, removing the input extension and adding the output extension. Supports outputdir parameter."""
 
         if not hasattr(self,'in_' + inputformat):
-            raise ValueError("Specified inputslot for " + inputformat + " does not exist for " + self.__class__.__name__)
+            raise ValueError("Specified inputslot for " + inputformat + " does not exist in " + self.__class__.__name__)
         inputslot = getattr(self, 'in_' + inputformat)
 
         try:
             inputfilename = inputslot().path
-        except AttributeError:
-            raise ValueError("Inputslot in_" + inputformat + " on " + self.__class__.__name__ + " is not connected to any output slot!")
+        except (AttributeError, TypeError):
+            raise ValueError("Inputslot in_" + inputformat + " of " + self.__class__.__name__ + " is not connected to any output slot!")
 
         if hasattr(self,outputdirparam):
             outputdir = getattr(self,outputdirparam)
