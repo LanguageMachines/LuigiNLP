@@ -159,10 +159,10 @@ class WorkflowComponent(sciluigi.WorkflowTask):
         accepts = self.accepts()
         if not isinstance(accepts, (tuple, list)):
             accepts = (accepts,)
-        for inputtuple in itertools.chain(accepts, self.accepted_components): #pylint: disable=redefined-builtin
+        for inputtuple in itertools.chain(accepts, self.accepted_components):
             input_feeds = {} #reset
             if not isinstance(inputtuple, tuple): inputtuple = (inputtuple,)
-            for input in inputtuple:
+            for input in inputtuple: #pylint: disable=redefined-builtin
                 if isinstance(input, InputFormat) and (not self.startcomponent or self.startcomponent == self.__class__.__name__):
                     if input.valid and (not self.inputslot or self.inputslot == input.format_id):
                         input_feeds[input.format_id] = input.task(workflow).out_default

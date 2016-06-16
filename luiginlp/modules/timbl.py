@@ -58,6 +58,7 @@ class Timbl_test(Timbl_base):
     def run(self):
         self.ex(
             i=self.in_ibase().path,
+            t=self.in_test().path,
             w=self.in_wgt().path + ':' + self.weighting,
             o=self.out_timbl().path,
             a=self.algorithm,
