@@ -125,7 +125,7 @@ class WorkflowComponent(sciluigi.WorkflowTask):
         if hasattr(self, 'autosetup'):
             input_feeds = self.setup_input(workflow)
             if len(input_feeds) > 1:
-                print("Input feed from "  + self.__class__.__name__ + ": " + repr(input_feeds),file=sys.stderr)
+                #print("Input feed from "  + self.__class__.__name__ + ": ", len(input_feeds), repr(input_feeds),file=sys.stderr)
                 raise AutoSetupError("Autosetup only works for single input/output tasks for now")
             configuration = self.autosetup()
             input_type, input_slot = list(input_feeds.items())[0]
@@ -164,12 +164,15 @@ class WorkflowComponent(sciluigi.WorkflowTask):
         for inputtuple in accepts: #pylint: disable=redefined-builtin
             input_feeds = {} #reset
             if not isinstance(inputtuple, tuple): inputtuple = (inputtuple,)
+            #print("RESET INPUT_FEEDS, INPUTTUPLE=", repr(inputtuple),file=sys.stderr)
             for input in inputtuple:
                 if isinstance(input, InputFormat) and (not self.startcomponent or self.startcomponent == self.__class__.__name__):
                     if input.valid and (not self.inputslot or self.inputslot == input.format_id):
                         input_feeds[input.format_id] = input.task(workflow).out_default
+                        #print("UPDATED INPUT_FEEDS (a)", len(input_feeds), repr(input_feeds),file=sys.stderr)
                         continue
                     else:
+                        #print("BREAKING INPUT_FEEDS (a)",file=sys.stderr)
                         break
                 elif isinstance(input, InputComponent):
                     swf = input.Class(*input.args, **input.kwargs)
@@ -182,11 +185,11 @@ class WorkflowComponent(sciluigi.WorkflowTask):
 
                 try:
                     new_input_feeds = swf.setup_input(workflow)
-                    inputtasks = swf.setup(workflow, input_feeds)
+                    inputtasks = swf.setup(workflow, new_input_feeds)
+                    #print("SUBWORKFLOW INPUT_FEEDS (b)",len(new_input_feeds), repr(new_input_feeds),file=sys.stderr)
                 except InvalidInput:
+                    #print("SUBWORKFLOW INVALID INPUT (b)", file=sys.stderr)
                     break
-
-                input_feeds.update(new_input_feeds)
 
                 if isinstance(inputtasks, Task): inputtasks = (inputtasks,)
                 for inputtask in inputtasks:
@@ -203,10 +206,13 @@ class WorkflowComponent(sciluigi.WorkflowTask):
                             else:
                                 input_feeds[format_id] = getattr(inputtask, attrname)
 
-            if input_feeds:
+                #print("UPDATED INPUT_FEEDS (c)",len(input_feeds), repr(input_feeds),file=sys.stderr)
+
+            if len(input_feeds) > 0:
+                #print("RETURNING INPUT_FEEDS (d)",len(input_feeds), repr(input_feeds),file=sys.stderr)
                 return input_feeds
 
-    #input was not handled, raise error
+        #input was not handled, raise error
         raise InvalidInput("Unable to find an entry point for supplied input")
 
     def workflow(self):
