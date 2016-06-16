@@ -1,9 +1,10 @@
+import sys
 import os
 import logging
 import glob
 import natsort
 from luigi import Parameter, BoolParameter, IntParameter
-from luiginlp.engine import Task, InputFormat, WorkflowComponent, registercomponent
+from luiginlp.engine import Task, InputFormat, WorkflowComponent, StandardWorkflowComponent, registercomponent
 from luiginlp.modules.openconvert import OpenConvert_folia
 
 log = logging.getLogger('mainlog')
@@ -23,13 +24,13 @@ class Timbl_train(Timbl_base):
     in_train = None #input slot
 
     def out_ibase(self):
-        self.outputfrominput(inputformat='train',inputextension='.train',outputextension='.ibase')
+        return self.outputfrominput(inputformat='train',inputextension='.train',outputextension='.ibase')
 
     def out_wgt(self):
-        self.outputfrominput(inputformat='train',inputextension='.train',outputextension='.wgt')
+        return self.outputfrominput(inputformat='train',inputextension='.train',outputextension='.wgt')
 
     def out_log(self):
-        self.outputfrominput(inputformat='train',inputextension='.train',outputextension='.timbl.train.log')
+        return self.outputfrominput(inputformat='train',inputextension='.train',outputextension='.timbl.train.log')
 
     def run(self):
         self.ex(
@@ -49,14 +50,14 @@ class Timbl_test(Timbl_base):
     in_test = None
 
     def out_timbl(self):
-        self.outputfrominput(inputformat='test',inputextension='.test',outputextension='.timbl.out')
+        return self.outputfrominput(inputformat='test',inputextension='.test',outputextension='.timbl.out')
 
     def out_log(self):
-        self.outputfrominput(inputformat='test',inputextension='.test',outputextension='.timbl.test.log')
+        return self.outputfrominput(inputformat='test',inputextension='.test',outputextension='.timbl.test.log')
 
     def run(self):
         self.ex(
-            i=self.in_base().path,
+            i=self.in_ibase().path,
             w=self.in_wgt().path + ':' + self.weighting,
             o=self.out_timbl().path,
             a=self.algorithm,
@@ -66,23 +67,22 @@ class Timbl_test(Timbl_base):
             __stdout_to=self.out_log().path)
 
 
-class Timbl_crossvalidate(Timbl_base):
-    in_ibase = None #input slot
-    in_wgt = None
+class Timbl_leaveoneout(Timbl_base):
+    in_train = None
 
     leaveoneout = BoolParameter(default=False)
 
     def out_log(self):
-        self.outputfrominput(inputformat='ibase',inputextension='.ibase',outputextension='.timbl.crossvalidation.log')
+        return self.outputfrominput(inputformat='train',inputextension='.train',outputextension='.timbl.leaveoneout.log')
 
     def run(self):
         self.ex(
-            i=self.in_base().path,
-            t="leave_one_out" if self.leaveoneout else "cross_validate",
+            f=self.in_train().path,
+            t="leave_one_out",
             a=self.algorithm,
             k=self.k,
             m=self.metric,
-            w=self.in_wgt().path + ':' + self.weighting,
+            w=self.weighting,
             d=self.distance,
             __stdout_to=self.out_log().path)
 
@@ -91,8 +91,8 @@ class TimblClassifier(WorkflowComponent):
     """A Timbl classifier that takes training data, test data, and outputs the test data with classification"""
 
     def accepts(self):
-        #Note: tuple in a tuple, the outer tuple corresponds to options, while the inner tuple is a conjunction
-        return ( ( InputFormat(self, format_id='train', extension='train'), InputFormat(self, format_id='test', extension='test')) ,)
+        #Note: tuple in a list, the outer list corresponds to options, while the inner tuples are conjunctions
+        return [ ( InputFormat(self, format_id='train', extension='train',inputparameter='trainfile'), InputFormat(self, format_id='test', extension='test',inputparameter='testfile')) ]
 
     def setup(self, workflow, input_feeds):
         timbl_train = workflow.new_task('timbl_train',Timbl_train, autopass=True)
@@ -110,24 +110,16 @@ TimblClassifier.inherit_parameters(Timbl_test)
 
 
 @registercomponent
-class TimblCVClassifier(WorkflowComponent):
-    """A Timbl classifier that performs cross-validation (or leave one out)"""
+class TimblLOOClassifier(StandardWorkflowComponent):
+    """A Timbl classifier that performs cross-validation (or leave one out) on the training data"""
 
     def accepts(self):
-        #Note: tuple in a tuple, the outer tuple corresponds to options, while the inner tuple is a conjunction
-        return ( ( InputFormat(self, format_id='train', extension='train'), InputFormat(self, format_id='test', extension='test')) ,)
+        return InputFormat(self, format_id='train', extension='train')
 
-    def setup(self, workflow, input_feeds):
-        timbl_train = workflow.new_task('timbl_train',Timbl_train, autopass=True)
-        timbl_train.in_train = input_feeds['train']
+    def autosetup(self):
+        return Timbl_leaveoneout
 
-        timbl_cv = workflow.new_task('timbl_cv',Timbl_crossvalidate, autopass=True)
-        timbl_cv.in_ibase = timbl_train.out_ibase
-        timbl_cv.in_wgt = timbl_train.out_wgt
+TimblLOOClassifier.inherit_parameters(Timbl_leaveoneout)
 
-        return timbl_cv
-
-TimblCVClassifier.inherit_parameters(Timbl_train)
-TimblCVClassifier.inherit_parameters(Timbl_crossvalidate)
 
 

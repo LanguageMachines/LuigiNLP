@@ -226,9 +226,10 @@ class WorkflowComponent(sciluigi.WorkflowTask):
         #automatically inherit parameters
         if 'autopass' in kwargs and kwargs['autopass']:
             for key in dir(cls):
-                attr = getattr(cls, key)
-                if isinstance(attr,luigi.Parameter) and key not in kwargs and hasattr(self,key):
-                    kwargs[key] = getattr(self,key)
+                if key not in ('instance_name', 'workflow_task'):
+                    attr = getattr(cls, key)
+                    if isinstance(attr,luigi.Parameter) and key not in kwargs and hasattr(self,key):
+                        kwargs[key] = getattr(self,key)
             del kwargs['autopass']
         return super().new_task(instance_name, cls, **kwargs)
 
@@ -296,9 +297,10 @@ class Task(sciluigi.Task):
     def inherit_parameters(Class, *ChildClasses):
         for ChildClass in ChildClasses:
             for key in dir(ChildClass):
-                attr = getattr(ChildClass, key)
-                if isinstance(attr,luigi.Parameter) and not hasattr(Class, key):
-                    setattr(Class,key, attr)
+                if key not in ('instance_name', 'workflow_task'):
+                    attr = getattr(ChildClass, key)
+                    if isinstance(attr,luigi.Parameter) and not hasattr(Class, key):
+                        setattr(Class,key, attr)
 
     def outputfrominput(self, inputformat, inputextension, outputextension, outputdirparam='outputdir'):
         """Derives the output filename from the input filename, removing the input extension and adding the output extension. Supports outputdir parameter."""
@@ -307,11 +309,16 @@ class Task(sciluigi.Task):
             raise ValueError("Specified inputslot for " + inputformat + " does not exist for " + self.__class__.__name__)
         inputslot = getattr(self, 'in_' + inputformat)
 
+        try:
+            inputfilename = inputslot().path
+        except AttributeError:
+            raise ValueError("Inputslot in_" + inputformat + " on " + self.__class__.__name__ + " is not connected to any output slot!")
+
         if hasattr(self,outputdirparam):
             outputdir = getattr(self,outputdirparam)
             if outputdir and outputdir != '.':
-                return TargetInfo(self, os.path.join(outputdir, os.path.basename(replaceextension(inputslot().path, inputextension,outputextension))))
-        return TargetInfo(self, replaceextension(inputslot().path, inputextension,outputextension))
+                return TargetInfo(self, os.path.join(outputdir, os.path.basename(replaceextension(inputfilename, inputextension,outputextension))))
+        return TargetInfo(self, replaceextension(inputfilename, inputextension,outputextension))
 
 
 class StandardWorkflowComponent(WorkflowComponent):
