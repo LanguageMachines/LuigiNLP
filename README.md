@@ -452,6 +452,14 @@ value that approximates the number of free CPU cores as the default value is
 one (no parallellisation).
 
 
+Troubleshooting
+------------------
+
+* *RuntimeError: Unfulfilled dependency at run time*: This error says
+  that the specified task or component has not delivered the output files that
+  were promised by the output slots. You should ensure all of the promised
+  files are delivered and there are no typos in the filenames/extensions.
+
 
 Plans/TODO
 -------------
