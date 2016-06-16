@@ -104,6 +104,14 @@ class WorkflowComponent(sciluigi.WorkflowTask):
     startcomponent = luigi.Parameter(default="")
     inputslot = luigi.Parameter(default="")
 
+    accepted_components = [] #additional accepted components (will be injected through the accept() method)
+
+    @classmethod
+    def accept(cls, *ChildClasses):
+        for ChildClass in ChildClasses:
+            if ChildClass not in cls.accepted_components:
+                cls.accepted_components.append(ChildClass)
+
     @classmethod
     def inherit_parameters(cls, *ChildClasses):
         for ChildClass in ChildClasses:
@@ -146,7 +154,11 @@ class WorkflowComponent(sciluigi.WorkflowTask):
     def setup_input(self, workflow):
         #Can we handle the input directly?
         accepts = self.accepts()
-        if not isinstance(accepts, (list, tuple)): accepts = (accepts,)
+        if isinstance(accepts, list):
+            accepts = tuple(accepts),
+        if not isinstance(accepts, tuple):
+            accepts = (accepts,)
+        accepts += tuple(self.accepted_components)
         for input in accepts: #pylint: disable=redefined-builtin
             if isinstance(input, InputFormat) and (not self.startcomponent or self.startcomponent == self.__class__.__name__):
                 if input.valid and (not self.inputslot or self.inputslot == input.format_id):
