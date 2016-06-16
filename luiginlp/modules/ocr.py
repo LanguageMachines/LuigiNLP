@@ -20,7 +20,7 @@ class Tesseract(Task):
     in_tiff = None #input slot
 
     def out_hocr(self):
-        return self.outputfrominput(format_id='tiff',inputextension=('.tiff','.tiff'), outputextension='.hocr')
+        return self.outputfrominput(inputformat='tiff',inputextension=('.tif','.tiff'), outputextension='.hocr')
 
     def run(self):
         self.ex(self.in_tiff().path, self.out_hocr().path[:-5], #output path without hocr extension (-5), Tesseract adds it already
@@ -48,7 +48,7 @@ class TesseractOCR_document(Task):
     in_tiffdir = None #input slot
 
     def out_hocrdir(self):
-        return TargetInfo(self, replaceextension(self.in_tiffdir().path, '.tiffdir','.hocrdir'))
+        return self.outputfrominput(inputformat='tiffdir',inputextension='.tiffdir', outputextension='.hocrdir')
 
     def run(self):
         #Set up the output directory, will create it and tear it down on failure automatically

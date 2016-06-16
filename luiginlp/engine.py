@@ -285,12 +285,12 @@ class Task(sciluigi.Task):
                 if isinstance(attr,luigi.Parameter) and not hasattr(Class, key):
                     setattr(Class,key, attr)
 
-    def outputfrominput(self, format_id, inputextension, outputextension, outputdirparam='outputdir'):
+    def outputfrominput(self, inputformat, inputextension, outputextension, outputdirparam='outputdir'):
         """Derives the output filename from the input filename, removing the input extension and adding the output extension. Supports outputdir parameter."""
 
-        if not hasattr(self,'in_' + format_id):
-            raise ValueError("Specified inputslot for " + format_id + " does not exist for " + self.__class__.__name__)
-        inputslot = getattr(self, 'in_' + format_id)
+        if not hasattr(self,'in_' + inputformat):
+            raise ValueError("Specified inputslot for " + inputformat + " does not exist for " + self.__class__.__name__)
+        inputslot = getattr(self, 'in_' + inputformat)
 
         if hasattr(self,outputdirparam):
             outputdir = getattr(self,outputdirparam)

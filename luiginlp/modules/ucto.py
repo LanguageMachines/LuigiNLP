@@ -16,7 +16,7 @@ class Ucto_txt2folia(Task):
     in_txt = None #will be linked to an out_* slot of another module in the workflow specification
 
     def out_folia(self):
-        return TargetInfo(self, replaceextension(self.in_txt().path, '.txt','.folia.xml'))
+        return self.outputfrominput(inputformat='txt',inputextension='.txt', outputextension='.folia.xml')
 
     def run(self):
         self.ex(self.in_txt().path(), self.out_folia().path,
@@ -35,7 +35,7 @@ class Ucto_txt2tok(Task):
     in_txt = None #will be linked to an out_* slot of another module in the workflow specification
 
     def out_tok(self):
-        return TargetInfo(self, replaceextension(self.in_txt().path, '.txt','.tok'))
+        return self.outputfrominput(inputformat='txt',inputextension='.txt', outputextension='.tok')
 
     def run(self):
         self.ex(self.in_txt().path(), self.out_tok().path,
@@ -55,10 +55,7 @@ class Ucto_folia2folia(Task):
     in_folia = None #will be linked to an out_* slot of another module in the workflow specification
 
     def out_folia(self):
-        if self.outputdir and self.outputdir != '.':
-            return TargetInfo(self, os.path.join(self.outputdir, os.path.basename(replaceextension(self.in_folia().path, '.folia.xml','.tok.folia.xml'))))
-        else:
-            return TargetInfo(self, replaceextension(self.in_folia().path, '.folia.xml','.tok.folia.xml'))
+        return self.outputfrominput(inputformat='folia',inputextension='.folia.xml', outputextension='.tok.folia.xml')
 
     def run(self):
         self.ex(self.in_txt().path(), self.out_folia().path,
@@ -98,7 +95,7 @@ class Ucto_txt2folia_dir(Task):
     in_txtdir = None #input slot
 
     def out_tokfoliadir(self):
-        return TargetInfo(self, replaceextension(self.in_txtdir().path, '.txtdir','.tok.foliadir'))
+        return self.outputfrominput(inputformat='txtdir',inputextension='.txtdir', outputextension='.tok.foliadir')
 
     def run(self):
         #Set up the output directory, will create it and tear it down on failure automatically
@@ -117,7 +114,7 @@ class Ucto_folia2folia_dir(Task):
     in_foliadir = None #input slot
 
     def out_tokfoliadir(self):
-        return TargetInfo(self, replaceextension(self.in_foliadir().path, '.foliadir','.tok.foliadir'))
+        return self.outputfrominput(inputformat='foliadir',inputextension='.foliadir', outputextension='.tok.foliadir')
 
     def run(self):
         #Set up the output directory, will create it and tear it down on failure automatically
