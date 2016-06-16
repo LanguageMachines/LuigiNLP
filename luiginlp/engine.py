@@ -117,8 +117,9 @@ class WorkflowComponent(sciluigi.WorkflowTask):
         for ChildClass in ChildClasses:
             for key in dir(ChildClass):
                 attr = getattr(ChildClass, key)
-                if isinstance(attr,luigi.Parameter) and not hasattr(cls,key):
-                    setattr(cls,key, attr)
+                if key not in ('instance_name', 'workflow_task'):
+                    if isinstance(attr,luigi.Parameter) and not hasattr(cls,key):
+                        setattr(cls,key, attr)
 
     def setup(self,workflow, input_feeds):
         if hasattr(self, 'autosetup'):
