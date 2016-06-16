@@ -1,3 +1,4 @@
+import glob
 from luigi import Parameter, BoolParameter
 from luiginlp.engine import Task, TargetInfo, registercomponent, StandardWorkflowComponent, Inputcomponent, InputFormat
 from luiginlp.util import replaceextension, getlog
@@ -21,8 +22,7 @@ class Ucto_txt2folia(Task):
         self.ex(self.in_txt().path(), self.out_folia().path,
                 L=self.language,
                 m=self.tok_input_sentenceperline,
-                X=True,
-        )
+                X=True)
 
 class Ucto_txt2tok(Task):
     executable = 'ucto' #external executable (None if n/a)
@@ -41,8 +41,7 @@ class Ucto_txt2tok(Task):
         self.ex(self.in_txt().path(), self.out_tok().path,
                 L=self.language,
                 m=self.tok_input_sentenceperline,
-                n=self.tok_output_sentenceperline,
-        )
+                n=self.tok_output_sentenceperline)
 
 class Ucto_folia2folia(Task):
     executable = 'ucto' #external executable (None if n/a)
@@ -50,17 +49,22 @@ class Ucto_folia2folia(Task):
     #Parameters for this module (all mandatory!)
     language = Parameter()
 
+    #Optional parameter
+    outputdir = Parameter(default="")
+
     in_folia = None #will be linked to an out_* slot of another module in the workflow specification
 
     def out_folia(self):
-        return TargetInfo(self, replaceextension(self.in_folia().path, '.folia.xml','.tok.folia.xml'))
+        if self.outputdir and self.outputdir != '.':
+            return TargetInfo(self, os.path.join(self.outputdir, os.path.basename(replaceextension(self.in_folia().path, '.folia.xml','.tok.folia.xml'))))
+        else:
+            return TargetInfo(self, replaceextension(self.in_folia().path, '.folia.xml','.tok.folia.xml'))
 
     def run(self):
         self.ex(self.in_txt().path(), self.out_folia().path,
                 L=self.language,
                 F=True, #folia input
-                X=True, #folia output
-        )
+                X=True) #folia output
 
 #################################################################################################################
 # Workflow Components
@@ -75,6 +79,7 @@ class Ucto(StandardWorkflowComponent):
     language = Parameter()
     tok_input_sentenceperline = BoolParameter(default=False)
     tok_output_sentenceperline = BoolParameter(default=False)
+    outputdir = Parameter(default="")
 
     def autosetup(self):
         return (Ucto_txt2folia, Ucto_folia2folia)
@@ -84,5 +89,64 @@ class Ucto(StandardWorkflowComponent):
         return (
             InputFormat(self, format_id='folia', extension='folia.xml'),
             InputFormat(self, format_id='txt', extension='txt'),
-            InputComponent(self, ConvertToFoLiA)
-        )
+            InputComponent(self, ConvertToFoLiA))
+
+
+class Ucto_txt2folia_dir(Task):
+    extension = Parameter(default="txt")
+
+    in_txtdir = None #input slot
+
+    def out_tokfoliadir(self):
+        return TargetInfo(self, replaceextension(self.in_txtdir().path, '.txtdir','.tok.foliadir'))
+
+    def run(self):
+        #Set up the output directory, will create it and tear it down on failure automatically
+        self.setup_output_dir(self.out_tokfoliadir().path)
+
+        #gather input files
+        inputfiles = [ filename for filename in glob.glob(self.in_txtdir().path + '/*.' + self.extension) ]
+
+        #inception aka dynamic dependencies: we yield a list of tasks to perform which could not have been predicted statically
+        #in this case we run the FeaturizerTask_single component for each input file in the directory
+        yield [ Ucto(inputfile=inputfile,inputslot='txt',outputdir=self.out_tokfoliadir().path) for inputfile in inputfiles ]
+
+class Ucto_folia2folia_dir(Task):
+    extension = Parameter(default="folia.xml")
+
+    in_foliadir = None #input slot
+
+    def out_tokfoliadir(self):
+        return TargetInfo(self, replaceextension(self.in_foliadir().path, '.foliadir','.tok.foliadir'))
+
+    def run(self):
+        #Set up the output directory, will create it and tear it down on failure automatically
+        self.setup_output_dir(self.out_tokfoliadir().path)
+
+        #gather input files
+        inputfiles = [ filename for filename in glob.glob(self.in_foliadir().path + '/*.' + self.extension) ]
+
+        #inception aka dynamic dependencies: we yield a list of tasks to perform which could not have been predicted statically
+        #in this case we run the FeaturizerTask_single component for each input file in the directory
+        yield [ Ucto(inputfile=inputfile,inputslot='folia',outputdir=self.out_tokfoliadir().path) for inputfile in inputfiles ]
+
+@registercomponent
+class Ucto_dir(StandardWorkflowComponent):
+    """A workflow component for Ucto that operates on entire directories"""
+
+    skip = Parameter(default="") #A parameter for the workflow, will be passed on to the tasks
+
+    language = Parameter()
+    tok_input_sentenceperline = BoolParameter(default=False)
+    tok_output_sentenceperline = BoolParameter(default=False)
+    outputdir = Parameter(default="")
+
+    def autosetup(self):
+        return (Ucto_txt2folia_dir, Ucto_folia2folia_dir)
+
+    def accepts(self):
+        """Returns a tuple of all the initial inputs and other workflows this component accepts as input (a disjunction, only one will be selected)"""
+        return (
+            InputFormat(self, format_id='txtdir', extension='txtdir', directory=True),
+            InputFormat(self, format_id='foliadir', extension='foliadir', directory=True))
+
