@@ -124,6 +124,7 @@ class WorkflowComponent(sciluigi.WorkflowTask):
         if hasattr(self, 'autosetup'):
             input_feeds = self.setup_input(workflow)
             if len(input_feeds) > 1:
+                print("Input feed from "  + self.__class__.__name__ + ": " + repr(input_feeds),file=sys.stderr)
                 raise AutoSetupError("Autosetup only works for single input/output tasks for now")
             configuration = self.autosetup()
             input_type, input_slot = list(input_feeds.items())[0]
@@ -166,6 +167,7 @@ class WorkflowComponent(sciluigi.WorkflowTask):
                 if isinstance(input, InputFormat) and (not self.startcomponent or self.startcomponent == self.__class__.__name__):
                     if input.valid and (not self.inputslot or self.inputslot == input.format_id):
                         input_feeds[input.format_id] = input.task(workflow).out_default
+                        continue
                     else:
                         break
                 elif isinstance(input, InputComponent):
@@ -178,24 +180,27 @@ class WorkflowComponent(sciluigi.WorkflowTask):
                     raise TypeError("Invalid element in accepts(): " + str(type(input)))
 
                 try:
-                    input_feeds.update( swf.setup_input(workflow) )
+                    new_input_feeds = swf.setup_input(workflow)
                     inputtasks = swf.setup(workflow, input_feeds)
-                    if isinstance(inputtasks, Task): inputtasks = (inputtasks,)
-                    for inputtask in inputtasks:
-                        if not isinstance(inputtask, Task):
-                            raise TypeError("setup() did not return a Task or a sequence of Tasks")
-                        for attrname in dir(inputtask):
-                            if attrname[:4] == 'out_':
-                                format_id = attrname[4:]
-                                if format_id in input_feeds:
-                                    if isinstance(input_feeds[format_id], list):
-                                        input_feeds[format_id] += [getattr(inputtask, attrname)]
-                                    else:
-                                        input_feeds[format_id] = [input_feeds[format_id], getattr(inputtask, attrname)]
-                                else:
-                                    input_feeds[format_id] = getattr(inputtask, attrname)
                 except InvalidInput:
                     break
+
+                input_feeds.update(new_input_feeds)
+
+                if isinstance(inputtasks, Task): inputtasks = (inputtasks,)
+                for inputtask in inputtasks:
+                    if not isinstance(inputtask, Task):
+                        raise TypeError("setup() did not return a Task or a sequence of Tasks")
+                    for attrname in dir(inputtask):
+                        if attrname[:4] == 'out_':
+                            format_id = attrname[4:]
+                            if format_id in input_feeds:
+                                if isinstance(input_feeds[format_id], list):
+                                    input_feeds[format_id] += [getattr(inputtask, attrname)]
+                                else:
+                                    input_feeds[format_id] = [input_feeds[format_id], getattr(inputtask, attrname)]
+                            else:
+                                input_feeds[format_id] = getattr(inputtask, attrname)
 
             if input_feeds:
                 return input_feeds
