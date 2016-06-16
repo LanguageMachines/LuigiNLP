@@ -116,8 +116,8 @@ class WorkflowComponent(sciluigi.WorkflowTask):
     def inherit_parameters(cls, *ChildClasses):
         for ChildClass in ChildClasses:
             for key in dir(ChildClass):
-                attr = getattr(ChildClass, key)
                 if key not in ('instance_name', 'workflow_task'):
+                    attr = getattr(ChildClass, key)
                     if isinstance(attr,luigi.Parameter) and not hasattr(cls,key):
                         setattr(cls,key, attr)
 
