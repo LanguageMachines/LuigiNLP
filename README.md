@@ -356,7 +356,7 @@ class Ucto(StandardWorkflowComponent):
 ```
 
 Dynamic dependencies aka Inception
----------------------------------
+-----------------------------------
 
 Workflows are static in the sense that based on the format of the input file
 and all given parameters, all workflow components and tasks are assembled
@@ -449,6 +449,74 @@ Note the ``--workers`` parameter, which is the generic way to tell LuigiNLP how
 many workers may run in parallel. You will want to explicitly set this to a
 value that approximates the number of free CPU cores as the default value is
 one (no parallellisation).
+
+Inheriting parameters
+-----------------------------
+
+Components often inherit parameters from the tasks they wrap. When you use
+``autosetup()``, parameters with the matching names are automatically passed
+from component to task. Similarly, if you use ``workflow.new_task()`` in your
+setup method, you can set the keyword argument ``autopass=True`` to also
+accomplish this.
+
+Still, you actually need to which parameters on the component.
+This can be done in the usual way, but if a task already defines them, you may want to inherit the parameters automatically and prevent any code duplication. This is done as follows:
+
+```
+class MyComponent(WorkflowComponent):
+	...
+MyComponent.inherit_parameters(MyTask1,MyTask2,MyTask3)
+```
+
+Note that the ``inherit_parameters()`` call is not part of the class definition (not in class scope) but placed after it.
+
+Multiple inputs 
+-----------------------------
+
+Tasks may defined multiple input slots (and multiple output slots). Components
+may accept multiple inputs similtaneously as well. Consider for example a
+classifier that takes a training file and a test file. Components can not use
+``autosetup()`` in this case, but you need to explicitly define a ``setup()``
+method.
+
+To define multiple concurrent inputs, group them together in a tuple and return
+this as part of a list or tuple from ``accepts()``. The following example
+components is for a classifier, it takes two inputs (``trainfile`` and
+``testfile``) rather than the standard ``inputfile`` pre-defined in
+``StandardWorkflowComponent`` (this class is therefore subclassed from
+``WorkflowComponent`` instead, which does not predefine ``inputfile``).
+
+Note furthermore that the ``InputFormat`` tuple contains the ``inputparameter``
+keyword argument that binds the proper inputformat to the proper parameter (the
+default was ``inputparameter="inputfile"`` so we never needed it before).
+
+
+```python
+@registercomponent
+class TimblClassifier(WorkflowComponent):
+    """A Timbl classifier that takes training data, test data, and outputs the test data with classification"""
+
+    trainfile = Parameter()
+    testfile = Parameter()
+
+    def accepts(self):
+        #Note: tuple in a list, the outer list corresponds to options (just one here), while the inner tuples are conjunctions
+        return [ ( InputFormat(self, format_id='train', extension='train',inputparameter='trainfile'), InputFormat(self, format_id='test', extension='test',inputparameter='testfile')) ]
+
+    def setup(self, workflow, input_feeds):
+        timbl_train = workflow.new_task('timbl_train',Timbl_train, autopass=True)
+        timbl_train.in_train = input_feeds['train']
+
+        timbl_test = workflow.new_task('timbl_test',Timbl_test, autopass=True)
+        timbl_test.in_test = input_feeds['test']
+        timbl_test.in_ibase = timbl_train.out_ibase
+        timbl_test.in_wgt = timbl_train.out_wgt
+
+        return timbl_test
+```
+
+We have not defined the tasks here, but you can infer that the ``Timbl_train``
+task has at least two output slots, and ``Timbl_test`` has two input slots.
 
 
 Troubleshooting
