@@ -380,7 +380,6 @@ component).  Consider the following task and component:
 ```python
 import glob
 from luiginlp.engine import Task, StandardWorkflowComponent
-from luiginlp.util import replaceextension
 from luigi import Parameter
 
 class Ucto_txtdir2tokdir(Task):
@@ -455,6 +454,11 @@ one (no parallellisation).
 Troubleshooting
 ------------------
 
+* Everything is run sequentially, nothing is parallelised? -- Did you explicitly
+ supply a ``workers`` parameter with the desired maximum number of threads? Otherwise just one worker will be used and everything is sequential. If
+ you did supply multiple workers, it may just  be the case that there is simply nothing to run in parallel
+ in your invoked workflow.
+* I get no errors but nothing seems to run when I rerun my workflow -- If all output files already exist, then the workflow has nothing to do. You will need to explicitly delete your output if you want to rerun things that have already been produced succesfully.
 * *error: unrecognized argument* -- You are passing an argument that
   is not known to the target component. Perhaps you forgot to inherit certain
   parameters from tasks to components using ``inherit_parameters()``?
