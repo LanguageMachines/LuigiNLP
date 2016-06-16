@@ -20,10 +20,7 @@ class Tesseract(Task):
     in_tiff = None #input slot
 
     def out_hocr(self):
-        if self.outputdir and self.outputdir != '.':
-            return TargetInfo(self, os.path.join(self.outputdir, os.path.basename(replaceextension(self.in_tiff().path, ('.tif','.tiff'),'.hocr'))))
-        else:
-            return TargetInfo(self, replaceextension(self.in_tiff().path, ('.tif','.tiff'),'.hocr'))
+        return self.outputfrominput(format_id='tiff',inputextension=('.tiff','.tiff'), outputextension='.hocr')
 
     def run(self):
         self.ex(self.in_tiff().path, self.out_hocr().path[:-5], #output path without hocr extension (-5), Tesseract adds it already
