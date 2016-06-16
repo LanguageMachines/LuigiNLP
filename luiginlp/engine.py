@@ -159,44 +159,48 @@ class WorkflowComponent(sciluigi.WorkflowTask):
         if not isinstance(accepts, tuple):
             accepts = (accepts,)
         accepts += tuple(self.accepted_components)
-        for input in accepts: #pylint: disable=redefined-builtin
-            if isinstance(input, InputFormat) and (not self.startcomponent or self.startcomponent == self.__class__.__name__):
-                if input.valid and (not self.inputslot or self.inputslot == input.format_id):
-                    return { input.format_id: input.task(workflow).out_default }
+        for inputtuple in accepts: #pylint: disable=redefined-builtin
+            input_feeds = {} #reset
+            if not isinstance(inputtuple, tuple): inputtuple = (inputtuple,)
+            for input in inputtuple:
+                if isinstance(input, InputFormat) and (not self.startcomponent or self.startcomponent == self.__class__.__name__):
+                    if input.valid and (not self.inputslot or self.inputslot == input.format_id):
+                        input_feeds[input.format_id] = input.task(workflow).out_default
+                    else:
+                        break
+                elif isinstance(input, InputComponent):
+                    swf = input.Class(*input.args, **input.kwargs)
+                elif inspect.isclass(input) and issubclass(input, WorkflowComponent):
+                    #not encapsulated in InputWorkflow yet, do now
+                    iwf = InputComponent(self, input)
+                    swf = iwf.Class(*input.args, **input.kwargs)
                 else:
-                    continue
-            elif isinstance(input, InputComponent):
-                swf = input.Class(*input.args, **input.kwargs)
-            elif inspect.isclass(input) and issubclass(input, WorkflowComponent):
-                #not encapsulated in InputWorkflow yet, do now
-                iwf = InputComponent(self, input)
-                swf = iwf.Class(*input.args, **input.kwargs)
-            else:
-                raise TypeError("Invalid element in accepts(): " + str(type(input)))
+                    raise TypeError("Invalid element in accepts(): " + str(type(input)))
 
-            try:
-                input_feeds = swf.setup_input(workflow)
-                inputtasks = swf.setup(workflow, input_feeds)
-                input_feeds = {} #reset
-                if isinstance(inputtasks, Task): inputtasks = (inputtasks,)
-                for inputtask in inputtasks:
-                    if not isinstance(inputtask, Task):
-                        raise TypeError("setup() did not return a Task or a sequence of Tasks")
-                    for attrname in dir(inputtask):
-                        if attrname[:4] == 'out_':
-                            format_id = attrname[4:]
-                            if format_id in input_feeds:
-                                if isinstance(input_feeds[format_id], list):
-                                    input_feeds[format_id] += [getattr(inputtask, attrname)]
+                try:
+                    input_feeds.update( swf.setup_input(workflow) )
+                    inputtasks = swf.setup(workflow, input_feeds)
+                    if isinstance(inputtasks, Task): inputtasks = (inputtasks,)
+                    for inputtask in inputtasks:
+                        if not isinstance(inputtask, Task):
+                            raise TypeError("setup() did not return a Task or a sequence of Tasks")
+                        for attrname in dir(inputtask):
+                            if attrname[:4] == 'out_':
+                                format_id = attrname[4:]
+                                if format_id in input_feeds:
+                                    if isinstance(input_feeds[format_id], list):
+                                        input_feeds[format_id] += [getattr(inputtask, attrname)]
+                                    else:
+                                        input_feeds[format_id] = [input_feeds[format_id], getattr(inputtask, attrname)]
                                 else:
-                                    input_feeds[format_id] = [input_feeds[format_id], getattr(inputtask, attrname)]
-                            else:
-                                input_feeds[format_id] = getattr(inputtask, attrname)
-                return input_feeds
-            except InvalidInput:
-                pass #try next one
+                                    input_feeds[format_id] = getattr(inputtask, attrname)
+                except InvalidInput:
+                    break
 
-        #input was not handled, raise error
+            if input_feeds:
+                return input_feeds
+
+    #input was not handled, raise error
         raise InvalidInput("Unable to find an entry point for supplied input")
 
     def workflow(self):
