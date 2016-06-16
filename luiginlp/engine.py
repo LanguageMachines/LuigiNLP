@@ -8,7 +8,7 @@ import argparse
 import importlib
 import shutil
 import glob
-from luiginlp.util import shellsafe, getlog
+from luiginlp.util import shellsafe, getlog, replaceextension
 
 log = getlog()
 
@@ -116,9 +116,10 @@ class WorkflowComponent(sciluigi.WorkflowTask):
     def inherit_parameters(cls, *ChildClasses):
         for ChildClass in ChildClasses:
             for key in dir(ChildClass):
-                attr = getattr(ChildClass, key)
-                if isinstance(attr,luigi.Parameter) and not hasattr(cls,key):
-                    setattr(cls,key, attr)
+                if key not in ('instance_name', 'workflow_task'):
+                    attr = getattr(ChildClass, key)
+                    if isinstance(attr,luigi.Parameter) and not hasattr(cls,key):
+                        setattr(cls,key, attr)
 
     def setup(self,workflow, input_feeds):
         if hasattr(self, 'autosetup'):
@@ -292,6 +293,20 @@ class Task(sciluigi.Task):
                 attr = getattr(ChildClass, key)
                 if isinstance(attr,luigi.Parameter) and not hasattr(Class, key):
                     setattr(Class,key, attr)
+
+    def outputfrominput(self, inputformat, inputextension, outputextension, outputdirparam='outputdir'):
+        """Derives the output filename from the input filename, removing the input extension and adding the output extension. Supports outputdir parameter."""
+
+        if not hasattr(self,'in_' + inputformat):
+            raise ValueError("Specified inputslot for " + inputformat + " does not exist for " + self.__class__.__name__)
+        inputslot = getattr(self, 'in_' + inputformat)
+
+        if hasattr(self,outputdirparam):
+            outputdir = getattr(self,outputdirparam)
+            if outputdir and outputdir != '.':
+                return TargetInfo(self, os.path.join(outputdir, os.path.basename(replaceextension(inputslot().path, inputextension,outputextension))))
+        return TargetInfo(self, replaceextension(inputslot().path, inputextension,outputextension))
+
 
 class StandardWorkflowComponent(WorkflowComponent):
     """A workflow component that takes one inputfile"""

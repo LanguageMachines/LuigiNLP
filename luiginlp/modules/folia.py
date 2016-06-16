@@ -3,7 +3,7 @@ import glob
 import natsort
 from luigi import Parameter, BoolParameter
 from luiginlp.engine import Task, TargetInfo, InputFormat, StandardWorkflowComponent, registercomponent
-from luiginlp.util import replaceextension, DirectoryHandler, getlog
+from luiginlp.util import getlog
 from luiginlp.modules.openconvert import OpenConvert_folia
 
 log = getlog()
@@ -41,7 +41,7 @@ class Rst2folia(Task):
     in_rst = None #will be linked to an out_* slot of another module in the workflow specification
 
     def out_folia(self):
-        return TargetInfo(self, replaceextension(self.in_rst().path, '.rst','.folia.xml'))
+        return self.outputfrominput(inputformat='rst',inputextension='.rst', outputextension='.folia.xml')
 
     def run(self):
         self.ex(self.in_rst().path, self.out_folia().path,
@@ -53,7 +53,7 @@ class Folia2html(Task):
     in_folia = None #will be linked to an out_* slot of another module in the workflow specification
 
     def out_html(self):
-        return TargetInfo(self, replaceextension(self.in_folia().path, '.folia.xml','.html'))
+        return self.outputfrominput(inputformat='folia',inputextension='.folia.xml', outputextension='.html')
 
     def run(self):
         self.ex(self.in_folia().path,
@@ -69,7 +69,7 @@ class Folia2txt(Task):
     in_folia = None #will be linked to an out_* slot of another module in the workflow specification
 
     def out_html(self):
-        return TargetInfo(self, replaceextension(self.in_folia().path, '.folia.xml','.txt'))
+        return self.outputfrominput(inputformat='folia',inputextension='.folia.xml', outputextension='.txt')
 
     def run(self):
         self.ex(self.in_folia().path,
@@ -84,7 +84,7 @@ class Alpino2folia(Task):
     in_alpinodocdir = None
 
     def out_folia(self):
-        return TargetInfo(self, replaceextension(self.in_alpinodocdir().path, '.alpinodocdir','.folia.xml'))
+        return self.outputfrominput(inputformat='alpinodocdir',inputextension='.alpinodocdir', outputextension='.folia.xml')
 
     def run(self):
         alpinofiles = [ alpinofile for alpinofile in sorted(glob.glob(self.in_alpinodocdir().path + '/*.xml'),key=lambda x: int(os.path.basename(x).split('.')[0])) ] #collect all alpino files in collection
@@ -95,13 +95,15 @@ class Alpino2folia(Task):
 class Foliacat(Task):
     executable = 'foliacat'
 
+    extension = Parameter(default='folia.xml')
+
     in_foliadir = None
 
     def out_folia(self):
-        return TargetInfo(self, replaceextension(self.in_foliadir().path, '.foliadir','.folia.xml'))
+        return self.outputfrominput(inputformat='foliadir',inputextension='.foliadir', outputextension='.folia.xml')
 
     def run(self):
-        foliafiles = [ filename for filename in natsort.natsorted(glob.glob(self.in_foliadir().path + '/*.folia.xml')) ]
+        foliafiles = [ filename for filename in natsort.natsorted(glob.glob(self.in_foliadir().path + '/*.' + self.extension)) ]
         self.ex(*foliafiles,
                 o=self.out_folia().path,
                 i=self.out_folia().path.split('.')[0]) #first component of filename acts as document ID
@@ -117,7 +119,7 @@ class FoliaHOCR(Task):
 
     def out_foliadir(self):
         """Directory of FoLiA document, one per hOCR file"""
-        return TargetInfo(self, replaceextension(self.in_hocrdir().path, ('.hocrdir'),'.foliadir'))
+        return self.outputfrominput(inputformat='hocrdir',inputextension='.hocrdir', outputextension='.foliadir')
 
     def run(self):
         self.setup_output_dir(self.out_foliadir().path)

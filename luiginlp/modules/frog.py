@@ -1,7 +1,7 @@
 import os
 from luigi import Parameter, BoolParameter
-from luiginlp.engine import Task, TargetInfo, InputComponent, InputFormat, StandardWorkflowComponent, registercomponent
-from luiginlp.util import replaceextension, getlog
+from luiginlp.engine import Task, InputComponent, InputFormat, StandardWorkflowComponent, registercomponent
+from luiginlp.util import getlog
 from luiginlp.modules.folia import ConvertToFoLiA
 
 log = getlog()
@@ -19,7 +19,7 @@ class Frog_txt2folia(Task):
 
     def out_folia(self):
         """The output slot, for FoLiA"""
-        return TargetInfo(self, replaceextension(self.in_txt().path, '.txt','.frogged.folia.xml'))
+        return self.outputfrominput(inputformat='txt',inputextension='.txt', outputextension='.frogged.folia.xml') #the format_id corresponds to the input slot (txt -> in_txt)
 
     def run(self):
         #execute a shell command, python keyword arguments will be passed as option flags (- for one letter, -- for more)
@@ -42,7 +42,7 @@ class Frog_folia2folia(Task):
     in_folia = None #will be linked to an out_* slot of another module in the workflow specification
 
     def out_folia(self):
-        return TargetInfo(self, replaceextension(self.in_folia().path, '.folia.xml','.frogged.folia.xml'))
+        return self.outputfrominput(inputformat='folia',inputextension='.folia.xml', outputextension='.frogged.folia.xml')
 
     def run(self):
         self.ex(

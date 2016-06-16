@@ -182,7 +182,6 @@ takes one mandatory parameter: the language the text is in.
 
 ```python
 from luiginlp.engine import Task
-from luiginlp.util import replaceextension
 from luigi import Parameter
 
 class Ucto_txt2tok(Task):
@@ -199,10 +198,13 @@ class Ucto_txt2tok(Task):
 
     #Define an output slot, output slots are methods that start with out_
     def out_tok(self): 
-        #Output slots always return TargetInfo instances pointing to the
-        #output file, we derive the name of the output file from the input
-        #file, and replace the extension
-        return TargetInfo(self, replaceextension(self.in_txt().path, '.txt','.tok')) 
+        #Output slots should call outputforminput() to automatically derive the output file
+        #from the input file, typically by removing the input extension and
+        #adding a new *and distinct* output extension. The inputformat
+        #parameter must correspond to an input slot (in_txt in this case).
+        #If an outputdir parameter is defined in the task, it is automatically
+        #supported.
+        return self.outputfrominput(inputformat='txt',inputextension='.txt',outputextension='.tok')
 
     #Define the run method, this will be called to do the actual work
     def run(self):
@@ -302,12 +304,12 @@ class LowercaseText(Task):
     def out_txt(self): 
         #We add a lowercased prefix to the extension
         #The output file may NEVER be equal to the input file
-        return TargetInfo(self, replaceextension(self.in_txt().path, '.txt','.lowercased.txt')) 
+        return self.outputfrominput(inputformat='txt',inputextension='.txt',outputextension='.lowercased.txt')
 
     #Define the run method, this will be called to do the actual work
     def run(self):
         #We do the work in Python itself
-        #TargetInfo instances can be opened as file objects
+        #Input and output slots can be opened as file objects
         with self.in_txt().open('r',encoding=self.encoding) as inputfile
             with self.out_txt().open('w',encoding=self.encoding) as outputfile:
                 outputfile.write(inputfile.read().lower())
@@ -387,7 +389,7 @@ class Ucto_txtdir2tokdir(Task):
     in_txtdir = None
 
     def out_tokdir(self):
-        return TargetInfo(self, replaceextension(self.in_txtdir().path, '.txtdir','.tokdir')) 
+        return self.outputfrominput(inputformat='txtdir',inputextension='.txtdir',outputextension='.tokdir')
     
     def run(self):
         #setup the output directory
@@ -430,19 +432,12 @@ Note that we added an ``outputdir`` parameter to the Ucto component which we
 hadn't implemented yet. This is necessary to ensure all individual output files
 end up in the directory that groups our output. The Ucto component should
 simply pass this parameter on to the ``Ucto_txt2tok`` task, and there we
-implement it as an optional parameter as follows:
+just add it as an optional parameter as follows. The ``outputfrominput()``
+method automatically supports this parameter.
 
 ```python
 class Ucto_txt2tok(Task):
-
     outputdir = Parameter(default="")
-
-    #Define an output slot, output slots are methods that start with out_
-    def out_tok(self): 
-        if self.outputdir:
-            return TargetInfo(self, os.path.join(outputdir, os.path.basename(replaceextension(self.in_txt().path, '.txt','.tok')))) 
-        else:
-            return TargetInfo(self, replaceextension(self.in_txt().path, '.txt','.tok')) 
 ```
 
 Assuming you have a collecting of text files in a directory ``corpus.txtdir/``,
