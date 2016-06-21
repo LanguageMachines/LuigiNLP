@@ -105,10 +105,13 @@ Install as follows:
 
     $ python setup.py install
 
+(If this fails due to a ``python-daemon`` error, just run it again. There is a
+problem in that package)
+
 Many of the implemented modules rely on software distributed as part of
 [LaMachine](https://proycon.github.io/LaMachine), so LuigiNLP is best used from
-within a LaMachine installation. LuigiNLP itself will be included in LaMachine
-when it is mature enough.
+within a LaMachine installation. LuigiNLP itself is included in LaMachine as
+well.
 
 Usage
 ---------
