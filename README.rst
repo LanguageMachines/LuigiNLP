@@ -376,8 +376,9 @@ everything.
             #always return the last task(s)
             return ucto
 
+------------------------------------
 Dynamic dependencies aka Inception
------------------------------------
+------------------------------------
 
 Workflows are static in the sense that based on the format of the input file
 and all given parameters, all workflow components and tasks are assembled
@@ -454,14 +455,10 @@ won't result in parallisation, you must really yield an entire list (or tuple).
 Note that we added an ``outputdir`` parameter to the Ucto component which we
 hadn't implemented yet. This is necessary to ensure all individual output files
 end up in the directory that groups our output. The Ucto component should
-simply pass this parameter on to the ``Ucto_txt2tok`` task, and there we
-just add it as an optional parameter as follows. The ``outputfrominput()``
-method automatically supports this parameter.
-
-.. code-block:: python
-
-    class Ucto_txt2tok(Task):
-        outputdir = Parameter(default="")
+simply pass this parameter on to the ``Ucto_txt2tok`` task. The outputdir
+parameter is implicitly present on all tasks as well as on
+``StandardWorkflowComponent``, the ``outputfrominput()`` method automatically
+supports this parameter.
 
 Assuming you have a collecting of text files in a directory ``corpus.txtdir/``,
 you can now invoke LuigiNLP as follows and end up with a ``corpus.tokdir/``

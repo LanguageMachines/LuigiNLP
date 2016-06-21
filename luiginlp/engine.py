@@ -328,6 +328,7 @@ class StandardWorkflowComponent(WorkflowComponent):
     """A workflow component that takes one inputfile"""
 
     inputfile = luigi.Parameter()
+    outputdir = luigi.Parameter(default="")
 
 class TargetInfo(sciluigi.TargetInfo):
     pass
