@@ -284,6 +284,8 @@ class Task(sciluigi.Task):
             cmd += ' ' + ' '.join(opts)
         if args:
             cmd += ' ' + ' '.join(args)
+        if '__stdin_from' in kwargs:
+            cmd += ' < ' + shellsafe(kwargs['__stdin_from'])
         if '__stdout_to' in kwargs:
             cmd += ' > ' + shellsafe(kwargs['__stdout_to'])
         if '__stderr_to' in kwargs:
