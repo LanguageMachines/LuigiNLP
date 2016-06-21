@@ -1,11 +1,12 @@
-LuigiNLP (proof of concept)
-================================
+LuigiNLP
+==========
 
 An NLP workflow system building upon
 [sciluigi](https://github.com/pharmbio/sciluigi), which is in turn based on
 [luigi](https://github.com/spotify/luigi).
 
-Proof of concept to be used for the PICCL and Quoll NLP pipelines.
+This started out as a proof of concept intended to be used for the PICCL and
+Quoll NLP pipelines developed at Radboud University Nijmegen.
 
 This is a solution for either a single computing node or a cluster of nodes
 (Hadoop, SLURM, not tested yet). The individual components are not webservices,
