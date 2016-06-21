@@ -164,6 +164,15 @@ Here's an example of running an OCR workflow for a scanned PDF file (requires th
 
     $ luiginlp --module luiginlp.modules.ocr OCR_folia --inputfile OllevierGeets.pdf --language eng
 
+LuigiNLP automatically finds a sequence of components leading from your input
+file (provided it's name matches whatever convention you use) to the target
+component. You may, however, force an inputfile by setting the ``--inputslot``
+parameter to some input format ID. This can be useful if you want to feed an
+input file that does not comply to your naming convention. 
+You may also specify a ``--startcomponent`` to explicitly state which component
+should be the first one, this may be useful in cases of ambiguity where
+multiple paths are possible (the first possibility would be otherwise be chosen).
+
 Writing tasks and components for LuigiNLP
 =============================================
 
