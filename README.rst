@@ -107,7 +107,6 @@ Directory Structure
    consists of workflow components and tasks.
  * ``luiginlp/util.py`` - Auxiliary functions
  * ``setup.py`` - Installation script for LuigiNLP (only covers LuigiNLP and its direct python dependencies)
- * ``bootstrap.sh`` - Full installation script, pulls in all necessary dependencies and runs ``setup.py``, to be invoked by or from within **LaMachine** (https://github.com/proycon/LaMachine)
 
 ==============
 Installation
@@ -547,10 +546,7 @@ task has at least two output slots, and ``Timbl_test`` has two input slots.
 Troubleshooting
 ==================
 
-* *Everything is run sequentially, nothing is parallelised?* -- Did you explicitly
-supply a ``workers`` parameter with the desired maximum number of threads? Otherwise just one worker will be used and everything is sequential. If
-you did supply multiple workers, it may just  be the case that there is simply nothing to run in parallel
-in your invoked workflow.
+* *Everything is run sequentially, nothing is parallelised?* -- Did you explicitly supply a ``workers`` parameter with the desired maximum number of threads? Otherwise just one worker will be used and everything is sequential. If you did supply multiple workers, it may just  be the case that there is simply nothing to run in parallel in your invoked workflow.
 * *I get no errors but nothing seems to run when I rerun my workflow?* -- If all output files already exist, then the workflow has nothing to do. You will need to explicitly delete your output if you want to rerun things that have already been produced succesfully.
 * *error: unrecognized argument* -- You are passing an argument that
   is not known to the target component. Perhaps you forgot to inherit certain
@@ -575,8 +571,7 @@ in your invoked workflow.
   All ``out_*()`` methods must return a ``TargetInfo`` instance, which is
   usually achieved by returning whatever ``outputfrominput()`` returns. Is a
   return statement missing in an output slot?
-* *ValueError: Inputslot .... of ..... is not connected to any output
-  slot!* -- You forgot to connect the specified input slot of the specified
+* *ValueError: Inputslot .... of ..... is not connected to any output slot!* -- You forgot to connect the specified input slot of the specified
   task to an output slot (in a components ``setup()`` method). All input slots must be satisfied.
 * *ValueError: Specified inputslot for ... does not exist in ....* -- Your call
   to ``outputfrominput()`` has a ``inputformat`` argument that does not
@@ -585,10 +580,7 @@ in your invoked workflow.
 * *Exception: No executable defined for .....* -- You are invoking the ``ex()``
   method to execute through the shell but the Task's class does not specify an
   executable to run. Set ``executable = "yourexecutable"`` in the class.
-* *TypeError: Invalid element in accepts(), must be InputFormat or
-InputComponent* -- Your component's accepts() method returns something it
- shouldn't, you may return a list/tuple of InputFormat or InputComponent
- instances, you may also includes tuples grouping multiple InputFormats or
+* *TypeError: Invalid element in accepts(), must be InputFormat or InputComponent* -- Your component's accepts() method returns something it shouldn't, you may return a list/tuple of InputFormat or InputComponent instances, you may also includes tuples grouping multiple InputFormats or
  InputComponents in case the component takes multiple input files.
 * *AutoSetupError: AutoSetup expected a Task class* -- Your components ``autosetup()`` method must return either a single Task class (not an instance) or a list/tuple of Task classes.
 * *AutoSetupError: No outputslot found on ....* -- The task you are returning in a component's ``autosetup()`` method has no output slots (one or more ``out_*()`` methods).
