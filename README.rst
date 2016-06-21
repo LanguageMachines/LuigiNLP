@@ -1,6 +1,10 @@
 .. image:: http://applejack.science.ru.nl/lamabadge.php/LuigiNLP
    :target: http://applejack.science.ru.nl/languagemachines/
 
+.. image:: https://travis-ci.org/LanguageMachines/LuigiNLP.svg?branch=master
+    :target: https://travis-ci.org/LanguageMachines/LuigiNLP
+
+
 *************
 LuigiNLP
 *************
@@ -102,17 +106,16 @@ Limitations
 Directory Structure
 ====================
 
- * ``luiginlp/luiginlp.py`` - Main tool
- * ``luiginlp/modules/`` - Modules, each addressing a specific tool/goal. A module
-   consists of workflow components and tasks.
- * ``luiginlp/util.py`` - Auxiliary functions
- * ``setup.py`` - Installation script for LuigiNLP (only covers LuigiNLP and its direct python dependencies)
+* ``luiginlp/luiginlp.py`` - Main tool
+* ``luiginlp/modules/`` - Modules, each addressing a specific tool/goal. A module consists of workflow components and tasks.
+* ``luiginlp/util.py`` - Auxiliary functions
+* ``setup.py`` - Installation script for LuigiNLP (only covers LuigiNLP and its direct python dependencies)
 
 ==============
 Installation
 ==============
 
-Install as follows:
+Install as follows::
 
     $ python setup.py install
 
@@ -580,8 +583,7 @@ Troubleshooting
 * *Exception: No executable defined for .....* -- You are invoking the ``ex()``
   method to execute through the shell but the Task's class does not specify an
   executable to run. Set ``executable = "yourexecutable"`` in the class.
-* *TypeError: Invalid element in accepts(), must be InputFormat or InputComponent* -- Your component's accepts() method returns something it shouldn't, you may return a list/tuple of InputFormat or InputComponent instances, you may also includes tuples grouping multiple InputFormats or
- InputComponents in case the component takes multiple input files.
+* *TypeError: Invalid element in accepts(), must be InputFormat or InputComponent* -- Your component's accepts() method returns something it shouldn't, you may return a list/tuple of InputFormat or InputComponent instances, you may also includes tuples grouping multiple InputFormats or InputComponents in case the component takes multiple input files.
 * *AutoSetupError: AutoSetup expected a Task class* -- Your components ``autosetup()`` method must return either a single Task class (not an instance) or a list/tuple of Task classes.
 * *AutoSetupError: No outputslot found on ....* -- The task you are returning in a component's ``autosetup()`` method has no output slots (one or more ``out_*()`` methods).
 * *AutoSetupError: AutoSetup only works for single input/output tasks now* -- You can not use ``autosetup()`` for components that take multiple input files, use ``setup()`` instead.
