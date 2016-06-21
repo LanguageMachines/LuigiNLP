@@ -6,8 +6,8 @@ LuigiNLP
 *************
 
 An NLP workflow system building upon
-`sciluigi<https://github.com/pharmbio/sciluigi>`_, which is in turn based on
-`luigi<https://github.com/spotify/luigi>`_.
+**sciluigi** (https://github.com/pharmbio/sciluigi), which is in turn based on
+**luigi** (https://github.com/spotify/luigi).
 
 This started out as a proof of concept intended to be used for the PICCL and
 Quoll NLP pipelines developed at Radboud University Nijmegen.
@@ -107,7 +107,7 @@ Directory Structure
    consists of workflow components and tasks.
  * ``luiginlp/util.py`` - Auxiliary functions
  * ``setup.py`` - Installation script for LuigiNLP (only covers LuigiNLP and its direct python dependencies)
- * ``bootstrap.sh`` - Full installation script, pulls in all necessary dependencies and runs ``setup.py``, to be invoked by or from within `LaMachine <https://github.com/proycon/LaMachine>`_
+ * ``bootstrap.sh`` - Full installation script, pulls in all necessary dependencies and runs ``setup.py``, to be invoked by or from within **LaMachine** (https://github.com/proycon/LaMachine)
 
 ==============
 Installation
@@ -121,7 +121,7 @@ Install as follows:
 problem in that package)
 
 Many of the implemented modules rely on software distributed as part of
-`LaMachine <https://proycon.github.io/LaMachine>`_, so LuigiNLP is best used from
+LaMachine (https://proycon.github.io/LaMachine), so LuigiNLP is best used from
 within a LaMachine installation. LuigiNLP itself is included in LaMachine as
 well.
 
@@ -199,7 +199,7 @@ several things:
 * Write one or more workflow components that chain tasks together, workflow components are classes derived from ``luiginlp.engine.WorkflowComponent``, you usually want to derive from ``luiginlp.engine.StandardWorkflowComponent`` which is a standard component that takes one inputfile as parameter.
 
 Let's begin by writing a simple task that invokes the tokeniser
-`ucto <https://languagemachines.github.io/ucto>`_ to convert plain text to
+*ucto* (https://languagemachines.github.io/ucto) to convert plain text to
 tokenised plain text. We prescribe that the plain text document has the
 extension ``txt`` and tokenised text has the extension ``tok``. The tokeniser
 takes one mandatory parameter: the language the text is in.
@@ -264,7 +264,7 @@ workflow component on a text document as follows::
     $ luiginlp Ucto --module mymodule --inputfile test.txt --language en
 
 Ucto does not just support plain text input, it can also handle input in the
-`FoLiA <https://proycon.github.io/folia>`_ format, an XML-based format for linguistic
+*FoLiA* format (https://proycon.github.io/folia), an XML-based format for linguistic
 annotation. We could write a task ``Ucto_folia2tok`` that runs ucto in this
 manner. Suppose we did that, we could extend our workflow component as
 follows:
@@ -548,9 +548,9 @@ Troubleshooting
 ==================
 
 * *Everything is run sequentially, nothing is parallelised?* -- Did you explicitly
- supply a ``workers`` parameter with the desired maximum number of threads? Otherwise just one worker will be used and everything is sequential. If
- you did supply multiple workers, it may just  be the case that there is simply nothing to run in parallel
- in your invoked workflow.
+supply a ``workers`` parameter with the desired maximum number of threads? Otherwise just one worker will be used and everything is sequential. If
+you did supply multiple workers, it may just  be the case that there is simply nothing to run in parallel
+in your invoked workflow.
 * *I get no errors but nothing seems to run when I rerun my workflow?* -- If all output files already exist, then the workflow has nothing to do. You will need to explicitly delete your output if you want to rerun things that have already been produced succesfully.
 * *error: unrecognized argument* -- You are passing an argument that
   is not known to the target component. Perhaps you forgot to inherit certain
@@ -586,7 +586,7 @@ Troubleshooting
   method to execute through the shell but the Task's class does not specify an
   executable to run. Set ``executable = "yourexecutable"`` in the class.
 * *TypeError: Invalid element in accepts(), must be InputFormat or
- InputComponent* -- Your component's accepts() method returns something it
+InputComponent* -- Your component's accepts() method returns something it
  shouldn't, you may return a list/tuple of InputFormat or InputComponent
  instances, you may also includes tuples grouping multiple InputFormats or
  InputComponents in case the component takes multiple input files.
