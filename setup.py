@@ -23,7 +23,7 @@ setup(
     packages=['luiginlp','luiginlp.modules'],
     long_description=read('README.md'),
     classifiers=[
-        "Development Status :: 1 - Alpha",
+        "Development Status :: 4 - Beta",
         "Topic :: Text Processing :: Linguistic",
         "Programming Language :: Python :: 3",
         "Operating System :: POSIX",
@@ -34,7 +34,7 @@ setup(
     zip_safe=False,
     #include_package_data=True,
     #package_data = {'': ['*.wsgi','*.js','*.xsl','*.gif','*.png','*.xml','*.html','*.jpg','*.svg','*.rng'] },
-    install_requires=['lxml >= 2.2','sciluigi','natsort'],
+    install_requires=['natsort','sciluigi'],
     entry_points = {    'console_scripts': [
             'luiginlp = luiginlp.luiginlp:main',
     ]

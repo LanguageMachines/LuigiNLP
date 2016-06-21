@@ -2,6 +2,6 @@ language: python
 python:
     - "3.4"
 install: 
-    - python setup.py install
+    - python setup.py install || python setup.py install  #path for python-deamon problem
 script:  
     - python test/test.py
