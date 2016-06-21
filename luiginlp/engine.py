@@ -233,6 +233,8 @@ class WorkflowComponent(sciluigi.WorkflowTask):
         return super().new_task(instance_name, cls, **kwargs)
 
 class Task(sciluigi.Task):
+    outputdir = luigi.Parameter(default="")
+
     def setup_output_dir(self, d):
         #Make output directory
         if os.path.exists(d):
