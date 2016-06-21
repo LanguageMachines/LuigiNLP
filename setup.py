@@ -21,7 +21,7 @@ setup(
     keywords = "nlp computational_linguistics",
     url = "https://github.com/LanguageMachines/LuigiNLP",
     packages=['luiginlp','luiginlp.modules'],
-    long_description=read('README.md'),
+    long_description=read('README.rst'),
     classifiers=[
         "Development Status :: 4 - Beta",
         "Topic :: Text Processing :: Linguistic",
