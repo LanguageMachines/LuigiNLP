@@ -30,7 +30,7 @@ LowerCaser.inherit_parameters(LowercaseTask)
 class LowerCaser2(StandardWorkflowComponent):
     def setup(self, workflow, input_feeds):
         lowercaser = workflow.new_task('lowercaser',LowercaseTask, autopass=True)
-        lowercaser = input_feeds['txt']
+        lowercaser.in_txt = input_feeds['txt']
         return lowercaser
 
     def accepts(self):
