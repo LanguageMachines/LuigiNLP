@@ -163,7 +163,9 @@ class WorkflowComponent(sciluigi.WorkflowTask):
             input_feeds = {} #reset
             if not isinstance(inputtuple, tuple): inputtuple = (inputtuple,)
             for input in inputtuple: #pylint: disable=redefined-builtin
-                if isinstance(input, InputFormat) and (not self.startcomponent or self.startcomponent == self.__class__.__name__):
+                if isinstance(input, InputFormat):
+                    if (self.startcomponent and self.startcomponent != self.__class__.__name__):
+                        break
                     if input.valid and (not self.inputslot or self.inputslot == input.format_id):
                         input_feeds[input.format_id] = input.task(workflow).out_default
                         #print("UPDATED INPUT_FEEDS (a)", len(input_feeds), repr(input_feeds),file=sys.stderr)
@@ -178,7 +180,7 @@ class WorkflowComponent(sciluigi.WorkflowTask):
                     iwf = InputComponent(self, input)
                     swf = iwf.Class(*input.args, **input.kwargs)
                 else:
-                    raise TypeError("Invalid element in accepts(), must be Inputformat or InputComponent, got " + str(type(input)))
+                    raise TypeError("Invalid element in accepts(), must be Inputformat or InputComponent, got " + str(repr(input)))
 
                 try:
                     new_input_feeds = swf.setup_input(workflow)
