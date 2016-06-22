@@ -163,7 +163,9 @@ class WorkflowComponent(sciluigi.WorkflowTask):
             input_feeds = {} #reset
             if not isinstance(inputtuple, tuple): inputtuple = (inputtuple,)
             for input in inputtuple: #pylint: disable=redefined-builtin
-                if isinstance(input, InputFormat) and (not self.startcomponent or self.startcomponent == self.__class__.__name__):
+                if isinstance(input, InputFormat):
+                    if (self.startcomponent and self.startcomponent != self.__class__.__name__):
+                        break
                     if input.valid and (not self.inputslot or self.inputslot == input.format_id):
                         input_feeds[input.format_id] = input.task(workflow).out_default
                         #print("UPDATED INPUT_FEEDS (a)", len(input_feeds), repr(input_feeds),file=sys.stderr)
@@ -178,7 +180,7 @@ class WorkflowComponent(sciluigi.WorkflowTask):
                     iwf = InputComponent(self, input)
                     swf = iwf.Class(*input.args, **input.kwargs)
                 else:
-                    raise TypeError("Invalid element in accepts(), must be Inputformat or InputComponent, got " + str(type(input)))
+                    raise TypeError("Invalid element in accepts(), must be Inputformat or InputComponent, got " + str(repr(input)))
 
                 try:
                     new_input_feeds = swf.setup_input(workflow)
@@ -215,7 +217,7 @@ class WorkflowComponent(sciluigi.WorkflowTask):
     def workflow(self):
         input_feeds = self.setup_input(self)
         output_task = self.setup(self, input_feeds)
-        if output_task is None:
+        if output_task is None or not (isinstance(output_task, Task) or (isinstance(output_task, (list,tuple)) and all([isinstance(output_task, Task) for t in output_task]))):
             raise ValueError("Workflow setup() did not return a valid last task (or sequence of tasks), got " + str(type(output_task)))
         return output_task
 
@@ -231,6 +233,8 @@ class WorkflowComponent(sciluigi.WorkflowTask):
         return super().new_task(instance_name, cls, **kwargs)
 
 class Task(sciluigi.Task):
+    outputdir = luigi.Parameter(default="")
+
     def setup_output_dir(self, d):
         #Make output directory
         if os.path.exists(d):
@@ -284,6 +288,8 @@ class Task(sciluigi.Task):
             cmd += ' ' + ' '.join(opts)
         if args:
             cmd += ' ' + ' '.join(args)
+        if '__stdin_from' in kwargs:
+            cmd += ' < ' + shellsafe(kwargs['__stdin_from'])
         if '__stdout_to' in kwargs:
             cmd += ' > ' + shellsafe(kwargs['__stdout_to'])
         if '__stderr_to' in kwargs:
@@ -322,6 +328,7 @@ class StandardWorkflowComponent(WorkflowComponent):
     """A workflow component that takes one inputfile"""
 
     inputfile = luigi.Parameter()
+    outputdir = luigi.Parameter(default="")
 
 class TargetInfo(sciluigi.TargetInfo):
     pass

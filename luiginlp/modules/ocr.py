@@ -15,7 +15,6 @@ class Tesseract(Task):
     executable = 'tesseract'
 
     language = Parameter()
-    outputdir = Parameter(default="")
 
     in_tiff = None #input slot
 
@@ -32,7 +31,6 @@ class Tesseract(Task):
 class OCR_singlepage(StandardWorkflowComponent):
     language = Parameter()
     tiff_extension=Parameter(default='tif')
-    outputdir = Parameter(default="")
 
     def autosetup(self):
         return Tesseract

@@ -49,8 +49,6 @@ class Ucto_folia2folia(Task):
     #Parameters for this module (all mandatory!)
     language = Parameter()
 
-    #Optional parameter
-    outputdir = Parameter(default="")
 
     in_folia = None #will be linked to an out_* slot of another module in the workflow specification
 
@@ -76,7 +74,6 @@ class Ucto(StandardWorkflowComponent):
     language = Parameter()
     tok_input_sentenceperline = BoolParameter(default=False)
     tok_output_sentenceperline = BoolParameter(default=False)
-    outputdir = Parameter(default="")
 
     def autosetup(self):
         return (Ucto_txt2folia, Ucto_folia2folia)
@@ -136,7 +133,6 @@ class Ucto_dir(StandardWorkflowComponent):
     language = Parameter()
     tok_input_sentenceperline = BoolParameter(default=False)
     tok_output_sentenceperline = BoolParameter(default=False)
-    outputdir = Parameter(default="")
 
     def autosetup(self):
         return (Ucto_txt2folia_dir, Ucto_folia2folia_dir)
