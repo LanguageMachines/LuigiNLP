@@ -88,6 +88,7 @@ class Ucto(StandardWorkflowComponent):
 
 class Ucto_txt2folia_dir(Task):
     extension = Parameter(default="txt")
+    language = Parameter()
 
     in_txtdir = None #input slot
 
@@ -103,10 +104,11 @@ class Ucto_txt2folia_dir(Task):
 
         #inception aka dynamic dependencies: we yield a list of tasks to perform which could not have been predicted statically
         #in this case we run the FeaturizerTask_single component for each input file in the directory
-        yield [ Ucto(inputfile=inputfile,inputslot='txt',outputdir=self.out_tokfoliadir().path) for inputfile in inputfiles ]
+        yield [ Ucto(inputfile=inputfile,inputslot='txt',outputdir=self.out_tokfoliadir().path,language=self.language) for inputfile in inputfiles ]
 
 class Ucto_folia2folia_dir(Task):
     extension = Parameter(default="folia.xml")
+    language = Parameter()
 
     in_foliadir = None #input slot
 
@@ -122,7 +124,7 @@ class Ucto_folia2folia_dir(Task):
 
         #inception aka dynamic dependencies: we yield a list of tasks to perform which could not have been predicted statically
         #in this case we run the FeaturizerTask_single component for each input file in the directory
-        yield [ Ucto(inputfile=inputfile,inputslot='folia',outputdir=self.out_tokfoliadir().path) for inputfile in inputfiles ]
+        yield [ Ucto(inputfile=inputfile,inputslot='folia',outputdir=self.out_tokfoliadir().path,language=self.language) for inputfile in inputfiles ]
 
 @registercomponent
 class Ucto_dir(StandardWorkflowComponent):
