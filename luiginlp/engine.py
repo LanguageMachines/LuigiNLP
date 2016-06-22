@@ -266,6 +266,9 @@ class Task(sciluigi.Task):
                 continue #no value, ignore this one
             if key.startswith('__'): #internal option: ignore
                 continue
+            if key.find('__') > 0:
+                #rewrite double underscore to hyphen, for options like --foo-bar (foo__bar)
+                key = key.replace('__','-')
             delimiter = ' '
             if key[0] == '_':
                 key = key[1:]
