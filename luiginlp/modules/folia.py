@@ -183,7 +183,7 @@ class FoliaValidator(StandardWorkflowComponent):
     def accepts(self):
         return (
             InputFormat(self, format_id='folia', extension='folia.xml'),
-            InputFormat(self, format_id='foliadir', extension='foliadir'),
+            InputFormat(self, format_id='foliadir', extension='foliadir'))
 
     def autosetup(self):
         return FoliaValidatorTask, FoliaValidatorDirTask
