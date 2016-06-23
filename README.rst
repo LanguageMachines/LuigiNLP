@@ -419,6 +419,11 @@ Keyword arguments starting with a single underscore will have that underscore
 removed, this is useful in cases where parameters clash with reserved keywords
 in Python, such as ``from`` or ``import``.
 
+Processes are expected to return proper exit codes (0 for success, non-zero for
+failure), LuigiNLP will interpret it as such and consider the task failed if a
+non-zero exit code is obtained. If you want to ignore failures,
+set ``__ignorefailure=True``.
+
 ------------------------------------
 Dynamic dependencies aka Inception
 ------------------------------------

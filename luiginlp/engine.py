@@ -329,7 +329,15 @@ class Task(sciluigi.Task):
             cmd += ' > ' + shellsafe(kwargs['__stdout_to'])
         if '__stderr_to' in kwargs:
             cmd += ' 2> ' + shellsafe(kwargs['__stderr_to'])
-        super(Task, self).ex(cmd)
+
+        if '__ignorefailure' in kwargs and kwargs['__ignorefailure']:
+            try:
+                super(Task, self).ex(cmd)
+            except:
+                log.warn("Ignoring failure on request!")
+                pass
+        else:
+            super(Task, self).ex(cmd)
 
     @classmethod
     def inherit_parameters(Class, *ChildClasses):
@@ -428,10 +436,10 @@ def run(*args, **kwargs):
         else:
             success = luigi.build(args,local_scheduler=True,**kwargs)
     if not success:
-        log.error("LuigiNLP: There were errors in scheduling the workflow")
-        raise SchedulingError("LuigiNLP: There were errors in scheduling the workflow")
+        log.error("LuigiNLP: There were errors in scheduling the workflow, inspect the logs for more details")
     else:
         log.info("LuigiNLP: Workflow run completed succesfully")
+    return success
 
 def run_cmdline(TaskClass,**kwargs):
     if 'local_scheduler' in kwargs:

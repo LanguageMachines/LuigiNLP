@@ -143,7 +143,8 @@ class FoliaValidatorTask(Task):
         #Run the validator
         self.ex(self.in_folia().path,
             E=self.folia_extension,
-            __stderr_to=self.out_validator().path)
+            __stderr_to=self.out_validator().path,
+            __ignorefailure=True) #if the validator fails (it does when the document is invalid),  we ignore it as that is a valid result for us
 
 class FoliaValidatorDirTask(Task):
     in_foliadir = InputSlot()
@@ -157,7 +158,7 @@ class FoliaValidatorDirTask(Task):
         inputfiles = recursive_glob(self.in_foliadir().path, '*.' + self.folia_extension)
 
         #Run the FoLiA tasks for all dependencies
-        yield [ FoliaValidatorTask(inputfile=inputfile,folia_extension=self.folia_extension,outputdir=self.outputdir) for inputfile in inputfiles ]
+        yield [ FoliaValidator(inputfile=inputfile,folia_extension=self.folia_extension,outputdir=self.outputdir) for inputfile in inputfiles ]
 
         #Gather all output files
         if self.outputdir:
@@ -174,9 +175,9 @@ class FoliaValidatorDirTask(Task):
                             success = True
                             break
                 if success:
-                    f_summary.write(outputfilename + ": OK")
+                    f_summary.write(outputfilename + ": OK\n")
                 else:
-                    f_summary.write(outputfilename + ": ERROR")
+                    f_summary.write(outputfilename + ": ERROR\n")
 
 @registercomponent
 class FoliaValidator(StandardWorkflowComponent):
