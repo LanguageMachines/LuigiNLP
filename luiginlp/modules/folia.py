@@ -170,7 +170,7 @@ class FoliaValidatorDirTask(Task):
                 with open(outputfilename, 'r',encoding='utf-8') as f:
                     success = False
                     for line in f:
-                        if line.startswith('Validated succesfully'):
+                        if line.startswith('Validated successfully'):
                             success = True
                             break
                 if success:
