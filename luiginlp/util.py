@@ -1,6 +1,7 @@
 import os
 import shutil
 import glob
+import fnmatch
 import logging
 
 DISALLOWINSHELLSAFE = ('|','&',';','!','<','>','{','}','`','\n','\r','\t')
@@ -90,6 +91,12 @@ class DirectoryHandler:
         for file in glob.glob(mask):
             shutil.move(file, self.directory)
 
+def recursive_glob(treeroot, pattern):
+    results = []
+    for base, dirs, files in os.walk(treeroot):
+        goodfiles = fnmatch.filter(files, pattern)
+        results.extend(os.path.join(base, f) for f in goodfiles)
+    return results
 
 
 

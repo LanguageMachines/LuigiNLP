@@ -2,7 +2,7 @@ import os
 import glob
 import natsort
 from luiginlp.engine import Task, TargetInfo, InputFormat, StandardWorkflowComponent, registercomponent, InputSlot, Parameter, BoolParameter
-from luiginlp.util import getlog
+from luiginlp.util import getlog, recursive_glob
 from luiginlp.modules.openconvert import OpenConvert_folia
 
 log = getlog()
@@ -125,3 +125,67 @@ class FoliaHOCR(Task):
         self.ex(self.in_hocrdir().path,
                 t=self.threads,
                 O=self.out_foliadir().path)
+
+class FoliaValidatorTask(Task):
+    executable = "foliavalidator"
+    folia_extension = Parameter(default='folia.xml')
+
+    in_folia = InputSlot()
+
+    def out_validator(self):
+        return self.outputfrominput(inputformat='folia',stripextension=self.folia_extension, addextension='.folia-validation-report.txt')
+
+    def run(self):
+        #If an explicit outputdir is given, ensure the directory for the output file exists (including any intermediate directories)
+        if self.outputdir:
+            self.setup_output_dir(os.path.dirname(self.out_validator().path))
+
+        #Run the validator
+        self.ex(self.in_folia().path,
+            E=self.folia_extension,
+            __stderr_to=self.out_validator().path)
+
+class FoliaValidatorDirTask(Task):
+    in_foliadir = InputSlot()
+    folia_extension = Parameter(default='folia.xml')
+
+    def out_validationsummary(self):
+        return self.outputfrominput(inputformat='foliadir',stripextension='.foliadir', addextension='.folia-validation-summary.txt')
+
+    def run(self):
+        #gather input files
+        inputfiles = recursive_glob(self.in_foliadir().path, '*.' + self.folia_extension)
+
+        #Run the FoLiA tasks for all dependencies
+        yield [ FoliaValidatorTask(inputfile=inputfile,folia_extension=self.folia_extension,outputdir=self.outputdir) for inputfile in inputfiles ]
+
+        #Gather all output files
+        if self.outputdir:
+            outputfiles = recursive_glob(self.outputdir, '*.folia-validation-report.txt')
+        else:
+            outputfiles = recursive_glob(self.in_foliadir().path, '*.folia-validation-report.txt')
+
+        with open(self.out_validationreport().path,'w',encoding='utf-8') as f_summary:
+            for outputfilename in outputfiles:
+                with open(outputfilename, 'r',encoding='utf-8') as f:
+                    success = False
+                    for line in f:
+                        if line.startswith('Validated succesfully'):
+                            success = True
+                            break
+                if success:
+                    f_summary.write(outputfilename + ": OK")
+                else:
+                    f_summary.write(outputfilename + ": ERROR")
+
+@registercomponent
+class FoliaValidator(StandardWorkflowComponent):
+    def accepts(self):
+        return (
+            InputFormat(self, format_id='folia', extension='folia.xml'),
+            InputFormat(self, format_id='foliadir', extension='foliadir'),
+
+    def autosetup(self):
+        return FoliaValidatorTask, FoliaValidatorDirTask
+
+FoliaValidator.inherit_parameters(FoliaValidatorTask, FoliaValidatorDirTask)
