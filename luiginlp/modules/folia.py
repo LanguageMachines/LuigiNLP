@@ -142,7 +142,6 @@ class FoliaValidatorTask(Task):
 
         #Run the validator
         self.ex(self.in_folia().path,
-            E=self.folia_extension,
             __stderr_to=self.out_validator().path,
             __ignorefailure=True) #if the validator fails (it does when the document is invalid),  we ignore it as that is a valid result for us
 
