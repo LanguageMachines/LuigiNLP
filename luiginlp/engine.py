@@ -34,26 +34,14 @@ class InvalidInput(Exception):
 class MissingInput(Exception):
     pass
 
+class EmptyDirectory(Exception):
+    pass
+
 class AutoSetupError(Exception):
     pass
 
 class SchedulingError(Exception):
     pass
-
-class InitialInput:
-    """Class that encapsulates the filename of the initial input and associates proper format classes"""
-
-    def __init__(self, inputfile):
-        self.filename = inputfile
-
-        self.type = None
-        self.basename = self.extension = ""
-        for inputclass in INPUTFORMATS:
-            if inspect.isclass(inputclass) and issubclass(inputclass, InputFormat):
-                if inputfile.endswith('.' +inputclass.extension):
-                    self.type = inputclass
-                    self.basename = inputfile[:-(len(inputclass.extension)+1)]
-                    self.extension = '.' + inputclass.extension
 
 class InputComponent:
     """A class that encapsulates a WorkflowComponent and is used by other components to list possible dependencies, used in WorkflowComponent.accepts(), holds parameter information to pass to sub-workflows"""
@@ -88,11 +76,20 @@ class InputFormat:
         self.inputtask = None
         self.valid = False
         self.format_id = format_id
-        self.extension = extension
+        if extension[0] == '.':
+            self.extension = extension[1:]
+        else:
+            self.extension = extension
         self.directory = directory
         if getattr(workflow,inputparameter).endswith('.' + extension) or force:
             self.basename =  getattr(workflow,inputparameter)[:-(len(extension) + 1)]
             self.valid = True
+            log.debug("InputFormat " + format_id + " matches input " + getattr(workflow, inputparameter))
+        else:
+            log.debug("(Tried inputFormat " + format_id + " does not match input  " + getattr(workflow, inputparameter)+")")
+
+    def __str__(self):
+        return self.basename + '.' + self.extension
 
     def task(self, workflow):
         if self.valid:
@@ -158,6 +155,7 @@ class WorkflowComponent(sciluigi.WorkflowTask):
             raise NotImplementedError("Override the setup() or autosetup() method for your workflow component " + self.__class__.__name__)
 
     def setup_input(self, workflow):
+        if inspect.isclass(self.startcomponent): self.startcomponent = self.startcomponent.__name__
         #Can we handle the input directly?
         accepts = self.accepts()
         if not isinstance(accepts, (tuple, list)):
@@ -167,7 +165,7 @@ class WorkflowComponent(sciluigi.WorkflowTask):
             if not isinstance(inputtuple, tuple): inputtuple = (inputtuple,)
             for input in inputtuple: #pylint: disable=redefined-builtin
                 if isinstance(input, InputFormat):
-                    if (self.startcomponent and self.startcomponent != self.__class__.__name__):
+                    if self.startcomponent and self.startcomponent != self.__class__.__name__:
                         break
                     if input.valid and (not self.inputslot or self.inputslot == input.format_id):
                         input_feeds[input.format_id] = input.task(workflow).out_default
@@ -190,8 +188,11 @@ class WorkflowComponent(sciluigi.WorkflowTask):
                     inputtasks = swf.setup(workflow, new_input_feeds)
                     #print("SUBWORKFLOW INPUT_FEEDS (b)",len(new_input_feeds), repr(new_input_feeds),file=sys.stderr)
                 except InvalidInput:
+                    log.debug("(Tried workflow " + swf.__class__.__name__ + " in accept chain, does not handle provided input)")
                     #print("SUBWORKFLOW INVALID INPUT (b)", file=sys.stderr)
                     break
+
+                log.debug("Workflow " + swf.__class__.__name__ + " handles the provided input")
 
                 if isinstance(inputtasks, Task): inputtasks = (inputtasks,)
                 for inputtask in inputtasks:
@@ -226,6 +227,8 @@ class WorkflowComponent(sciluigi.WorkflowTask):
 
     def new_task(self, instance_name, cls, **kwargs):
         #automatically inherit parameters
+        if not isinstance(instance_name,str):
+            raise TypeError("First parameter to new_task must be an instance_name (str), got " + repr(instance_name))
         if 'autopass' in kwargs and kwargs['autopass']:
             for key in dir(cls):
                 if key not in ('instance_name', 'workflow_task'):
@@ -254,6 +257,18 @@ class Task(sciluigi.Task):
                 os.rename(self.__output_dir, self.__output_dir + '.failed')
         except AttributeError:
             pass
+
+    def on_success(self):
+        try:
+            if self.__output_dir and os.path.exists(self.__output_dir):
+                files = [ f for f in glob.glob(os.path.join(self.__output_dir,'*')) if f not in ('.','..') ]
+                if not files:
+                    #an empty directory is not success
+                    os.rename(self.__output_dir, self.__output_dir + '.failed')
+                    raise EmptyDirectory("Target directory " + self.__output_dir + " is empty. Expected contents")
+        except AttributeError:
+            pass
+
 
     def ex(self, *args, **kwargs):
         if not hasattr(self,'executable'):

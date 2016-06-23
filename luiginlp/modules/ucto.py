@@ -55,7 +55,7 @@ class Ucto_folia2folia(Task):
         return self.outputfrominput(inputformat='folia',stripextension='.folia.xml', addextension='.tok.folia.xml')
 
     def run(self):
-        self.ex(self.in_folia().path(), self.out_folia().path,
+        self.ex(self.in_folia().path, self.out_folia().path,
                 L=self.language,
                 F=True, #folia input
                 X=True) #folia output
