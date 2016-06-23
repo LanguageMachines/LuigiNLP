@@ -415,6 +415,10 @@ Shell redirects (``<``,``>``,``2>``) are supported through the special keyword
 arguments ``__stin_from``, ``__stdout_to`` and ``__stderr_to``, each expecting
 a path to a file. Further piping is not supported through the ``ex()`` command.
 
+Keyword arguments starting with a single underscore will have that underscore
+removed, this is useful in cases where parameters clash with reserved keywords
+in Python, such as ``from`` or ``import``.
+
 ------------------------------------
 Dynamic dependencies aka Inception
 ------------------------------------
