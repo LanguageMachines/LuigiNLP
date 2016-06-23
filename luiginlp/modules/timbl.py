@@ -4,7 +4,7 @@ import logging
 import glob
 import natsort
 from luigi import Parameter, BoolParameter, IntParameter
-from luiginlp.engine import Task, InputFormat, WorkflowComponent, StandardWorkflowComponent, registercomponent
+from luiginlp.engine import Task, InputFormat, WorkflowComponent, StandardWorkflowComponent, registercomponent, InputSlot
 from luiginlp.modules.openconvert import OpenConvert_folia
 
 log = logging.getLogger('mainlog')
@@ -21,16 +21,16 @@ class Timbl_base(Task):
 
 
 class Timbl_train(Timbl_base):
-    in_train = None #input slot
+    in_train = InputSlot() #input slot
 
     def out_ibase(self):
-        return self.outputfrominput(inputformat='train',inputextension='.train',outputextension='.ibase')
+        return self.outputfrominput(inputformat='train',stripextension='.train',addextension='.ibase')
 
     def out_wgt(self):
-        return self.outputfrominput(inputformat='train',inputextension='.train',outputextension='.wgt')
+        return self.outputfrominput(inputformat='train',stripextension='.train',addextension='.wgt')
 
     def out_log(self):
-        return self.outputfrominput(inputformat='train',inputextension='.train',outputextension='.timbl.train.log')
+        return self.outputfrominput(inputformat='train',stripextension='.train',addextension='.timbl.train.log')
 
     def run(self):
         self.ex(
@@ -45,15 +45,15 @@ class Timbl_train(Timbl_base):
             __stdout_to=self.out_log().path)
 
 class Timbl_test(Timbl_base):
-    in_ibase = None #input slot
-    in_wgt = None
-    in_test = None
+    in_ibase = InputSlot() #input slot
+    in_wgt = InputSlot()
+    in_test = InputSlot()
 
     def out_timbl(self):
-        return self.outputfrominput(inputformat='test',inputextension='.test',outputextension='.timbl.out')
+        return self.outputfrominput(inputformat='test',stripextension='.test',addextension='.timbl.out')
 
     def out_log(self):
-        return self.outputfrominput(inputformat='test',inputextension='.test',outputextension='.timbl.test.log')
+        return self.outputfrominput(inputformat='test',stripextension='.test',addextension='.timbl.test.log')
 
     def run(self):
         self.ex(
@@ -69,12 +69,12 @@ class Timbl_test(Timbl_base):
 
 
 class Timbl_leaveoneout(Timbl_base):
-    in_train = None
+    in_train = InputSlot()
 
     leaveoneout = BoolParameter(default=False)
 
     def out_log(self):
-        return self.outputfrominput(inputformat='train',inputextension='.train',outputextension='.timbl.leaveoneout.log')
+        return self.outputfrominput(inputformat='train',stripextension='.train',addextension='.timbl.leaveoneout.log')
 
     def run(self):
         self.ex(

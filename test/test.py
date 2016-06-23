@@ -5,17 +5,17 @@ import glob
 import shutil
 from luigi import Parameter
 import luiginlp
-from luiginlp.engine import Task, StandardWorkflowComponent, InputFormat, InputComponent
+from luiginlp.engine import Task, StandardWorkflowComponent, InputFormat, InputComponent, InputSlot
 
 
 class LowercaseTask(Task):
     """A simple task, implemented in python"""
 
-    in_txt = None
+    in_txt = InputSlot()
     encoding = Parameter(default='utf-8')
 
     def out_txt(self):
-        return self.outputfrominput(inputformat='txt',inputextension='.txt',outputextension='.lowercase.txt')
+        return self.outputfrominput(inputformat='txt',stripextension='.txt',addextension='.lowercase.txt')
 
     def run(self):
         with open(self.in_txt().path,'r',encoding=self.encoding) as f_in:
@@ -50,11 +50,11 @@ Lowercaser2.inherit_parameters(LowercaseTask)
 class VoweleaterTask(Task):
     """Example of a task that invokes an external tool and uses stdin and stdout. This one simply removes vowels from a text."""
     executable = 'sed'
-    in_txt = None
+    in_txt = InputSlot()
     encoding = Parameter(default='utf-8')
 
     def out_txt(self):
-        return self.outputfrominput(inputformat='txt',inputextension='.txt',outputextension='.novowels.txt')
+        return self.outputfrominput(inputformat='txt',stripextension='.txt',addextension='.novowels.txt')
 
     def run(self):
         self.ex(e='s/[aeiouAEIOU]//g',__stdin_from=self.in_txt().path,__stdout_to=self.out_txt().path)
@@ -85,11 +85,11 @@ class LowercaseVoweleater(StandardWorkflowComponent):
 LowercaseVoweleater.inherit_parameters(VoweleaterTask, LowercaseTask)
 
 class LowercaseVoweleaterDirTask(Task):
-    in_txtdir = None
+    in_txtdir = InputSlot()
     extension = Parameter(default='txt')
 
     def out_txtdir(self):
-        return self.outputfrominput(inputformat='txtdir',inputextension='.txtdir',outputextension='.lcnv.txtdir')
+        return self.outputfrominput(inputformat='txtdir',stripextension='.txtdir',addextension='.lcnv.txtdir')
 
     def run(self):
         #Set up the output directory, will create it and tear it down on failure automatically
@@ -110,11 +110,11 @@ class LowercaseVoweleaterDir(StandardWorkflowComponent):
         return InputFormat(self, format_id='txtdir',extension='txtdir', directory=True)
 
 class LowercaseVoweleaterDirTask2(Task):
-    in_txtdir = None
+    in_txtdir = InputSlot()
     extension = Parameter(default='txt')
 
     def out_txtdir(self):
-        return self.outputfrominput(inputformat='txtdir',inputextension='.txtdir',outputextension='.lcnv.txtdir')
+        return self.outputfrominput(inputformat='txtdir',stripextension='.txtdir',addextension='.lcnv.txtdir')
 
     def run(self):
         #Set up the output directory, will create it and tear it down on failure automatically

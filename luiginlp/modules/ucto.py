@@ -1,6 +1,6 @@
 import glob
 from luigi import Parameter, BoolParameter
-from luiginlp.engine import Task, registercomponent, StandardWorkflowComponent, InputComponent, InputFormat
+from luiginlp.engine import Task, registercomponent, StandardWorkflowComponent, InputComponent, InputFormat, InputSlot
 from luiginlp.util import getlog
 from luiginlp.modules.folia import ConvertToFoLiA
 
@@ -13,10 +13,10 @@ class Ucto_txt2folia(Task):
     language = Parameter()
     tok_input_sentenceperline = BoolParameter(default=False)
 
-    in_txt = None #will be linked to an out_* slot of another module in the workflow specification
+    in_txt = InputSlot() #will be linked to an out_* slot of another module in the workflow specification
 
     def out_folia(self):
-        return self.outputfrominput(inputformat='txt',inputextension='.txt', outputextension='.folia.xml')
+        return self.outputfrominput(inputformat='txt',stripextension='.txt', addextension='.folia.xml')
 
     def run(self):
         self.ex(self.in_txt().path(), self.out_folia().path,
@@ -32,10 +32,10 @@ class Ucto_txt2tok(Task):
     tok_input_sentenceperline = BoolParameter(default=False)
     tok_output_sentenceperline = BoolParameter(default=False)
 
-    in_txt = None #will be linked to an out_* slot of another module in the workflow specification
+    in_txt = InputSlot() #will be linked to an out_* slot of another module in the workflow specification
 
     def out_tok(self):
-        return self.outputfrominput(inputformat='txt',inputextension='.txt', outputextension='.tok')
+        return self.outputfrominput(inputformat='txt',stripextension='.txt', addextension='.tok')
 
     def run(self):
         self.ex(self.in_txt().path(), self.out_tok().path,
@@ -50,10 +50,10 @@ class Ucto_folia2folia(Task):
     language = Parameter()
 
 
-    in_folia = None #will be linked to an out_* slot of another module in the workflow specification
+    in_folia = InputSlot() #will be linked to an out_* slot of another module in the workflow specification
 
     def out_folia(self):
-        return self.outputfrominput(inputformat='folia',inputextension='.folia.xml', outputextension='.tok.folia.xml')
+        return self.outputfrominput(inputformat='folia',stripextension='.folia.xml', addextension='.tok.folia.xml')
 
     def run(self):
         self.ex(self.in_folia().path(), self.out_folia().path,
@@ -90,10 +90,10 @@ class Ucto_txt2folia_dir(Task):
     extension = Parameter(default="txt")
     language = Parameter()
 
-    in_txtdir = None #input slot
+    in_txtdir = InputSlot() #input slot
 
     def out_tokfoliadir(self):
-        return self.outputfrominput(inputformat='txtdir',inputextension='.txtdir', outputextension='.tok.foliadir')
+        return self.outputfrominput(inputformat='txtdir',stripextension='.txtdir', addextension='.tok.foliadir')
 
     def run(self):
         #Set up the output directory, will create it and tear it down on failure automatically
@@ -110,10 +110,10 @@ class Ucto_folia2folia_dir(Task):
     extension = Parameter(default="folia.xml")
     language = Parameter()
 
-    in_foliadir = None #input slot
+    in_foliadir = InputSlot() #input slot
 
     def out_tokfoliadir(self):
-        return self.outputfrominput(inputformat='foliadir',inputextension='.foliadir', outputextension='.tok.foliadir')
+        return self.outputfrominput(inputformat='foliadir',stripextension='.foliadir', addextension='.tok.foliadir')
 
     def run(self):
         #Set up the output directory, will create it and tear it down on failure automatically

@@ -3,7 +3,7 @@ import glob
 import sys
 import shutil
 from luigi import Parameter, BoolParameter
-from luiginlp.engine import Task, StandardWorkflowComponent, registercomponent, InputComponent, Parallel, run, ComponentParameters, InputFormat
+from luiginlp.engine import Task, StandardWorkflowComponent, registercomponent, InputComponent, Parallel, run, ComponentParameters, InputFormat, InputSlot
 from luiginlp.util import getlog
 from luiginlp.modules.pdf import Pdf2images
 from luiginlp.modules.folia import Foliacat, FoliaHOCR
@@ -16,10 +16,10 @@ class Tesseract(Task):
 
     language = Parameter()
 
-    in_tiff = None #input slot
+    in_tiff = InputSlot() #input slot
 
     def out_hocr(self):
-        return self.outputfrominput(inputformat='tiff',inputextension=('.tif','.tiff'), outputextension='.hocr')
+        return self.outputfrominput(inputformat='tiff',stripextension=('.tif','.tiff'), addextension='.hocr')
 
     def run(self):
         self.ex(self.in_tiff().path, self.out_hocr().path[:-5], #output path without hocr extension (-5), Tesseract adds it already
@@ -43,10 +43,10 @@ class TesseractOCR_document(Task):
     tiff_extension=Parameter(default='tif')
     language = Parameter()
 
-    in_tiffdir = None #input slot
+    in_tiffdir = InputSlot() #input slot
 
     def out_hocrdir(self):
-        return self.outputfrominput(inputformat='tiffdir',inputextension='.tiffdir', outputextension='.hocrdir')
+        return self.outputfrominput(inputformat='tiffdir',stripextension='.tiffdir', addextension='.hocrdir')
 
     def run(self):
         #Set up the output directory, will create it and tear it down on failure automatically

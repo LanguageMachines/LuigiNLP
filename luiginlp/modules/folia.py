@@ -2,7 +2,7 @@ import os
 import glob
 import natsort
 from luigi import Parameter, BoolParameter
-from luiginlp.engine import Task, TargetInfo, InputFormat, StandardWorkflowComponent, registercomponent
+from luiginlp.engine import Task, TargetInfo, InputFormat, StandardWorkflowComponent, registercomponent, InputSlot
 from luiginlp.util import getlog
 from luiginlp.modules.openconvert import OpenConvert_folia
 
@@ -38,10 +38,10 @@ class ConvertToFoLiA(StandardWorkflowComponent):
 class Rst2folia(Task):
     executable = 'rst2folia' #external executable (None if n/a)
 
-    in_rst = None #will be linked to an out_* slot of another module in the workflow specification
+    in_rst = InputSlot() #will be linked to an out_* slot of another module in the workflow specification
 
     def out_folia(self):
-        return self.outputfrominput(inputformat='rst',inputextension='.rst', outputextension='.folia.xml')
+        return self.outputfrominput(inputformat='rst',stripextension='.rst', addextension='.folia.xml')
 
     def run(self):
         self.ex(self.in_rst().path, self.out_folia().path,
@@ -50,10 +50,10 @@ class Rst2folia(Task):
 class Folia2html(Task):
     executable = 'folia2html' #external executable (None if n/a)
 
-    in_folia = None #will be linked to an out_* slot of another module in the workflow specification
+    in_folia = InputSlot() #will be linked to an out_* slot of another module in the workflow specification
 
     def out_html(self):
-        return self.outputfrominput(inputformat='folia',inputextension='.folia.xml', outputextension='.html')
+        return self.outputfrominput(inputformat='folia',stripextension='.folia.xml', addextension='.html')
 
     def run(self):
         self.ex(self.in_folia().path,
@@ -66,10 +66,10 @@ class Folia2txt(Task):
     paragraphperline = BoolParameter(default=False)
     retaintokenisation = BoolParameter(default=False)
 
-    in_folia = None #will be linked to an out_* slot of another module in the workflow specification
+    in_folia = InputSlot() #will be linked to an out_* slot of another module in the workflow specification
 
     def out_html(self):
-        return self.outputfrominput(inputformat='folia',inputextension='.folia.xml', outputextension='.txt')
+        return self.outputfrominput(inputformat='folia',stripextension='.folia.xml', addextension='.txt')
 
     def run(self):
         self.ex(self.in_folia().path,
@@ -81,10 +81,10 @@ class Folia2txt(Task):
 class Alpino2folia(Task):
     executable = 'alpino2folia'
 
-    in_alpinodocdir = None
+    in_alpinodocdir = InputSlot()
 
     def out_folia(self):
-        return self.outputfrominput(inputformat='alpinodocdir',inputextension='.alpinodocdir', outputextension='.folia.xml')
+        return self.outputfrominput(inputformat='alpinodocdir',stripextension='.alpinodocdir', addextension='.folia.xml')
 
     def run(self):
         alpinofiles = [ alpinofile for alpinofile in sorted(glob.glob(self.in_alpinodocdir().path + '/*.xml'),key=lambda x: int(os.path.basename(x).split('.')[0])) ] #collect all alpino files in collection
@@ -97,10 +97,10 @@ class Foliacat(Task):
 
     extension = Parameter(default='folia.xml')
 
-    in_foliadir = None
+    in_foliadir = InputSlot()
 
     def out_folia(self):
-        return self.outputfrominput(inputformat='foliadir',inputextension='.foliadir', outputextension='.folia.xml')
+        return self.outputfrominput(inputformat='foliadir',stripextension='.foliadir', addextension='.folia.xml')
 
     def run(self):
         foliafiles = [ filename for filename in natsort.natsorted(glob.glob(self.in_foliadir().path + '/*.' + self.extension)) ]
@@ -115,11 +115,11 @@ class FoliaHOCR(Task):
 
     threads = Parameter(default=1)
 
-    in_hocrdir = None
+    in_hocrdir = InputSlot()
 
     def out_foliadir(self):
         """Directory of FoLiA document, one per hOCR file"""
-        return self.outputfrominput(inputformat='hocrdir',inputextension='.hocrdir', outputextension='.foliadir')
+        return self.outputfrominput(inputformat='hocrdir',stripextension='.hocrdir', addextension='.foliadir')
 
     def run(self):
         self.setup_output_dir(self.out_foliadir().path)

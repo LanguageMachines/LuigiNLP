@@ -31,6 +31,9 @@ def registercomponent(Class):
 class InvalidInput(Exception):
     pass
 
+class MissingInput(Exception):
+    pass
+
 class AutoSetupError(Exception):
     pass
 
@@ -308,7 +311,7 @@ class Task(sciluigi.Task):
                     if isinstance(attr,luigi.Parameter) and not hasattr(Class, key):
                         setattr(Class,key, attr)
 
-    def outputfrominput(self, inputformat, inputextension, outputextension, outputdirparam='outputdir'):
+    def outputfrominput(self, inputformat, stripextension, addextension, outputdirparam='outputdir'):
         """Derives the output filename from the input filename, removing the input extension and adding the output extension. Supports outputdir parameter."""
 
         if not hasattr(self,'in_' + inputformat):
@@ -323,8 +326,8 @@ class Task(sciluigi.Task):
         if hasattr(self,outputdirparam):
             outputdir = getattr(self,outputdirparam)
             if outputdir and outputdir != '.':
-                return TargetInfo(self, os.path.join(outputdir, os.path.basename(replaceextension(inputfilename, inputextension,outputextension))))
-        return TargetInfo(self, replaceextension(inputfilename, inputextension,outputextension))
+                return TargetInfo(self, os.path.join(outputdir, os.path.basename(replaceextension(inputfilename, stripextension,addextension))))
+        return TargetInfo(self, replaceextension(inputfilename, stripextension,addextension))
 
 
 class StandardWorkflowComponent(WorkflowComponent):
@@ -419,6 +422,7 @@ def run_cmdline(TaskClass,**kwargs):
         kwargs['local_scheduler'] = True
     luigi.run(main_task_cls=TaskClass,cmdline_args=' '.join(cmdline_args), **kwargs)
 
-
+def InputSlot():
+    return lambda: None
 
 

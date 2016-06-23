@@ -3,7 +3,7 @@ import glob
 import natsort
 import os
 from luigi import Parameter, BoolParameter
-from luiginlp.engine import Task, TargetInfo, StandardWorkflowComponent
+from luiginlp.engine import Task, TargetInfo, StandardWorkflowComponent, InputSlot
 from luiginlp.util import replaceextension, DirectoryHandler
 
 log = logging.getLogger('mainlog')
@@ -13,7 +13,7 @@ class Pdf2images(Task):
     """Extract images from a PDF document to a set of TIFF images"""
     executable = 'pdfimages' #external executable (None if n/a)
 
-    in_pdf = None #will be linked to an out_* slot of another module in the workflow specification
+    in_pdf = InputSlot() #will be linked to an out_* slot of another module in the workflow specification
 
     def out_tiffdir(self):
         return TargetInfo(self, replaceextension(self.in_pdf().path, '.pdf','.tiffdir'))
@@ -33,7 +33,7 @@ class CollatePDF(Task):
 
     naturalsort = BoolParameter(default=True) #do a natural sort of all pdfs in the input directory
 
-    in_pdfdir = None
+    in_pdfdir = InputSlot()
 
     def out_pdf(self):
         return TargetInfo(self, replaceextension(self.in_pdfdir().path, '.pdfdir','.pdf'))

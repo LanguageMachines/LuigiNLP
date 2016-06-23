@@ -207,7 +207,7 @@ extension ``txt`` and tokenised text has the extension ``tok``. The tokeniser
 takes one mandatory parameter: the language the text is in.
 
 .. code-block:: python
-    from luiginlp.engine import Task
+    from luiginlp.engine import Task, InputSlot
     from luigi import Parameter
 
     class Ucto_txt2tok(Task):
@@ -217,20 +217,19 @@ takes one mandatory parameter: the language the text is in.
         #Parameters for this task
         language = Parameter()
 
-        #this is the input slot for plaintext files, input slots are always set
-        #to None and are connected to output slots of other tasks by a workflow
-        #component
-        in_txt = None 
+        #this is the input slot for plaintext files, input slots are connected
+        to output slots of other tasks by a workflow #component
+        in_txt = InputSlot()
 
         #Define an output slot, output slots are methods that start with out_
         def out_tok(self): 
             #Output slots should call outputforminput() to automatically derive the output file
-            #from the input file, typically by removing the input extension and
-            #adding a new *and distinct* output extension. The inputformat
+            #from the input file, typically by stripping the specified
+            extension form the input and adding a new *and distinct* output extension. The inputformat
             #parameter must correspond to an input slot (in_txt in this case).
             #If an outputdir parameter is defined in the task, it is automatically
             #supported.
-            return self.outputfrominput(inputformat='txt',inputextension='.txt',outputextension='.tok')
+            return self.outputfrominput(inputformat='txt',stripextension='.txt',addextension='.tok')
 
         #Define the run method, this will be called to do the actual work
         def run(self):
@@ -314,7 +313,7 @@ follows, for this one we just use Python and call no external tools (i.e. we
 set no ``executable`` and do not call ``ex()``):
 
 .. code-block:: python
-    from luiginlp.engine import Task
+    from luiginlp.engine import Task, InputSlot
     from luigi import Parameter
 
     class LowercaseText(Task):
@@ -322,13 +321,13 @@ set no ``executable`` and do not call ``ex()``):
         language = Parameter()
         encoding = Parameter(default='utf-8')
 
-        in_txt = None 
+        in_txt = InputSlot() 
 
         #Define an output slot, output slots are methods that start with out_
         def out_txt(self): 
             #We add a lowercased prefix to the extension
             #The output file may NEVER be equal to the input file
-            return self.outputfrominput(inputformat='txt',inputextension='.txt',outputextension='.lowercased.txt')
+            return self.outputfrominput(inputformat='txt',stripextension='.txt',addextension='.lowercased.txt')
 
         #Define the run method, this will be called to do the actual work
         def run(self):
@@ -402,16 +401,16 @@ component).  Consider the following task and component:
 .. code-block:: python
 
     import glob
-    from luiginlp.engine import Task, StandardWorkflowComponent
+    from luiginlp.engine import Task, StandardWorkflowComponent, InputSlot
     from luigi import Parameter
 
     class Ucto_txtdir2tokdir(Task):
         language = Parameter()
 
-        in_txtdir = None
+        in_txtdir = InputSlot()
 
         def out_tokdir(self):
-            return self.outputfrominput(inputformat='txtdir',inputextension='.txtdir',outputextension='.tokdir')
+            return self.outputfrominput(inputformat='txtdir',stripextension='.txtdir',addextension='.tokdir')
         
         def run(self):
             #setup the output directory
