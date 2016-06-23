@@ -165,7 +165,7 @@ class FoliaValidatorDirTask(Task):
         else:
             outputfiles = recursive_glob(self.in_foliadir().path, '*.folia-validation-report.txt')
 
-        with open(self.out_validationreport().path,'w',encoding='utf-8') as f_summary:
+        with open(self.out_validationsummary().path,'w',encoding='utf-8') as f_summary:
             for outputfilename in outputfiles:
                 with open(outputfilename, 'r',encoding='utf-8') as f:
                     success = False
