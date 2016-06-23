@@ -76,20 +76,24 @@ class InputFormat:
         self.inputtask = None
         self.valid = False
         self.format_id = format_id
-        if extension[0] == '.':
-            self.extension = extension[1:]
-        else:
-            self.extension = extension
         self.directory = directory
-        if getattr(workflow,inputparameter).endswith('.' + extension) or force:
-            self.basename =  getattr(workflow,inputparameter)[:-(len(extension) + 1)]
-            self.valid = True
-            log.debug("InputFormat " + format_id + " matches input " + getattr(workflow, inputparameter))
+        if isinstance(extension, str):
+            extensions = (extension,)
         else:
-            log.debug("(Tried inputFormat " + format_id + " does not match input  " + getattr(workflow, inputparameter)+")")
+            extensions = extension
+        for extension in extensions:
+            if extension[0] == '.': extension = extension[1:]
+            if getattr(workflow,inputparameter).endswith('.' + extension) or force:
+                self.basename =  getattr(workflow,inputparameter)[:-(len(extension) + 1)]
+                self.extension = extension
+                self.valid = True
+                break
 
     def __str__(self):
-        return self.basename + '.' + self.extension
+        if self.valid:
+            return self.basename + '.' + self.extension
+        else:
+            return ""
 
     def task(self, workflow):
         if self.valid:
