@@ -6,9 +6,9 @@ from luiginlp.engine import Parallel, run
 from luiginlp.util import getlog
 
 log = getlog()
-log.setLevel(logging.DEBUG)
-luigi_logger = logging.getLogger('luigi-interface')
-luigi_logger.setLevel(logging.DEBUG)
+log.setLevel(logging.INFO)
+
+
 
 def main():
     log.info("Starting LuigiNLP")

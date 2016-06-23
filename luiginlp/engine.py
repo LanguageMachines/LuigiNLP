@@ -397,27 +397,27 @@ class ParallelFromDir(sciluigi.WorkflowTask):
         return tasks
 
 def run(*args, **kwargs):
-    log.info("Starting workflow run")
+    luigi_logger = logging.getLogger('luigi-interface')
+    if len(luigi_logger.handlers) == 2:
+        luigi_logger.removeHandler(luigi_logger.handlers[1]) #ugly patch remove the stream handler for the luigi-interface log that sciluigi configured
+    luigi_logger.setLevel(logging.INFO)
+
+    log.info("LuigiNLP: Starting workflow")
     if 'local_scheduler' in kwargs:
         if not args:
-            luigi.run(**kwargs)
+            success = luigi.run(**kwargs)
         else:
             success = luigi.build(args,**kwargs)
-            if not success:
-                log.error("There were errors in scheduling the workflow")
-                raise SchedulingError("There were errors in scheduling the workflow")
-            else:
-                log.info("Workflow run completed")
     else:
         if not args:
-            luigi.run(local_scheduler=True,**kwargs)
+            success = luigi.run(local_scheduler=True,**kwargs)
         else:
             success = luigi.build(args,local_scheduler=True,**kwargs)
-            if not success:
-                log.error("There were errors in scheduling the workflow")
-                raise SchedulingError("There were errors in scheduling the workflow")
-            else:
-                log.info("Workflow run completed")
+    if not success:
+        log.error("LuigiNLP: There were errors in scheduling the workflow")
+        raise SchedulingError("LuigiNLP: There were errors in scheduling the workflow")
+    else:
+        log.info("LuigiNLP: Workflow run completed succesfully")
 
 def run_cmdline(TaskClass,**kwargs):
     if 'local_scheduler' in kwargs:
