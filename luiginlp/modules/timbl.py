@@ -3,8 +3,7 @@ import os
 import logging
 import glob
 import natsort
-from luigi import Parameter, BoolParameter, IntParameter
-from luiginlp.engine import Task, InputFormat, WorkflowComponent, StandardWorkflowComponent, registercomponent, InputSlot
+from luiginlp.engine import Task, InputFormat, WorkflowComponent, StandardWorkflowComponent, registercomponent, InputSlot, Parameter, BoolParameter, IntParameter
 from luiginlp.modules.openconvert import OpenConvert_folia
 
 log = logging.getLogger('mainlog')

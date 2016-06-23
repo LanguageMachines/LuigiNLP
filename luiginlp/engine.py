@@ -281,7 +281,7 @@ class Task(sciluigi.Task):
                 key = '-' + key
             else:
                 key = '--' + key
-                if '__useequals' in kwargs and kwargs['__useequals']:
+                if '__assignop' in kwargs and kwargs['__assignop']:
                     delimiter = '='
 
             if value is True:
@@ -425,4 +425,14 @@ def run_cmdline(TaskClass,**kwargs):
 def InputSlot():
     return lambda: None
 
+class Parameter(sciluigi.Parameter):
+    pass
 
+class BoolParameter(luigi.BoolParameter):
+    pass
+
+class IntParameter(luigi.IntParameter):
+    pass
+
+class FloatParameter(luigi.FloatParameter):
+    pass

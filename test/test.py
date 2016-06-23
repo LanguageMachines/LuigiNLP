@@ -3,9 +3,8 @@ import os
 import unittest
 import glob
 import shutil
-from luigi import Parameter
 import luiginlp
-from luiginlp.engine import Task, StandardWorkflowComponent, InputFormat, InputComponent, InputSlot
+from luiginlp.engine import Task, StandardWorkflowComponent, InputFormat, InputComponent, InputSlot, Parameter
 
 
 class LowercaseTask(Task):

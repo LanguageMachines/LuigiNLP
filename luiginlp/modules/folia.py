@@ -1,8 +1,7 @@
 import os
 import glob
 import natsort
-from luigi import Parameter, BoolParameter
-from luiginlp.engine import Task, TargetInfo, InputFormat, StandardWorkflowComponent, registercomponent, InputSlot
+from luiginlp.engine import Task, TargetInfo, InputFormat, StandardWorkflowComponent, registercomponent, InputSlot, Parameter, BoolParameter
 from luiginlp.util import getlog
 from luiginlp.modules.openconvert import OpenConvert_folia
 

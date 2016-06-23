@@ -1,6 +1,5 @@
 import glob
-from luigi import Parameter, BoolParameter
-from luiginlp.engine import Task, registercomponent, StandardWorkflowComponent, InputComponent, InputFormat, InputSlot
+from luiginlp.engine import Task, registercomponent, StandardWorkflowComponent, InputComponent, InputFormat, InputSlot, Parameter, BoolParameter
 from luiginlp.util import getlog
 from luiginlp.modules.folia import ConvertToFoLiA
 

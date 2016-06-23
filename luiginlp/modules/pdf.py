@@ -2,8 +2,7 @@ import logging
 import glob
 import natsort
 import os
-from luigi import Parameter, BoolParameter
-from luiginlp.engine import Task, TargetInfo, StandardWorkflowComponent, InputSlot
+from luiginlp.engine import Task, TargetInfo, StandardWorkflowComponent, InputSlot, Parameter, BoolParameter
 from luiginlp.util import replaceextension, DirectoryHandler
 
 log = logging.getLogger('mainlog')
@@ -16,7 +15,7 @@ class Pdf2images(Task):
     in_pdf = InputSlot() #will be linked to an out_* slot of another module in the workflow specification
 
     def out_tiffdir(self):
-        return TargetInfo(self, replaceextension(self.in_pdf().path, '.pdf','.tiffdir'))
+        return self.outputfrominput(inputformat='pdf',stripextension='.pdf',addextension='.tiffdir')
 
     def run(self):
         #we use a DirectoryHandler that takes care of creating a temporary directory to hold all output and renames it to the final directory when all succeeds, and cleaning up otherwise
@@ -36,7 +35,7 @@ class CollatePDF(Task):
     in_pdfdir = InputSlot()
 
     def out_pdf(self):
-        return TargetInfo(self, replaceextension(self.in_pdfdir().path, '.pdfdir','.pdf'))
+        return self.outputfrominput(inputformat='pdfdir',stripextension='.pdfdir',addextension='.pdf')
 
     def run(self):
         pdf_files = [ pdffile for pdffile in glob.glob(self.in_pdfdir().path + '/*.pdf') ] #collect all pdf files in collection

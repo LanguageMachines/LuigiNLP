@@ -200,6 +200,18 @@ several things:
 * Write one or more tasks, tasks are classes derived from ``luiginlp.engine.Task``
 * Write one or more workflow components that chain tasks together, workflow components are classes derived from ``luiginlp.engine.WorkflowComponent``, you usually want to derive from ``luiginlp.engine.StandardWorkflowComponent`` which is a standard component that takes one inputfile as parameter.
 
+Always take in mind the following guidelines when writing tasks and components for
+LuigiNLP:
+
+* Tasks should cover the smallest unit of work, do not do too much in one task, but chain tasks instead.
+* Be very specific in your file extensions. If two tasks output a file with the
+  same extension, they are considered identical for all intends and purposes!  Multiple stacking extensions are fine and
+  recommend (``*.x.y.z``). Generally, each task strips input extensions (optional) and adds a a new extension. 
+* Input and output filenames may never be the same! It is forbidden to change a file in-place.
+* Consider whether you want to chain multiple workflow components and to use the automatic
+  resolution mechanism, or whether you have larger components that chain
+  multiple tasks. Components are needed whenever you want to have multiple entry points.
+
 Let's begin by writing a simple task that invokes the tokeniser
 *ucto* (https://languagemachines.github.io/ucto) to convert plain text to
 tokenised plain text. We prescribe that the plain text document has the
@@ -207,8 +219,7 @@ extension ``txt`` and tokenised text has the extension ``tok``. The tokeniser
 takes one mandatory parameter: the language the text is in.
 
 .. code-block:: python
-    from luiginlp.engine import Task, InputSlot
-    from luigi import Parameter
+    from luiginlp.engine import Task, InputSlot, Parameter
 
     class Ucto_txt2tok(Task):
         #This task invokes an external tool (ucto), set the executable to invoke
@@ -245,7 +256,7 @@ takes one mandatory parameter: the language the text is in.
 We can now turn this task into a simple component that we can invoke:
 
 .. code-block:: python
-    from luiginlp.engine import StandardWorkflowComponent, InputFormat
+    from luiginlp.engine import StandardWorkflowComponent, InputFormat, Parameter
 
     class Ucto(StandardWorkflowComponent):
         #parameters for the task, most are just passed on to the task(s)
@@ -313,8 +324,7 @@ follows, for this one we just use Python and call no external tools (i.e. we
 set no ``executable`` and do not call ``ex()``):
 
 .. code-block:: python
-    from luiginlp.engine import Task, InputSlot
-    from luigi import Parameter
+    from luiginlp.engine import Task, InputSlot, Parameter
 
     class LowercaseText(Task):
         #Parameters for this task
@@ -375,6 +385,36 @@ everything.
             #always return the last task(s)
             return ucto
 
+-----------------------------------
+Executing external commands
+-----------------------------------
+
+We have seen that the ``ex()`` method on a task can be invoked from it's
+``run()`` method to call external tools. The executable to execute is defined
+in the task's ``executable`` property. 
+
+The ``ex()`` method allows you to define your calls to external tools in a
+python way, and ensures that all parameter values are properly escaped to prevent any
+shell injection attacks. Its offers cleaner and more secure code.
+
+When you call ``ex()``, all keyword arguments will be passed as parameters. The
+keyword argument ``x`` (one letter) to ``ex()`` , will result in the flag ``-x``,
+whereas keyword argument ``foo`` (multiple letters), will result in the flag
+``--foo``. If you want to force single hyphens for multiletter options, set ``__singlehyphen=True``.
+Keyword arguments starting with a double underscore are special directives to
+``ex()``. A double underscore inside a parameter will be translated to a
+hyphen, as Python does not allow variables with hyphens. So keyword argument
+``foo__bar`` will result in the option ``--foo-bar``.
+
+Keyword arguments with a boolean value are passed as flags without
+value, i.e. passing ``foo=True`` results just in ``--foo``, whereas ``foo=5``
+yields ``--foo 5``. If you want to force the use of an assignment operator, as
+in ``--foo=5``, pass  ``__assignop=True``.
+
+Shell redirects (``<``,``>``,``2>``) are supported through the special keyword
+arguments ``__stin_from``, ``__stdout_to`` and ``__stderr_to``, each expecting
+a path to a file. Further piping is not supported through the ``ex()`` command.
+
 ------------------------------------
 Dynamic dependencies aka Inception
 ------------------------------------
@@ -401,8 +441,7 @@ component).  Consider the following task and component:
 .. code-block:: python
 
     import glob
-    from luiginlp.engine import Task, StandardWorkflowComponent, InputSlot
-    from luigi import Parameter
+    from luiginlp.engine import Task, StandardWorkflowComponent, InputSlot, Parameter
 
     class Ucto_txtdir2tokdir(Task):
         language = Parameter()
