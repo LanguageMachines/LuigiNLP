@@ -252,24 +252,34 @@ class Task(sciluigi.Task):
         elif os.path.exists(d + '.failed'):
             os.rename(d +'.failed',d)
         else:
-            os.mkdir(d)
-        self.__output_dir = d
+            os.makedirs(d)
+        try:
+            self.__output_dir.append(d)
+        except AttributeError: #not defined yet:
+            self.__output_dir = [d]
 
     def on_failure(self, exception):
         try:
-            if self.__output_dir and os.path.exists(self.__output_dir):
-                os.rename(self.__output_dir, self.__output_dir + '.failed')
+            if self.__output_dir:
+                for d in self.__output_dir:
+                    if os.path.exists(d):
+                        os.rename(d, d + '.failed')
         except AttributeError:
             pass
 
     def on_success(self):
         try:
-            if self.__output_dir and os.path.exists(self.__output_dir):
-                files = [ f for f in glob.glob(os.path.join(self.__output_dir,'*')) if f not in ('.','..') ]
-                if not files:
-                    #an empty directory is not success
-                    os.rename(self.__output_dir, self.__output_dir + '.failed')
-                    raise EmptyDirectory("Target directory " + self.__output_dir + " is empty. Expected contents")
+            if self.__output_dir:
+                failed = []
+                for d in self.__output_dirs:
+                    if os.path.exists(self.__output_dir):
+                        files = [ f for f in glob.glob(os.path.join(d,'*')) if f not in ('.','..') ]
+                        if not files:
+                            #an empty directory is not success
+                            os.rename(d, d + '.failed')
+                            failed.append(d)
+                if failed:
+                    raise EmptyDirectory("Target directory/directories " + ','.join(failed) + " is/are empty. Expected contents")
         except AttributeError:
             pass
 
