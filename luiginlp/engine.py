@@ -28,19 +28,22 @@ def registercomponent(Class):
         COMPONENTS.append(Class)
     return Class
 
-class InvalidInput(Exception):
+class LuigiNLPException(Exception):
     pass
 
-class MissingInput(Exception):
+class InvalidInput(LuigiNLPException):
     pass
 
-class EmptyDirectory(Exception):
+class MissingInput(LuigiNLPException):
     pass
 
-class AutoSetupError(Exception):
+class EmptyDirectory(LuigiNLPException):
     pass
 
-class SchedulingError(Exception):
+class AutoSetupError(LuigiNLPException):
+    pass
+
+class SchedulingError(LuigiNLPException):
     pass
 
 class InputComponent:
@@ -223,8 +226,12 @@ class WorkflowComponent(sciluigi.WorkflowTask):
         raise InvalidInput("Unable to find an entry point for supplied input")
 
     def workflow(self):
-        input_feeds = self.setup_input(self)
-        output_task = self.setup(self, input_feeds)
+        try:
+            input_feeds = self.setup_input(self)
+            output_task = self.setup(self, input_feeds)
+        except Exception as e:
+            log.error(e.__class__.__name__ + ": " + str(e))
+            raise
         if output_task is None or not (isinstance(output_task, Task) or (isinstance(output_task, (list,tuple)) and all([isinstance(output_task, Task) for t in output_task]))):
             raise ValueError("Workflow setup() did not return a valid last task (or sequence of tasks), got " + str(type(output_task)))
         return output_task
