@@ -266,6 +266,7 @@ class Task(sciluigi.Task):
                         os.rename(d, d + '.failed')
         except AttributeError:
             pass
+        return super().on_failure(exception)
 
     def on_success(self):
         try:
@@ -282,6 +283,11 @@ class Task(sciluigi.Task):
                     raise EmptyDirectory("Target directory/directories " + ','.join(failed) + " is/are empty. Expected contents")
         except AttributeError:
             pass
+
+        for attrname in dir(self):
+            if attrname[:4] == 'out_':
+                log.info("Produced output " + getattr(self, attrname)().path)
+        return super().on_success()
 
 
     def ex(self, *args, **kwargs):
