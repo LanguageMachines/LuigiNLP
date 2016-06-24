@@ -335,10 +335,18 @@ class Task(sciluigi.Task):
                 opts.append(key + delimiter + shellsafe(value))
             else:
                 opts.append(key + delimiter + str(value))
-        if opts:
-            cmd += ' ' + ' '.join(opts)
-        if args:
-            cmd += ' ' + ' '.join(args)
+
+        if '__options_last' in kwargs and kwargs['__options_last']:
+            if args:
+                cmd += ' ' + ' '.join(args)
+            if opts:
+                cmd += ' ' + ' '.join(opts)
+        else:
+            if opts:
+                cmd += ' ' + ' '.join(opts)
+            if args:
+                cmd += ' ' + ' '.join(args)
+
         if '__stdin_from' in kwargs:
             cmd += ' < ' + shellsafe(kwargs['__stdin_from'])
         if '__stdout_to' in kwargs:
