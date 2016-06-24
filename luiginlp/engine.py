@@ -71,6 +71,7 @@ class InputTask(sciluigi.ExternalTask):
         return TargetInfo(self, self.basename + '.' + self.extension)
 
 
+
 class InputFormat:
     """A class that encapsulates an initial task"""
 
@@ -89,6 +90,8 @@ class InputFormat:
             if getattr(workflow,inputparameter).endswith('.' + extension) or force:
                 self.basename =  getattr(workflow,inputparameter)[:-(len(extension) + 1)]
                 self.extension = extension
+                if not os.path.exists(self.basename + '.' + self.extension):
+                    raise FileNotFoundError("Specified input file for format " + self.format_id + " to " + workflow.__class__.__name__ + " does not exist: " + self.basename + "." + self.extension)
                 self.valid = True
                 break
 
