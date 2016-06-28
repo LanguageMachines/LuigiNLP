@@ -180,9 +180,11 @@ class FoliaValidatorDirTask(Task):
 
 @registercomponent
 class FoliaValidator(StandardWorkflowComponent):
+    folia_extension = Parameter(default='folia.xml')
+
     def accepts(self):
         return (
-            InputFormat(self, format_id='folia', extension='folia.xml'),
+            InputFormat(self, format_id='folia', extension=self.folia_extension),
             InputFormat(self, format_id='foliadir', extension='foliadir'))
 
     def autosetup(self):
