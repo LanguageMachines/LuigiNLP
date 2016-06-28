@@ -117,6 +117,36 @@ class WorkflowComponent(sciluigi.WorkflowTask):
 
     accepted_components = [] #additional accepted components (will be injected through the accept() method)
 
+
+    def requires(self):
+        '''
+        Implementation of Luigi API method. (Overrides SciLuigi with minor modification!)
+        '''
+        clsname = self.__class__.__name__
+        if not self._hasloggedstart:
+            log.info('-'*80)
+            log.info('SciLuigi: %s Workflow Component Started (logging to %s)', clsname, self.get_wflogpath())
+            log.info('-'*80)
+            self._hasloggedstart = True
+        if not self._hasaddedhandler:
+            wflog_formatter = logging.Formatter(
+                    sciluigi.interface.LOGFMT_STREAM,
+                    sciluigi.interface.DATEFMT)
+            wflog_file_handler = logging.FileHandler(self.output()['log'].path, delay=True)
+            wflog_file_handler.setLevel(logging.INFO)
+            wflog_file_handler.setFormatter(wflog_formatter)
+            log.addHandler(wflog_file_handler)
+            luigilog = logging.getLogger('luigi-interface')
+            luigilog.addHandler(wflog_file_handler)
+            self._hasaddedhandler = True
+        workflow_output = self.workflow()
+        if workflow_output is None:
+            clsname = self.__class__.__name__
+            raise Exception(('Nothing returned from workflow() method in the %s Workflow task. '
+                             'Forgot to add a return statement at the end?') % clsname)
+        return workflow_output
+
+
     @classmethod
     def accept(cls, *ChildClasses):
         for ChildClass in ChildClasses:
@@ -446,7 +476,7 @@ def run(*args, **kwargs):
     luigi_logger = logging.getLogger('luigi-interface')
     if len(luigi_logger.handlers) == 2:
         luigi_logger.removeHandler(luigi_logger.handlers[1]) #ugly patch remove the stream handler for the luigi-interface log that sciluigi configured
-    luigi_logger.setLevel(logging.INFO)
+    luigi_logger.setLevel(logging.WARN) #setting this lower causes problems with too many open files when parallizing many workflows at once
 
     log.info("LuigiNLP: Starting workflow")
     if 'local_scheduler' in kwargs:
