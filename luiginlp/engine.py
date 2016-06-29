@@ -122,29 +122,28 @@ class WorkflowComponent(sciluigi.WorkflowTask):
         '''
         Implementation of Luigi API method. (Overrides SciLuigi with minor modification!)
         '''
+        if not self._hasaddedhandler:
+            self._hasaddedhandler = True
         clsname = self.__class__.__name__
         if not self._hasloggedstart:
-            log.info('-'*80)
-            log.info('SciLuigi: %s Workflow Component Started (logging to %s)', clsname, self.get_wflogpath())
-            log.info('-'*80)
+            log.info('>>> Starting component %s', str(self)) # (logging to %s)', clsname, self.get_wflogpath())
             self._hasloggedstart = True
-        if not self._hasaddedhandler:
-            wflog_formatter = logging.Formatter(
-                    sciluigi.interface.LOGFMT_STREAM,
-                    sciluigi.interface.DATEFMT)
-            wflog_file_handler = logging.FileHandler(self.output()['log'].path, delay=True)
-            wflog_file_handler.setLevel(logging.INFO)
-            wflog_file_handler.setFormatter(wflog_formatter)
-            log.addHandler(wflog_file_handler)
-            luigilog = logging.getLogger('luigi-interface')
-            luigilog.addHandler(wflog_file_handler)
-            self._hasaddedhandler = True
         workflow_output = self.workflow()
         if workflow_output is None:
             clsname = self.__class__.__name__
             raise Exception(('Nothing returned from workflow() method in the %s Workflow task. '
                              'Forgot to add a return statement at the end?') % clsname)
         return workflow_output
+
+    def run(self):
+        if not self._hasloggedfinish:
+            clsname = self.__class__.__name__
+            log.info('<<< Finished component %s', str(self))
+            self._hasloggedfinish = True
+        return super().run()
+
+    def output(self):
+        return {'audit': luigi.LocalTarget(self.get_auditlogpath())}
 
 
     @classmethod
