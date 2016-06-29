@@ -154,17 +154,22 @@ class FoliaValidatorDirTask(Task):
 
     def run(self):
         #gather input files
+        log.info("Collecting input files...")
         inputfiles = recursive_glob(self.in_foliadir().path, '*.' + self.folia_extension)
+        log.info("Collected " + str(inputfiles) + " input files")
 
+        log.info("Scheduling validators for each input file...")
         #Run the FoLiA tasks for all dependencies
         yield [ FoliaValidator(inputfile=inputfile,folia_extension=self.folia_extension,outputdir=self.outputdir) for inputfile in inputfiles ]
 
+        log.info("Collecting output files...")
         #Gather all output files
         if self.outputdir:
             outputfiles = recursive_glob(self.outputdir, '*.folia-validation-report.txt')
         else:
             outputfiles = recursive_glob(self.in_foliadir().path, '*.folia-validation-report.txt')
 
+        log.info("Writing summary")
         with open(self.out_validationsummary().path,'w',encoding='utf-8') as f_summary:
             for outputfilename in outputfiles:
                 with open(outputfilename, 'r',encoding='utf-8') as f:
