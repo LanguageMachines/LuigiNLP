@@ -156,7 +156,7 @@ class FoliaValidatorDirTask(Task):
         #gather input files
         log.info("Collecting input files...")
         inputfiles = recursive_glob(self.in_foliadir().path, '*.' + self.folia_extension)
-        log.info("Collected " + str(inputfiles) + " input files")
+        log.info("Collected " + len(str(inputfiles)) + " input files")
 
         log.info("Scheduling validators for each input file...")
         #Run the FoLiA tasks for all dependencies
