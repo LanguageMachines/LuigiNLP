@@ -473,11 +473,12 @@ class ParallelFromDir(sciluigi.WorkflowTask):
 
 def run(*args, **kwargs):
     luigi_logger = logging.getLogger('luigi-interface')
+    logfile = luigi_logger.handlers[0].baseFilename
     if len(luigi_logger.handlers) == 2:
         luigi_logger.removeHandler(luigi_logger.handlers[1]) #ugly patch remove the stream handler for the luigi-interface log that sciluigi configured
-    luigi_logger.setLevel(logging.WARN) #setting this lower causes problems with too many open files when parallizing many workflows at once
+    luigi_logger.setLevel(logging.INFO)
 
-    log.info("LuigiNLP: Starting workflow")
+    log.info("LuigiNLP: Starting workflow (logging to %s)",logfile )
     if 'local_scheduler' in kwargs:
         if not args:
             success = luigi.run(**kwargs)
@@ -489,9 +490,9 @@ def run(*args, **kwargs):
         else:
             success = luigi.build(args,local_scheduler=True,**kwargs)
     if not success:
-        log.error("LuigiNLP: There were errors in scheduling the workflow, inspect the logs for more details")
+        log.error("LuigiNLP: There were errors in scheduling the workflow, inspect the log at %s for more details", logfile)
     else:
-        log.info("LuigiNLP: Workflow run completed succesfully")
+        log.info("LuigiNLP: Workflow run completed succesfully (logged to %s)", logfile)
     return success
 
 def run_cmdline(TaskClass,**kwargs):
