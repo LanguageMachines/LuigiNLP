@@ -221,5 +221,21 @@ class Test2(unittest.TestCase):
         luiginlp.run(LowercaseVoweleaterDir2(inputfile='/tmp/corpus.txtdir'))
         self.assertTrue(testdircontents('/tmp/corpus.lcnv.txtdir', 'lowercase.novowels.txt', 'ths s  tst'))
 
+class Test3(unittest.TestCase):
+    def setUp(self):
+        os.mkdir('/tmp/corpus.txtdir')
+        for i in range(0,250):
+            with open('/tmp/corpus.txtdir/test' + str(i) + '.txt','w',encoding='utf-8') as f:
+                f.write("THIS IS A TEST\n" * 100)
+
+    def tearDown(self):
+        for d in ('/tmp/corpus.txtdir', '/tmp/corpus.lcnv.txtdir'):
+            if os.path.exists(d):
+                shutil.rmtree(d)
+
+    def test3_10(self):
+        """Parallelisation on directory input (invokes two chained components, one task per component, for each file)"""
+        luiginlp.run(LowercaseVoweleaterDir2(inputfile='/tmp/corpus.txtdir'), workers=5)
+
 if __name__ == '__main__':
     unittest.main()
