@@ -160,7 +160,10 @@ class FoliaValidatorDirTask(Task):
 
         log.info("Scheduling validators for each input file...")
         #Run the FoLiA tasks for all dependencies
-        yield [ FoliaValidator(inputfile=inputfile,folia_extension=self.folia_extension,outputdir=self.outputdir) for inputfile in inputfiles ]
+        if self.outputdir:
+            yield [ FoliaValidator(inputfile=inputfile,folia_extension=self.folia_extension,outputdir=os.path.dirname(inputfile).replace(self.in_foliadir().path,self.outputdir)) for inputfile in inputfiles ]
+        else:
+            yield [ FoliaValidator(inputfile=inputfile,folia_extension=self.folia_extension) for inputfile in inputfiles ]
 
         log.info("Collecting output files...")
         #Gather all output files
