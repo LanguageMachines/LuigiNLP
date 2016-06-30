@@ -9,6 +9,7 @@ import importlib
 import itertools
 import shutil
 import glob
+import socket
 from luiginlp.util import shellsafe, getlog, replaceextension
 
 log = getlog()
@@ -479,16 +480,32 @@ def run(*args, **kwargs):
     luigi_logger.setLevel(logging.INFO)
 
     log.info("LuigiNLP: Starting workflow (logging to %s)",logfile )
-    if 'local_scheduler' in kwargs:
-        if not args:
-            success = luigi.run(**kwargs)
-        else:
-            success = luigi.build(args,**kwargs)
+
+    if 'scheduler_host' in kwargs:
+        host = kwargs['scheduler_host']
     else:
-        if not args:
-            success = luigi.run(local_scheduler=True,**kwargs)
-        else:
-            success = luigi.build(args,local_scheduler=True,**kwargs)
+        host = 'localhost'
+
+    if 'scheduler_port' in kwargs:
+        port = kwargs['scheduler_port']
+    else:
+        port = 8082
+
+    #test whether luigid is running, fall back to local scheduler otherwise
+    if 'local_scheduler' not in kwargs:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            sock.connect((host,port))
+            log.info("Using scheduler at " + host + ":" + str(port))
+        except:
+            kwargs['local_scheduler'] = True
+            log.info("Using local scheduler")
+
+    if not args:
+        success = luigi.run(**kwargs)
+    else:
+        success = luigi.build(args,**kwargs)
+
     if not success:
         log.error("LuigiNLP: There were errors in scheduling the workflow, inspect the log at %s for more details", logfile)
     else:
