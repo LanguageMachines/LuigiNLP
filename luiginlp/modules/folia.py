@@ -2,7 +2,7 @@ import os
 import glob
 import natsort
 from luiginlp.engine import Task, TargetInfo, InputFormat, StandardWorkflowComponent, registercomponent, InputSlot, Parameter, BoolParameter, IntParameter
-from luiginlp.util import getlog, recursive_glob, waitforbatch, replaceextension
+from luiginlp.util import getlog, recursive_glob, waitforslot, waitforcompletion, replaceextension
 from luiginlp.modules.openconvert import OpenConvert_folia
 
 log = getlog()
@@ -179,7 +179,9 @@ class FoliaValidatorDirTask(Task):
                 pids.append(self.ex_async(inputfile,
                     __stderr_to=outputfile,
                     __ignorefailure=True)) #if the validator fails (it does when the document is invalid),  we ignore it as that is a valid result for us
-                waitforbatch(pids, self.validatorthreads)
+                waitforslot(pids, self.validatorthreads)
+            waitforcompletion(pids)
+
 
         log.info("Collecting output files...")
         #Gather all output files
