@@ -172,7 +172,7 @@ class FoliaValidatorDirTask(Task):
             #Luigi can't handle too many scheduled tasks quickly enough, we run directly
             pids = []
             for inputfile in inputfiles:
-                outputfile = replaceextension(inputfile, self.foliaextension, '.folia-validation-report.txt')
+                outputfile = replaceextension(inputfile, self.folia_extension, '.folia-validation-report.txt')
                 if self.outputdir:
                     outputfile = outputfile.replace(self.in_folia().path, self.outputdir)
                 #Run the validator
