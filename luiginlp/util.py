@@ -99,4 +99,12 @@ def recursive_glob(treeroot, pattern):
     return results
 
 
-
+def waitforbatch(pids, threads)
+    while len(pids) == threads:
+        newpids = []
+        for pid in pids:
+            try:
+                os.kill(pid, 0) #checks if process still running, does not kill
+            except:
+                newpids.append(pid)
+            pids = newpids

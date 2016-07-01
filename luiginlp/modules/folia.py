@@ -2,7 +2,7 @@ import os
 import glob
 import natsort
 from luiginlp.engine import Task, TargetInfo, InputFormat, StandardWorkflowComponent, registercomponent, InputSlot, Parameter, BoolParameter
-from luiginlp.util import getlog, recursive_glob
+from luiginlp.util import getlog, recursive_glob, waitforbatch, replaceextension
 from luiginlp.modules.openconvert import OpenConvert_folia
 
 log = getlog()
@@ -146,8 +146,10 @@ class FoliaValidatorTask(Task):
             __ignorefailure=True) #if the validator fails (it does when the document is invalid),  we ignore it as that is a valid result for us
 
 class FoliaValidatorDirTask(Task):
+    executable = "foliavalidator"
     in_foliadir = InputSlot()
     folia_extension = Parameter(default='folia.xml')
+    validatorthreads = IntParameter(default=1)
 
     def out_validationsummary(self):
         return self.outputfrominput(inputformat='foliadir',stripextension='.foliadir', addextension='.folia-validation-summary.txt')
@@ -158,12 +160,26 @@ class FoliaValidatorDirTask(Task):
         inputfiles = recursive_glob(self.in_foliadir().path, '*.' + self.folia_extension)
         log.info("Collected " + str(len(inputfiles)) + " input files")
 
-        log.info("Scheduling validators for each input file...")
-        #Run the FoLiA tasks for all dependencies
-        if self.outputdir:
-            yield [ FoliaValidator(inputfile=inputfile,folia_extension=self.folia_extension,outputdir=os.path.dirname(inputfile).replace(self.in_foliadir().path,self.outputdir)) for inputfile in inputfiles ]
+        if len(inputfiles) < 5000:
+            log.info("Scheduling validators for each input file...")
+            #Run the FoLiA tasks for all dependencies
+            if self.outputdir:
+                yield [ FoliaValidator(inputfile=inputfile,folia_extension=self.folia_extension,outputdir=os.path.dirname(inputfile).replace(self.in_foliadir().path,self.outputdir)) for inputfile in inputfiles ]
+            else:
+                yield [ FoliaValidator(inputfile=inputfile,folia_extension=self.folia_extension) for inputfile in inputfiles ]
         else:
-            yield [ FoliaValidator(inputfile=inputfile,folia_extension=self.folia_extension) for inputfile in inputfiles ]
+            log.info("Handling directly...")
+            #Luigi can't handle too many scheduled tasks quickly enough, we run directly
+            pids = []
+            for inputfile in inputfiles:
+                outputfile = replaceextension(inputfile, self.foliaextension, '.folia-validation-report.txt')
+                if self.outputdir:
+                    outputfile = outputfile.replace(self.in_folia().path, self.outputdir)
+                #Run the validator
+                pids.append(self.ex_async(inputfile,
+                    __stderr_to=outputfile,
+                    __ignorefailure=True)) #if the validator fails (it does when the document is invalid),  we ignore it as that is a valid result for us
+                waitforbatch(pids, self.validatorthreads)
 
         log.info("Collecting output files...")
         #Gather all output files

@@ -330,7 +330,7 @@ class Task(sciluigi.Task):
         return super().on_success()
 
 
-    def ex(self, *args, **kwargs):
+    def getcmd(self, *args, **kwargs):
         if not hasattr(self,'executable'):
             raise Exception("No executable defined for Task " + self.__class__.__name__)
 
@@ -384,6 +384,11 @@ class Task(sciluigi.Task):
         if '__stderr_to' in kwargs:
             cmd += ' 2> ' + shellsafe(kwargs['__stderr_to'])
 
+        return cmd
+
+
+    def ex(self, *args, **kwargs):
+        cmd = self.getcmd(*args,**kwargs)
         if '__ignorefailure' in kwargs and kwargs['__ignorefailure']:
             try:
                 super(Task, self).ex(cmd)
@@ -392,6 +397,19 @@ class Task(sciluigi.Task):
                 pass
         else:
             super(Task, self).ex(cmd)
+
+
+    def ex_async(self, *args, **kwargs):
+        cmd = self.getcmd(*args,**kwargs)
+        process = subprocess.Popen(cmd, shell=True)
+        if process:
+            log.info("Executing asynchronous command: " + cmd)
+            return process.pid
+        else:
+            raise Exception("Unable to launch process: " + cmd)
+
+
+
 
     @classmethod
     def inherit_parameters(Class, *ChildClasses):
