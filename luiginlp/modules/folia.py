@@ -174,7 +174,7 @@ class FoliaValidatorDirTask(Task):
             for inputfile in inputfiles:
                 outputfile = replaceextension(inputfile, self.folia_extension, '.folia-validation-report.txt')
                 if self.outputdir:
-                    outputfile = outputfile.replace(self.in_folia().path, self.outputdir)
+                    outputfile = outputfile.replace(self.in_foliadir().path, self.outputdir)
                 #Run the validator
                 pids.append(self.ex_async(inputfile,
                     __stderr_to=outputfile,
