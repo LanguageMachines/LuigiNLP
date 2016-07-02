@@ -1,6 +1,7 @@
 import os
 import glob
 import natsort
+import subprocess
 from luiginlp.engine import Task, TargetInfo, InputFormat, StandardWorkflowComponent, registercomponent, InputSlot, Parameter, BoolParameter, IntParameter
 from luiginlp.util import getlog, recursive_glob, waitforslot, waitforcompletion, replaceextension
 from luiginlp.modules.openconvert import OpenConvert_folia
