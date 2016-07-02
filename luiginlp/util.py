@@ -109,6 +109,7 @@ def waitforslot(pids, threads):
             except:
                 pass
         pids = newpids
+    return pids
 
 def waitforcompletion(pids):
     while len(pids) >= 0:

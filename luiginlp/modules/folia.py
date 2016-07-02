@@ -180,7 +180,7 @@ class FoliaValidatorDirTask(Task):
                 pids.append(self.ex_async(inputfile,
                     __stderr_to=outputfile,
                     __ignorefailure=True)) #if the validator fails (it does when the document is invalid),  we ignore it as that is a valid result for us
-                waitforslot(pids, self.validatorthreads)
+                pids = waitforslot(pids, self.validatorthreads)
             waitforcompletion(pids)
 
 
