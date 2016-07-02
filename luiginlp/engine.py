@@ -8,6 +8,7 @@ import argparse
 import importlib
 import itertools
 import shutil
+import subprocess
 import glob
 import socket
 from luiginlp.util import shellsafe, getlog, replaceextension
