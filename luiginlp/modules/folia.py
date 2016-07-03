@@ -168,7 +168,7 @@ class FoliaValidatorDirTask(Task):
     def run(self):
         #gather input files
         batchsize = 1000
-        if self.outputdir: os.makedirs(self.outputdir)
+        if self.outputdir and not os.path.exists(self.outputdir): os.makedirs(self.outputdir)
 
         if os.path.exists(self.out_state().path):
             log.info("Loading index...")
