@@ -3,7 +3,6 @@ import shutil
 import glob
 import fnmatch
 import logging
-from itertools import izip_longest
 
 DISALLOWINSHELLSAFE = ('|','&',';','!','<','>','{','}','`','\n','\r','\t')
 
