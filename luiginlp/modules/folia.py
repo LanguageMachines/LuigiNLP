@@ -160,20 +160,26 @@ class FoliaValidatorDirTask(Task):
         return self.outputfrominput(inputformat='foliadir',stripextension='.foliadir', addextension='.foliavalidatordirtask.state.pickle')
 
 
+    def on_failure(self, exception):
+        if os.path.exists(self.out_state().path):
+            os.unlink(self.out_state().path)
+        return super().on_failure(exception)
+
     def run(self):
         #gather input files
         batchsize = 1000
+        if self.outputdir: os.makedirs(self.outputdir)
 
         if os.path.exists(self.out_state().path):
             log.info("Loading index...")
-            with open(self.out_state().path,'r') as f:
+            with open(self.out_state().path,'rb') as f:
                 inputfiles = pickle.load(f)
         else:
             log.info("Collecting input files...")
             inputfiles = recursive_glob(self.in_foliadir().path, '*.' + self.folia_extension)
             log.info("Collected " + str(len(inputfiles)) + " input files")
 
-        with open(self.out_state().path,'w') as f:
+        with open(self.out_state().path,'wb') as f:
             pickle.dump(inputfiles[batchsize:],f)
 
         log.info("Scheduling validators, " + len(inputfiles) + " left...")
