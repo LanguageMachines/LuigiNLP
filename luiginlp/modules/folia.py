@@ -2,6 +2,7 @@ import os
 import glob
 import natsort
 import subprocess
+import pickle
 from luiginlp.engine import Task, TargetInfo, InputFormat, StandardWorkflowComponent, registercomponent, InputSlot, Parameter, BoolParameter, IntParameter
 from luiginlp.util import getlog, recursive_glob, waitforslot, waitforcompletion, replaceextension, chunk
 from luiginlp.modules.openconvert import OpenConvert_folia
@@ -155,15 +156,22 @@ class FoliaValidatorDirTask(Task):
     def out_validationsummary(self):
         return self.outputfrominput(inputformat='foliadir',stripextension='.foliadir', addextension='.folia-validation-summary.txt')
 
+    def out_index(self):
+        return self.outputfrominput(inputformat='foliadir',stripextension='.foliadir', addextension='.index.pickle')
+
     def run(self):
         #gather input files
-        log.info("Collecting input files...")
-        inputfiles = recursive_glob(self.in_foliadir().path, '*.' + self.folia_extension)
-        log.info("Collected " + str(len(inputfiles)) + " input files")
+        if os.path.exists(self.out_index().path):
+            inputfiles = pickle.load(self.out_index().path)
+        else:
+            log.info("Collecting input files...")
+            inputfiles = recursive_glob(self.in_foliadir().path, '*.' + self.folia_extension)
+            log.info("Collected " + str(len(inputfiles)) + " input files")
+            pickle.dump(self.out_index().path, inputfiles)
 
 
         log.info("Scheduling validators...")
-        for taskbatch in chunk(inputfiles,250): #schedule in batches of 250 so we don't overload the scheduler
+        for taskbatch in chunk(inputfiles,1000): #schedule in batches of 1000 so we don't overload the scheduler
             if self.outputdir:
                 yield [ FoliaValidator(inputfile=inputfile,folia_extension=self.folia_extension,outputdir=os.path.dirname(inputfile).replace(self.in_foliadir().path,self.outputdir)) for inputfile in taskbatch ]
             else:
