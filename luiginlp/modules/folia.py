@@ -182,7 +182,7 @@ class FoliaValidatorDirTask(Task):
         with open(self.out_state().path,'wb') as f:
             pickle.dump(inputfiles[batchsize:],f)
 
-        log.info("Scheduling validators, " + len(inputfiles) + " left...")
+        log.info("Scheduling validators, " + str(len(inputfiles)) + " left...")
         for taskbatch in chunk(inputfiles,batchsize): #schedule in batches of 1000 so we don't overload the scheduler
             if self.outputdir:
                 yield [ FoliaValidator(inputfile=inputfile,folia_extension=self.folia_extension,outputdir=os.path.dirname(inputfile).replace(self.in_foliadir().path,self.outputdir)) for inputfile in taskbatch ]
