@@ -3,6 +3,7 @@ import shutil
 import glob
 import fnmatch
 import logging
+from itertools import izip_longest
 
 DISALLOWINSHELLSAFE = ('|','&',';','!','<','>','{','}','`','\n','\r','\t')
 
@@ -121,3 +122,10 @@ def waitforcompletion(pids):
             except:
                 pass
         pids = newpids
+
+
+def chunk(lst, n):
+    l = len(lst)
+    for i in range(0,l,n):
+        yield lst[i:i+n]
+
