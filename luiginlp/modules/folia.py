@@ -174,7 +174,7 @@ class FoliaValidatorDirTask(Task):
             log.info("Collected " + str(len(inputfiles)) + " input files")
 
         with open(self.out_state().path,'w') as f:
-            pickle.dump(f, inputfiles[batchsize:])
+            pickle.dump(inputfiles[batchsize:],f)
 
         log.info("Scheduling validators, " + len(inputfiles) + " left...")
         for taskbatch in chunk(inputfiles,batchsize): #schedule in batches of 1000 so we don't overload the scheduler
