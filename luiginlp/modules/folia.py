@@ -161,16 +161,13 @@ class FoliaValidatorDirTask(Task):
         inputfiles = recursive_glob(self.in_foliadir().path, '*.' + self.folia_extension)
         log.info("Collected " + str(len(inputfiles)) + " input files")
 
-        log.info("Initialising subtasks...")
-        #Run the FoLiA tasks for all dependencies
-        if self.outputdir:
-            tasks = [ FoliaValidator(inputfile=inputfile,folia_extension=self.folia_extension,outputdir=os.path.dirname(inputfile).replace(self.in_foliadir().path,self.outputdir)) for inputfile in inputfiles ]
-        else:
-            tasks = [ FoliaValidator(inputfile=inputfile,folia_extension=self.folia_extension) for inputfile in inputfiles ]
 
         log.info("Scheduling validators...")
-        for taskbatch in chunk(tasks,250): #schedule in batches of 250 so we don't overload the scheduler
-            yield taskbatch
+        for taskbatch in chunk(inputfiles,250): #schedule in batches of 250 so we don't overload the scheduler
+            if self.outputdir:
+                yield [ FoliaValidator(inputfile=inputfile,folia_extension=self.folia_extension,outputdir=os.path.dirname(inputfile).replace(self.in_foliadir().path,self.outputdir)) for inputfile in taskbatch ]
+            else:
+                yield [ FoliaValidator(inputfile=inputfile,folia_extension=self.folia_extension) for inputfile in taskbatch ]
 
 
         log.info("Collecting output files...")
