@@ -156,25 +156,28 @@ class FoliaValidatorDirTask(Task):
     def out_validationsummary(self):
         return self.outputfrominput(inputformat='foliadir',stripextension='.foliadir', addextension='.folia-validation-summary.txt')
 
-    def out_index(self):
-        return self.outputfrominput(inputformat='foliadir',stripextension='.foliadir', addextension='.index.pickle')
+    def out_state(self):
+        return self.outputfrominput(inputformat='foliadir',stripextension='.foliadir', addextension='.foliavalidatordirtask.state.pickle')
+
 
     def run(self):
         #gather input files
-        if os.path.exists(self.out_index().path):
+        batchsize = 1000
+
+        if os.path.exists(self.out_state().path):
             log.info("Loading index...")
-            with open(self.out_index().path,'r') as f:
+            with open(self.out_state().path,'r') as f:
                 inputfiles = pickle.load(f)
         else:
             log.info("Collecting input files...")
             inputfiles = recursive_glob(self.in_foliadir().path, '*.' + self.folia_extension)
             log.info("Collected " + str(len(inputfiles)) + " input files")
-            with open(self.out_index().path,'2') as f:
-                pickle.dump(f, inputfiles)
 
+        with open(self.out_state().path,'w') as f:
+            pickle.dump(f, inputfiles[batchsize:])
 
-        log.info("Scheduling validators...")
-        for taskbatch in chunk(inputfiles,1000): #schedule in batches of 1000 so we don't overload the scheduler
+        log.info("Scheduling validators, " + len(inputfiles) + " left...")
+        for taskbatch in chunk(inputfiles,batchsize): #schedule in batches of 1000 so we don't overload the scheduler
             if self.outputdir:
                 yield [ FoliaValidator(inputfile=inputfile,folia_extension=self.folia_extension,outputdir=os.path.dirname(inputfile).replace(self.in_foliadir().path,self.outputdir)) for inputfile in taskbatch ]
             else:
