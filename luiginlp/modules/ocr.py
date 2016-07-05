@@ -2,7 +2,7 @@ import os
 import glob
 import sys
 import shutil
-from luiginlp.engine import Task, StandardWorkflowComponent, registercomponent, InputComponent, Parallel, run, ComponentParameters, InputFormat, InputSlot, Parameter, BoolParameter
+from luiginlp.engine import Task, StandardWorkflowComponent, registercomponent, InputComponent, Parallel, run, InputFormat, InputSlot, Parameter, BoolParameter
 from luiginlp.util import getlog
 from luiginlp.modules.pdf import Pdf2images
 from luiginlp.modules.folia import Foliacat, FoliaHOCR

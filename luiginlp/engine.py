@@ -11,6 +11,7 @@ import shutil
 import subprocess
 import glob
 import socket
+import json
 from luiginlp.util import shellsafe, getlog, replaceextension
 
 log = getlog()
@@ -87,6 +88,8 @@ class InputFormat:
             extensions = (extension,)
         else:
             extensions = extension
+        if not hasattr(workflow,inputparameter):
+            raise AttributeError("Workflow " + workflow.__class__.__name__ + " has no attribute " + inputparameter)
         for extension in extensions:
             if extension[0] == '.': extension = extension[1:]
             if getattr(workflow,inputparameter).endswith('.' + extension) or force:
@@ -96,6 +99,8 @@ class InputFormat:
                     raise FileNotFoundError("Specified input file for format " + self.format_id + " to " + workflow.__class__.__name__ + " does not exist: " + self.basename + "." + self.extension)
                 self.valid = True
                 break
+        #if not self.valid:
+        #    log.info("InputFormat " + format_id + " (extensions " + ",".join(extensions)+") did not match " + getattr(workflow, inputparameter))
 
     def __str__(self):
         if self.valid:
@@ -199,6 +204,9 @@ class WorkflowComponent(sciluigi.WorkflowTask):
         if inspect.isclass(self.startcomponent): self.startcomponent = self.startcomponent.__name__
         #Can we handle the input directly?
         accepts = self.accepts()
+        inputlog = []
+        if hasattr(self, 'inputfile'):
+            inputlog.append("inputfile=" + self.inputfile)
         if not isinstance(accepts, (tuple, list)):
             accepts = (accepts,)
         for inputtuple in itertools.chain(accepts, self.accepted_components):
@@ -207,12 +215,15 @@ class WorkflowComponent(sciluigi.WorkflowTask):
             for input in inputtuple: #pylint: disable=redefined-builtin
                 if isinstance(input, InputFormat):
                     if self.startcomponent and self.startcomponent != self.__class__.__name__:
+                        inputlog.append("startcomponent does not match " + self.__class__.__name__ + ", skipping InputFormat " + input.format_id)
                         break
                     if input.valid and (not self.inputslot or self.inputslot == input.format_id):
+                        inputlog.append("InputFormat " + input.format_id + " matches!")
                         input_feeds[input.format_id] = input.task(workflow).out_default
                         #print("UPDATED INPUT_FEEDS (a)", len(input_feeds), repr(input_feeds),file=sys.stderr)
                         continue
                     else:
+                        inputlog.append("InputFormat " + input.format_id + " does not match (inputslot=" + self.inputslot+")")
                         #print("BREAKING INPUT_FEEDS (a)",file=sys.stderr)
                         break
                 elif isinstance(input, InputComponent):
@@ -228,7 +239,8 @@ class WorkflowComponent(sciluigi.WorkflowTask):
                     new_input_feeds = swf.setup_input(workflow)
                     inputtasks = swf.setup(workflow, new_input_feeds)
                     #print("SUBWORKFLOW INPUT_FEEDS (b)",len(new_input_feeds), repr(new_input_feeds),file=sys.stderr)
-                except InvalidInput:
+                except InvalidInput as e:
+                    inputlog.append( "(Tried workflow " + swf.__class__.__name__ + " in accept chain, does not handle provided input: " + str(e) + ")")
                     log.debug("(Tried workflow " + swf.__class__.__name__ + " in accept chain, does not handle provided input)")
                     #print("SUBWORKFLOW INVALID INPUT (b)", file=sys.stderr)
                     break
@@ -257,7 +269,7 @@ class WorkflowComponent(sciluigi.WorkflowTask):
                 return input_feeds
 
         #input was not handled, raise error
-        raise InvalidInput("Unable to find an entry point for supplied input")
+        raise InvalidInput("Unable to find an entry point for supplied input: " + "; ". join(inputlog))
 
     def workflow(self):
         try:
@@ -456,10 +468,13 @@ def getcomponentclass(classname):
             return Class
     raise Exception("No such component: " + classname)
 
-class ComponentParameters(dict):
-    def __init__(self, **kwargs):
+class PassParameters(dict):
+    def __init__(self, *args, **kwargs):
         super().__init__()
-        self.update(kwargs)
+        if args:
+            self.update(args[0])
+        if kwargs:
+            self.update(kwargs)
 
     def __hash__(self):
         return hash(tuple(sorted(self.items())))
@@ -468,13 +483,21 @@ class Parallel(sciluigi.WorkflowTask):
     """Meta workflow"""
     inputfiles = luigi.Parameter()
     component = luigi.Parameter()
-    component_parameters = luigi.Parameter(default=ComponentParameters())
+    passparameters = luigi.Parameter(default=PassParameters())
 
     def workflow(self):
+        if isinstance(self.passparameters, str):
+            self.passparameters = PassParameters(json.loads(self.passparameters.replace("'",'"')))
+        elif isinstance(self.passparameters, dict):
+            self.passparameters = PassParameters(self.passparameters)
+        elif not isinstance(self.passparameters, PassParameters):
+            raise TypeError("Keywork argument passparameters must be instance of PassParameters, got " + repr(self.passparameters))
         tasks = []
         ComponentClass = getcomponentclass(self.component)
-        for inputfile in self.inputfiles.split(','):
-            tasks.append( self.new_task(self.component, ComponentClass, inputfile=inputfile,**self.component_parameters) )
+        if isinstance(self.inputfiles, str):
+            self.inputfiles = self.inputfiles.split(',')
+        for inputfile in self.inputfiles:
+            tasks.append( self.new_task(self.component, ComponentClass, inputfile=inputfile,**self.passparameters) )
         return tasks
 
 class ParallelFromDir(sciluigi.WorkflowTask):
@@ -482,13 +505,19 @@ class ParallelFromDir(sciluigi.WorkflowTask):
     directory = luigi.Parameter()
     pattern = luigi.Parameter(default="*")
     component = luigi.Parameter()
-    component_parameters = luigi.Parameter(default=ComponentParameters())
+    passparameters = luigi.Parameter(default=PassParameters())
 
     def workflow(self):
+        if isinstance(self.passparameters, str):
+            self.passparameters = PassParameters(json.loads(self.passparameters.replace("'",'"')))
+        elif isinstance(self.passparameters, dict):
+            self.passparameters = PassParameters(self.passparameters)
+        elif not isinstance(self.passparameters, PassParameters):
+            raise TypeError("Keywork argument passparameters must be instance of PassParameters, got " + repr(self.passparameters))
         tasks = []
         ComponentClass = getcomponentclass(self.component)
         for inputfile in glob.glob(os.path.join(self.directory, self.pattern)):
-            tasks.append( self.new_task(self.component, ComponentClass, inputfile=inputfile,**self.component_parameters) )
+            tasks.append( self.new_task(self.component, ComponentClass, inputfile=inputfile,**self.passparameters) )
         return tasks
 
 def run(*args, **kwargs):

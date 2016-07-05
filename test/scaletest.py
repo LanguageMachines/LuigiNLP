@@ -4,8 +4,8 @@ import unittest
 import glob
 import shutil
 import luiginlp
-from luiginlp.engine import Task, StandardWorkflowComponent, InputFormat, InputComponent, InputSlot, Parameter, IntParameter
-from luiginlp.util import getlog
+from luiginlp.engine import Task, StandardWorkflowComponent, PassParameters, InputFormat, InputComponent, InputSlot, Parameter, IntParameter, registercomponent, Parallel
+from luiginlp.util import getlog, chunk
 
 log = getlog()
 
@@ -23,6 +23,7 @@ class VoweleaterTask(Task):
         self.ex(e='s/[aeiouAEIOU]//g',__stdin_from=self.in_txt().path,__stdout_to=self.out_txt().path)
 
 
+@registercomponent
 class Voweleater(StandardWorkflowComponent):
     def autosetup(self):
         return VoweleaterTask
@@ -31,6 +32,22 @@ class Voweleater(StandardWorkflowComponent):
         return InputFormat(self, format_id='txt',extension='txt')
 
 Voweleater.inherit_parameters(VoweleaterTask)
+
+#class SplitTask(Task):
+#    inputfiles = Parameter()
+#    component = Parameter()
+#    passparameters = PassParameters()
+#
+#    def out_split(self):
+#        return TargetInfo(self, self.basename + '.' + self.extension)
+#
+#    def run(self):
+#        ComponentClass = getcomponentclass(self.component)
+#        yield [ ComponentClass(inputfile=inputfile,outputdir=self.out_txtdir().path) for inputfile in inputfiles ]
+
+
+
+
 
 class ScaleTestTask(Task):
 
@@ -51,8 +68,13 @@ class ScaleTestTask(Task):
 
         #inception aka dynamic dependencies: we yield a list of tasks to perform which could not have been predicted statically
         #in this case we run the OCR_singlepage component for each input file in the directory
-        log.info("Scheduling validators, " + str(len(inputfiles)) + " left...")
-        yield [ Voweleater(inputfile=inputfile,outputdir=self.out_txtdir().path) for inputfile in inputfiles ]
+
+        chunks = [ Parallel(component='Voweleater',inputfiles=','.join(inputfiles_chunk),passparameters=PassParameters(outputdir=self.out_txtdir().path)) for inputfiles_chunk  in chunk(inputfiles, 1000) ]
+        log.info("Scheduling chunks: " + str(len(chunks)))
+        yield chunks
+
+        #yield [ Voweleater(inputfile=inputfile,outputdir=self.out_txtdir().path) for inputfile in inputfiles ]
+
 
 
 class ScaleTest(StandardWorkflowComponent):
@@ -80,6 +102,6 @@ if __name__ == '__main__':
             with open(filename,'w',encoding='utf-8') as f:
                 f.write("test")
 
-    luiginlp.run(ScaleTest(inputfile=workdir,n=n, inputslot='txtdir'),workers=5)
+    luiginlp.run(ScaleTest(inputfile=workdir,n=n),workers=5)
 
 
