@@ -151,7 +151,6 @@ class FoliaValidatorDirTask(Task):
     executable = "foliavalidator"
     in_foliadir = InputSlot()
     folia_extension = Parameter(default='folia.xml')
-    validatorthreads = IntParameter(default=1)
 
     def out_validationsummary(self):
         return self.outputfrominput(inputformat='foliadir',stripextension='.foliadir', addextension='.folia-validation-summary.txt')

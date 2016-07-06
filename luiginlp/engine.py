@@ -450,6 +450,8 @@ class Task(sciluigi.Task):
             if outputdir and outputdir != '.':
                 if hasattr(self, replaceinputdirparam):
                     replaceinputdir = getattr(self,replaceinputdirparam)
+                else:
+                    replaceinputdir = None
                 if replaceinputdir:
                     if inputfilename.startswith(replaceinputdir):
                         return TargetInfo(self, os.path.join(outputdir, os.path.basename(replaceextension(inputfilename[len(replaceinputdir):], stripextension,addextension))))
