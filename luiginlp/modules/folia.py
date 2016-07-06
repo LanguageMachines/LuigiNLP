@@ -3,7 +3,7 @@ import glob
 import natsort
 import subprocess
 import pickle
-from luiginlp.engine import Task, TargetInfo, InputFormat, StandardWorkflowComponent, registercomponent, InputSlot, Parameter, BoolParameter, IntParameter
+from luiginlp.engine import Task, TargetInfo, InputFormat, StandardWorkflowComponent, registercomponent, InputSlot, Parameter, BoolParameter, IntParameter, PassParameters, ParallelBatch
 from luiginlp.util import getlog, recursive_glob, waitforslot, waitforcompletion, replaceextension, chunk
 from luiginlp.modules.openconvert import OpenConvert_folia
 
@@ -167,28 +167,27 @@ class FoliaValidatorDirTask(Task):
 
     def run(self):
         #gather input files
-        batchsize = 1000
         if self.outputdir and not os.path.exists(self.outputdir): os.makedirs(self.outputdir)
 
         if os.path.exists(self.out_state().path):
-            log.info("Loading index...")
+            log.info("Collecting input files from saved state...")
             with open(self.out_state().path,'rb') as f:
                 inputfiles = pickle.load(f)
         else:
             log.info("Collecting input files...")
             inputfiles = recursive_glob(self.in_foliadir().path, '*.' + self.folia_extension)
             log.info("Collected " + str(len(inputfiles)) + " input files")
+            with open(self.out_state().path,'wb') as f:
+                pickle.dump(inputfiles,f)
 
-        with open(self.out_state().path,'wb') as f:
-            pickle.dump(inputfiles[batchsize:],f)
+        log.info("Scheduling validators")
+        if self.outputdir:
+            passparameters = PassParameters(folia_extension=self.folia_extension,replaceinputdir=self.in_foliadir().path, outputdir=self.outputdir)
+        else:
+            passparameters = PassParameters(folia_extension=self.folia_extension)
 
-        log.info("Scheduling validators, " + str(len(inputfiles)) + " left...")
-        for taskbatch in chunk(inputfiles,batchsize): #schedule in batches of 1000 so we don't overload the scheduler
-            if self.outputdir:
-                yield [ FoliaValidator(inputfile=inputfile,folia_extension=self.folia_extension,outputdir=os.path.dirname(inputfile).replace(self.in_foliadir().path,self.outputdir)) for inputfile in taskbatch ]
-            else:
-                yield [ FoliaValidator(inputfile=inputfile,folia_extension=self.folia_extension) for inputfile in taskbatch ]
-
+        for inputfiles_batch in chunk(inputfiles,1000): #schedule in batches of 1000 so we don't overload the scheduler
+            yield ParallelBatch(component='FoliaValidator',inputfiles=inputfiles_batch,passparameters=passparameters)
 
         log.info("Collecting output files...")
         #Gather all output files

@@ -433,7 +433,7 @@ class Task(sciluigi.Task):
                     if isinstance(attr,luigi.Parameter) and not hasattr(Class, key):
                         setattr(Class,key, attr)
 
-    def outputfrominput(self, inputformat, stripextension, addextension, outputdirparam='outputdir'):
+    def outputfrominput(self, inputformat, stripextension, addextension, replaceinputdirparam='replaceinputdir', outputdirparam='outputdir'):
         """Derives the output filename from the input filename, removing the input extension and adding the output extension. Supports outputdir parameter."""
 
         if not hasattr(self,'in_' + inputformat):
@@ -448,8 +448,15 @@ class Task(sciluigi.Task):
         if hasattr(self,outputdirparam):
             outputdir = getattr(self,outputdirparam)
             if outputdir and outputdir != '.':
-                return TargetInfo(self, os.path.join(outputdir, os.path.basename(replaceextension(inputfilename, stripextension,addextension))))
-        return TargetInfo(self, replaceextension(inputfilename, stripextension,addextension))
+                if hasattr(self, replaceinputdirparam):
+                    replaceinputdir = getattr(self,replaceinputdirparam)
+                if replaceinputdir:
+                    if inputfilename.startswith(replaceinputdir):
+                        return TargetInfo(self, os.path.join(outputdir, os.path.basename(replaceextension(inputfilename[len(replaceinputdir):], stripextension,addextension))))
+                else:
+                    return TargetInfo(self, os.path.join(outputdir, os.path.basename(replaceextension(inputfilename, stripextension,addextension))))
+            else:
+                return TargetInfo(self, replaceextension(inputfilename, stripextension,addextension))
 
 
 class StandardWorkflowComponent(WorkflowComponent):
@@ -457,6 +464,7 @@ class StandardWorkflowComponent(WorkflowComponent):
 
     inputfile = luigi.Parameter()
     outputdir = luigi.Parameter(default="")
+    replaceinputdir = luigi.Parameter(default="")
 
 class TargetInfo(sciluigi.TargetInfo):
     pass
@@ -478,6 +486,36 @@ class PassParameters(dict):
 
     def __hash__(self):
         return hash(tuple(sorted(self.items())))
+
+class ParallelBatch(luigi.Task):
+    """Meta workflow"""
+    inputfiles = luigi.Parameter()
+    component = luigi.Parameter()
+    passparameters = luigi.Parameter(default=PassParameters())
+
+    def requires(self):
+        if isinstance(self.passparameters, str):
+            self.passparameters = PassParameters(json.loads(self.passparameters.replace("'",'"')))
+        elif isinstance(self.passparameters, dict):
+            self.passparameters = PassParameters(self.passparameters)
+        elif not isinstance(self.passparameters, PassParameters):
+            raise TypeError("Keywork argument passparameters must be instance of PassParameters, got " + repr(self.passparameters))
+        tasks = []
+        ComponentClass = getcomponentclass(self.component)
+        if isinstance(self.inputfiles, str):
+            self.inputfiles = self.inputfiles.split(',')
+        for inputfile in self.inputfiles:
+            tasks.append(  ComponentClass(inputfile=inputfile,**self.passparameters))
+        return tasks
+
+    def run(self):
+        if isinstance(self.inputfiles, str):
+            self.inputfiles = self.inputfiles.split(',')
+        with self.output().open('w') as f:
+            f.write("\n".join(self.inputfiles))
+
+    def output(self):
+        return luigi.LocalTarget('.parallelbatch-' + self.component + '-' + str(hash(self)) + '.done')
 
 class Parallel(sciluigi.WorkflowTask):
     """Meta workflow"""

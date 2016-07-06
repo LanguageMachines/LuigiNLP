@@ -4,7 +4,9 @@ import unittest
 import glob
 import shutil
 import luiginlp
-from luiginlp.engine import Task, StandardWorkflowComponent, PassParameters, InputFormat, InputComponent, InputSlot, Parameter, IntParameter, registercomponent, Parallel
+import luigi
+import json
+from luiginlp.engine import Task, StandardWorkflowComponent, PassParameters, InputFormat, InputComponent, InputSlot, Parameter, IntParameter, registercomponent, ParallelBatch
 from luiginlp.util import getlog, chunk
 
 log = getlog()
@@ -49,6 +51,8 @@ Voweleater.inherit_parameters(VoweleaterTask)
 
 
 
+
+
 class ScaleTestTask(Task):
 
     in_txtdir = InputSlot()
@@ -67,11 +71,11 @@ class ScaleTestTask(Task):
         log.info("Collected " + str(len(inputfiles)) + " input files")
 
         #inception aka dynamic dependencies: we yield a list of tasks to perform which could not have been predicted statically
-        #in this case we run the OCR_singlepage component for each input file in the directory
+        for inputfiles_chunk in chunk(inputfiles, 1000):
+            yield ParallelBatch(component='Voweleater',inputfiles=','.join(inputfiles_chunk),passparameters=PassParameters(outputdir=self.out_txtdir().path))
 
-        chunks = [ Parallel(component='Voweleater',inputfiles=','.join(inputfiles_chunk),passparameters=PassParameters(outputdir=self.out_txtdir().path)) for inputfiles_chunk  in chunk(inputfiles, 1000) ]
-        log.info("Scheduling chunks: " + str(len(chunks)))
-        yield chunks
+        #log.info("Scheduling chunks: " + str(len(chunks)))
+        #yield chunks
 
         #yield [ Voweleater(inputfile=inputfile,outputdir=self.out_txtdir().path) for inputfile in inputfiles ]
 
