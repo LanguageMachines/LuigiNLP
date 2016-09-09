@@ -18,7 +18,7 @@ class Ucto_txt2folia(Task):
         return self.outputfrominput(inputformat='txt',stripextension='.txt', addextension='.folia.xml')
 
     def run(self):
-        self.ex(self.in_txt().path(), self.out_folia().path,
+        self.ex(self.in_txt().path, self.out_folia().path,
                 L=self.language,
                 m=self.tok_input_sentenceperline,
                 X=True)
@@ -37,7 +37,7 @@ class Ucto_txt2tok(Task):
         return self.outputfrominput(inputformat='txt',stripextension='.txt', addextension='.tok')
 
     def run(self):
-        self.ex(self.in_txt().path(), self.out_tok().path,
+        self.ex(self.in_txt().path, self.out_tok().path,
                 L=self.language,
                 m=self.tok_input_sentenceperline,
                 n=self.tok_output_sentenceperline)
