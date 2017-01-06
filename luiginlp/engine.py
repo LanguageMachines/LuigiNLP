@@ -342,6 +342,8 @@ class Task(sciluigi.Task):
                 log.info("Produced output " + getattr(self, attrname)().path)
         return super().on_success()
 
+    def run(self):
+        raise NotImplementedError("No run() method implemented for Task " + self.__class__.__name__)
 
     def getcmd(self, *args, **kwargs):
         if not hasattr(self,'executable'):
