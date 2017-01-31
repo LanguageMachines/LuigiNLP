@@ -1,7 +1,10 @@
 language: python
 python:
     - "3.4"
+preinstall: 
+    - pip install python-daemon
+    - pip install luigi
 install: 
-    - python setup.py install || python setup.py install  #path for python-deamon problem
+    - python setup.py install
 script:  
     - python test/test.py
