@@ -1,10 +1,11 @@
 language: python
 python:
     - "3.4"
-preinstall: 
+dist: trusty
+sudo: false
+install: 
     - pip install python-daemon
     - pip install luigi
-install: 
     - python setup.py install
 script:  
     - python test/test.py
