@@ -155,29 +155,14 @@ class FoliaValidatorDirTask(Task):
     def out_validationsummary(self):
         return self.outputfrominput(inputformat='foliadir',stripextension='.foliadir', addextension='.folia-validation-summary.txt')
 
-    def out_state(self):
-        return self.outputfrominput(inputformat='foliadir',stripextension='.foliadir', addextension='.foliavalidatordirtask.state.pickle')
-
-
-    def on_failure(self, exception):
-        if os.path.exists(self.out_state().path):
-            os.unlink(self.out_state().path)
-        return super().on_failure(exception)
 
     def run(self):
         #gather input files
         if self.outputdir and not os.path.exists(self.outputdir): os.makedirs(self.outputdir)
 
-        if os.path.exists(self.out_state().path):
-            log.info("Collecting input files from saved state...")
-            with open(self.out_state().path,'rb') as f:
-                inputfiles = pickle.load(f)
-        else:
-            log.info("Collecting input files...")
-            inputfiles = recursive_glob(self.in_foliadir().path, '*.' + self.folia_extension)
-            log.info("Collected " + str(len(inputfiles)) + " input files")
-            with open(self.out_state().path,'wb') as f:
-                pickle.dump(inputfiles,f)
+        log.info("Collecting input files...")
+        inputfiles = recursive_glob(self.in_foliadir().path, '*.' + self.folia_extension)
+        log.info("Collected " + str(len(inputfiles)) + " input files")
 
         log.info("Scheduling validators")
         if self.outputdir:
@@ -185,8 +170,7 @@ class FoliaValidatorDirTask(Task):
         else:
             passparameters = PassParameters(folia_extension=self.folia_extension)
 
-        for inputfiles_batch in chunk(inputfiles,1000): #schedule in batches of 1000 so we don't overload the scheduler
-            yield ParallelBatch(component='FoliaValidator',inputfiles=inputfiles_batch,passparameters=passparameters)
+        yield [ FoliaValidator(inputfile=inputfile,passparameters=passparameters) for inputfile in inputfiles ]
 
         log.info("Collecting output files...")
         #Gather all output files
