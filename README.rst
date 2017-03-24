@@ -30,12 +30,12 @@ Goals
 * Robust failure recovery: when failures occur, fix the problem and run the workflow again, tasks that have completed will not be rerun.
 * Easy to extend with new modules (i.e. workflow components & tasks).
 * Traceability of all intermediate steps, retain intermediate results until explicitly discarded
-* Explicit workflow definitions 
+* Explicit workflow definitions
 * Automatic parallellisation of tasks where possible
 * Keep it simple, minimize overhead for the developer of the workflow, use Pythonic principles,
 * Python-based, all workflow and component specifications are in Python rather than external.
 * Protection against shell injection attacks for tasks that invoke external tools
-* Runnable standalone from command-line 
+* Runnable standalone from command-line
 
 ==============
 Architecture
@@ -65,7 +65,7 @@ parameters. A workflow component only glues together different tasks, the task
 performs an actual job, either by invoking an external tool, or by running
 Python code directly. Chaining together tasks in the definition of the
 workflow component is done by connecting output slots of one task, to input
-slots of the other. 
+slots of the other.
 
 The architecture is visualised in the following scheme:
 
@@ -76,10 +76,10 @@ The architecture is visualised in the following scheme:
 Tasks and workflow components may take **parameters**. These are available
 within a task's ``run()`` method to either be propagated to an external tool
 or to be handled within Python directly. At the component level, parameters may also be used to influence
-task composition, though often they are just passed on to the tasks. 
+task composition, though often they are just passed on to the tasks.
 
 The simplest instance of a workflow component is just one that accepts one
-particular type of input file and sets up just a single task. 
+particular type of input file and sets up just a single task.
 
 Both tasks and workflow components are defined in a **module** (in the Python
 sense of the word), which simply groups several tasks and workflow components together.
@@ -87,7 +87,7 @@ sense of the word), which simply groups several tasks and workflow components to
 LuigiNLP relies heavily on filename extensions. Input formats are matched on
 the basis of an extension, and generally each task reads a file and outputs
 a file with a new extension. Re-use of the same filename (i.e. writing output to the
-input file), is **strictly forbidden**! 
+input file), is **strictly forbidden**!
 
 It is important to understand that the actual input files are only open for
 inspection when a Task is executed (its ``run()`` method is invoked).  During
@@ -140,9 +140,8 @@ of workers should be explicitly set::
 
     $ luiginlp Parallel --module luiginlp.modules.frog --component Frog --inputfiles test.rst,test2.rst --workers 2 --skip p
 
-You can always pass component-specific parameters by using the component name
-as a prefix. For instance, the Frog component takes an option ``skip``, you can
-use ``--Frog-skip`` to explicitly set it.
+You can always pass workflow-component-specific parameters by using the workflow component name as a prefix. For
+instance, the Frog component takes an option ``skip``, you can use ``--Frog-skip`` to explicitly set it.
 
 You can also invoke LuigiNLP from within Python of course:
 
@@ -161,7 +160,7 @@ To parallelize multiple tasks you can just do:
     luiginlp.run(
         Frog(inputfile="test.rst",skip='p'),
         Frog(inputfile="test2.rst",skip='p'))
-        
+
 Or use the ``Parallel`` interface:
 
 .. code-block:: python
@@ -176,7 +175,7 @@ Or use the ``Parallel`` interface:
     )
 
 
-Here's an example of running an OCR workflow for a scanned PDF file (requires the tools ``pdfimages``, 
+Here's an example of running an OCR workflow for a scanned PDF file (requires the tools ``pdfimages``,
 ``Tesseract``, ``FoLiA-hocr`` and ``foliacat``, the latter two are a part of LaMachine)::
 
     $ luiginlp --module luiginlp.modules.ocr OCR_folia --inputfile OllevierGeets.pdf --language eng
@@ -185,7 +184,7 @@ LuigiNLP automatically finds a sequence of components leading from your input
 file (provided it's name matches whatever convention you use) to the target
 component. You may, however, force an inputfile by setting the ``--inputslot``
 parameter to some input format ID. This can be useful if you want to feed an
-input file that does not comply to your naming convention. 
+input file that does not comply to your naming convention.
 You may also specify a ``--startcomponent`` to explicitly state which component
 should be the first one, this may be useful in cases of ambiguity where
 multiple paths are possible (the first possibility would be otherwise be chosen).
@@ -206,7 +205,7 @@ LuigiNLP:
 * Tasks should cover the smallest unit of work, do not do too much in one task, but chain tasks instead.
 * Be very specific in your file extensions. If two tasks output a file with the
   same extension, they are considered identical for all intends and purposes!  Multiple stacking extensions are fine and
-  recommend (``*.x.y.z``). Generally, each task strips input extensions (optional) and adds a a new extension. 
+  recommend (``*.x.y.z``). Generally, each task strips input extensions (optional) and adds a a new extension.
 * Input and output filenames may never be the same! It is forbidden to change a file in-place.
 * Consider whether you want to chain multiple workflow components and to use the automatic
   resolution mechanism, or whether you have larger components that chain
@@ -223,7 +222,7 @@ takes one mandatory parameter: the language the text is in.
 
     class Ucto_txt2tok(Task):
         #This task invokes an external tool (ucto), set the executable to invoke
-        executable = 'ucto' 
+        executable = 'ucto'
 
         #Parameters for this task
         language = Parameter()
@@ -233,7 +232,7 @@ takes one mandatory parameter: the language the text is in.
         in_txt = InputSlot()
 
         #Define an output slot, output slots are methods that start with out_
-        def out_tok(self): 
+        def out_tok(self):
             #Output slots should call outputforminput() to automatically derive the output file
             #from the input file, typically by stripping the specified
             extension form the input and adding a new *and distinct* output extension. The inputformat
@@ -298,7 +297,7 @@ FoLiA. What if our input text is in PDF format, MarkDown format, or God forbid,
 in MS Word format? We could solve this problem by writing a
 ``ConvertToPlaintext`` component that handles a multitude of formats and simply
 instructs ucto to accept the plaintext output from that component. We need some extra imports
-and would then modify the ``accepts()`` to tie in the component: 
+and would then modify the ``accepts()`` to tie in the component:
 
 .. code-block:: python
 
@@ -310,13 +309,13 @@ and would then modify the ``accepts()`` to tie in the component:
     def accepts(self):
         return (
             InputFormat(self, format_id='txt',extension='txt'),
-            InputFormat(self, format_id='folia', extension='folia.xml'), 
+            InputFormat(self, format_id='folia', extension='folia.xml'),
             InputComponent(self, ConvertToPlaintext) #you can pass parameters using keyword arguments here
         )
 
 Our ucto component thus-far has been fairly simple, we first used ``autosetup()`` to
 wrap a single task, and later to choose amongst two tasks. Let's look at a more
-explicit example with actual task chaining. 
+explicit example with actual task chaining.
 
 Suppose we want the Ucto component to lowercase our text before passing it on
 to the actual task that invokes ucto. We can write a simple lowercase task as
@@ -331,10 +330,10 @@ set no ``executable`` and do not call ``ex()``):
         language = Parameter()
         encoding = Parameter(default='utf-8')
 
-        in_txt = InputSlot() 
+        in_txt = InputSlot()
 
         #Define an output slot, output slots are methods that start with out_
-        def out_txt(self): 
+        def out_txt(self):
             #We add a lowercased prefix to the extension
             #The output file may NEVER be equal to the input file
             return self.outputfrominput(inputformat='txt',stripextension='.txt',addextension='.lowercased.txt')
@@ -369,7 +368,7 @@ everything.
 
         #Setup a workflow chain manually
         def setup(self, workflow, input_feeds):
-            #input_feeds will be a dictionary of format_id => output_slot 
+            #input_feeds will be a dictionary of format_id => output_slot
 
             #set up the lower caser and feed the input to it
             lowercaser = workflow.new_task('lowercaser',LowercaseText)
@@ -379,7 +378,7 @@ everything.
             #we explicitly pass any parameters we want to propagate
             #if you instead want to implicitly pass all parameters with matching names
             #between component and task, just set keyword argument autopass=True
-            ucto = workflow.new_task('ucto', Ucto_txt2tok, language=self.language) 
+            ucto = workflow.new_task('ucto', Ucto_txt2tok, language=self.language)
             ucto.in_txt = lowercaser.out_txt
 
             #always return the last task(s)
@@ -391,7 +390,7 @@ Executing external commands
 
 We have seen that the ``ex()`` method on a task can be invoked from it's
 ``run()`` method to call external tools. The executable to execute is defined
-in the task's ``executable`` property. 
+in the task's ``executable`` property.
 
 The ``ex()`` method allows you to define your calls to external tools in a
 python way, and ensures that all parameter values are properly escaped to prevent any
@@ -459,10 +458,10 @@ component).  Consider the following task and component:
 
         def out_tokdir(self):
             return self.outputfrominput(inputformat='txtdir',stripextension='.txtdir',addextension='.tokdir')
-        
+
         def run(self):
             #setup the output directory
-            # this creates the directory and also moved it out of the way again when failures occur in this task
+            # this creates the directory and also moves it out of the way again when failures occur in this task
             self.setup_output_dir(self.out_tokdir().path)
 
             #gather input files
@@ -489,7 +488,7 @@ of the input directory. First we set up the output directory with a call to
 ``self.setup_output_dir()``. This creates the directory if it doesn't exist
 yet, but also makes sure the directory is stashed away when the task fails,
 ensuring you can always rerun the pipeline if happens to break off. (in
-technical terms, this preserves idempotency). 
+technical terms, this preserves idempotency).
 
 Mext, we construct a list of all the txt files in the directory. We use this
 list to yield a **list** of components to run, one component for each input file.
@@ -540,7 +539,7 @@ This can be done in the usual way, but if a task already defines them, you may w
 Note that the ``inherit_parameters()`` call is not part of the class definition (not in class scope) but placed after it.
 
 -----------------------------
-Multiple inputs 
+Multiple inputs
 -----------------------------
 
 Tasks may defined multiple input slots (and multiple output slots). Components
@@ -609,7 +608,7 @@ Troubleshooting
   so it is automatically detected. You may also explicitly supply an
   ``inputslot`` parameter with the ID of the format, possibly in combination
   with a ``startcomponent`` parameter with the name of the component you want
-  to start with. 
+  to start with.
 * *ValueError: Workflow setup() did not return a valid last task (or sequence of
   tasks)* or *TypeError: setup() did not return a Task or a sequence of Tasks* -- At the end of your component's ``setup()``
   method you must return the last task instance, or a list of the last task
