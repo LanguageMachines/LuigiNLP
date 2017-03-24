@@ -204,7 +204,7 @@ LuigiNLP:
 
 * Tasks should cover the smallest unit of work, do not do too much in one task, but chain tasks instead.
 * Be very specific in your file extensions. If two tasks output a file with the
-  same extension, they are considered identical for all intends and purposes!  Multiple stacking extensions are fine and
+  same extension, they are considered identical for all intents and purposes!  Multiple stacking extensions are fine and
   recommend (``*.x.y.z``). Generally, each task strips input extensions (optional) and adds a a new extension.
 * Input and output filenames may never be the same! It is forbidden to change a file in-place.
 * Consider whether you want to chain multiple workflow components and to use the automatic
@@ -228,7 +228,7 @@ takes one mandatory parameter: the language the text is in.
         language = Parameter()
 
         #this is the input slot for plaintext files, input slots are connected
-        to output slots of other tasks by a workflow #component
+        #to output slots of other tasks by a workflow component
         in_txt = InputSlot()
 
         #Define an output slot, output slots are methods that start with out_
