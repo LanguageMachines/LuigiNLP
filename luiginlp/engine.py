@@ -205,6 +205,7 @@ class WorkflowComponent(sciluigi.WorkflowTask):
         #Can we handle the input directly?
         accepts = self.accepts()
         inputlog = []
+        candidates = []
         if hasattr(self, 'inputfile'):
             inputlog.append("inputfile=" + self.inputfile)
         if not isinstance(accepts, (tuple, list)):
@@ -263,14 +264,19 @@ class WorkflowComponent(sciluigi.WorkflowTask):
                                 input_feeds[format_id] = getattr(inputtask, attrname)
 
                 #print("UPDATED INPUT_FEEDS (c)",len(input_feeds), repr(input_feeds),file=sys.stderr)
+                
+            if len(input_feeds) > 0: # potential candidates will be stored
+                candidates.append(input_feeds)
 
-            if len(input_feeds) > 0:
-                #print("RETURNING INPUT_FEEDS (d)",len(input_feeds), repr(input_feeds),file=sys.stderr)
-                return input_feeds
+        if len(candidates) > 0: # the candidate with most matches will be picked as input_feeds
+            sorted_candidates = sorted([[len(input_feeds.keys()),input_feeds] for input_feeds in candidates],key = lambda k : k[0],reverse=True)
+            input_feeds = sorted_candidates[0][1]
+            #print("RETURNING INPUT_FEEDS (d)",len(input_feeds), repr(input_feeds),file=sys.stderr)
+            return input_feeds
 
         #input was not handled, raise error
         raise InvalidInput("Unable to find an entry point for supplied input: " + "; ". join(inputlog))
-
+    
     def workflow(self):
         try:
             input_feeds = self.setup_input(self)
