@@ -4,6 +4,11 @@
 .. image:: https://travis-ci.org/LanguageMachines/LuigiNLP.svg?branch=master
     :target: https://travis-ci.org/LanguageMachines/LuigiNLP
 
+.. image:: https://www.repostatus.org/badges/latest/abandoned.svg
+   :alt: Project Status: Abandoned – The project has been abandoned and the author(s) do not intend on continuing development.
+   :target: https://www.repostatus.org/#abandoned
+
+
 
 *************
 LuigiNLP
