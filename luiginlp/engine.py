@@ -205,6 +205,7 @@ class WorkflowComponent(sciluigi.WorkflowTask):
         #Can we handle the input directly?
         accepts = self.accepts()
         inputlog = []
+        candidates = []
         if hasattr(self, 'inputfile'):
             inputlog.append("inputfile=" + self.inputfile)
         if not isinstance(accepts, (tuple, list)):
@@ -216,7 +217,7 @@ class WorkflowComponent(sciluigi.WorkflowTask):
                 if isinstance(input, InputFormat):
                     if self.startcomponent and self.startcomponent != self.__class__.__name__:
                         inputlog.append("startcomponent does not match " + self.__class__.__name__ + ", skipping InputFormat " + input.format_id)
-                        break
+                        continue
                     if input.valid and (not self.inputslot or self.inputslot == input.format_id):
                         inputlog.append("InputFormat " + input.format_id + " matches!")
                         input_feeds[input.format_id] = input.task(workflow).out_default
@@ -225,7 +226,7 @@ class WorkflowComponent(sciluigi.WorkflowTask):
                     else:
                         inputlog.append("InputFormat " + input.format_id + " does not match (inputslot=" + self.inputslot+")")
                         #print("BREAKING INPUT_FEEDS (a)",file=sys.stderr)
-                        break
+                        continue
                 elif isinstance(input, InputComponent):
                     swf = input.Class(*input.args, **input.kwargs)
                 elif inspect.isclass(input) and issubclass(input, WorkflowComponent):
@@ -262,15 +263,19 @@ class WorkflowComponent(sciluigi.WorkflowTask):
                             else:
                                 input_feeds[format_id] = getattr(inputtask, attrname)
 
-                #print("UPDATED INPUT_FEEDS (c)",len(input_feeds), repr(input_feeds),file=sys.stderr)
+                
+            if len(input_feeds) > 0: # potential candidates will be stored
+                candidates.append(input_feeds)
 
-            if len(input_feeds) > 0:
-                #print("RETURNING INPUT_FEEDS (d)",len(input_feeds), repr(input_feeds),file=sys.stderr)
-                return input_feeds
+        if len(candidates) > 0: # the candidate with most matches will be picked as input_feeds
+            sorted_candidates = sorted([[len(input_feeds.keys()),input_feeds] for input_feeds in candidates],key = lambda k : k[0],reverse=True)
+            input_feeds = sorted_candidates[0][1]
+            #print("RETURNING INPUT_FEEDS (d)",len(input_feeds), repr(input_feeds),file=sys.stderr)
+            return input_feeds
 
         #input was not handled, raise error
         raise InvalidInput("Unable to find an entry point for supplied input: " + "; ". join(inputlog))
-
+    
     def workflow(self):
         try:
             input_feeds = self.setup_input(self)
@@ -278,7 +283,7 @@ class WorkflowComponent(sciluigi.WorkflowTask):
         except Exception as e:
             log.error(e.__class__.__name__ + ": " + str(e))
             raise
-        if output_task is None or not (isinstance(output_task, Task) or (isinstance(output_task, (list,tuple)) and all([isinstance(output_task, Task) for t in output_task]))):
+        if output_task is None or not (isinstance(output_task, Task) or (isinstance(output_task, (list,tuple)) and not all([isinstance(output_task, Task) for t in output_task]))):
             raise ValueError("Workflow setup() did not return a valid last task (or sequence of tasks), got " + str(type(output_task)))
         return output_task
 
